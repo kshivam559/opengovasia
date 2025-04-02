@@ -1,0 +1,41 @@
+opengovasia/
+│── 404.php
+│── archive.php
+│── assets/                     # CSS, JS, Images, Fonts
+│   ├── css/
+│       ├── fonts.css
+│       └── ...
+│   ├── js/
+│   ├── images/
+│   ├── fonts/
+│── comments.php
+│── footer.php
+│── functions.php                # Main Theme Functions
+│── header.php                    # Header Template
+│── inc/                         # Include PHP files
+│   ├── custom-post-types.php       # Custom Post Types & Taxonomies
+│   ├── meta-box/
+│       ├── events.php               # Meta Box for Event Details
+│       ├── query-filters.php
+│   ├── taxonomy/
+│   ├── template-functions.php
+│   ├── template-tags.php
+│── index.php                    # Default Index Page
+│── languages/
+│   ├── opengovasia.pot
+│── LICENSE
+│── notes.txt
+│── page.php
+│── readme.txt                    # Theme Documentation
+│── screenshot.jpg                # Theme Screenshot
+│── search.php
+│── sidebar.php                   # Sidebar Template
+│── single.php                    # General Single Page
+│── style-rtl.css
+│── style.css                     # Theme Stylesheet
+│── taxonomy.php
+│── template-parts/
+│   ├── content-none.php
+│   ├── content-page.php
+│   ├── content-search.php
+│   ├── content.php
