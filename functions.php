@@ -195,6 +195,8 @@ require get_template_directory() . '/inc/taxonomy/channel.php';
 
 require get_template_directory() . '/inc/taxonomy/years.php';
 
+require get_template_directory() . '/inc/taxonomy/playlists.php';
+
 /*
  * Custom Query Filter for this theme.
  */
@@ -255,3 +257,9 @@ require get_template_directory() . '/inc/rewrite-rules.php';
  */
 
 require get_template_directory() . '/inc/query-loop.php';
+
+/**
+ * Add PWA Support
+ */
+
+require get_template_directory() . '/inc/pwa-settings.php';

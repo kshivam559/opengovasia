@@ -61,7 +61,7 @@ $post_type = isset($_GET['post_type']) ? sanitize_text_field($_GET['post_type'])
 
 									elseif (get_post_type() === 'ogtv'):
 
-										get_template_part('template-parts/ogtv/archive');
+										get_template_part('template-parts/ogtv/archive-modern');
 
 									else:
 

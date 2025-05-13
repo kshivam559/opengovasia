@@ -1,40 +1,42 @@
 <?php
 // Register Custom Post Types: Posts, Awards, Events, OGTV
 
-function register_custom_post_types() {
+function register_custom_post_types()
+{
     $post_types = [
         'awards' => ['name' => 'Awards', 'icon' => 'dashicons-awards'], // Trophy icon
         'events' => ['name' => 'Events', 'icon' => 'dashicons-calendar'], // Calendar icon
-        'ogtv'   => ['name' => 'OGTV', 'icon' => 'dashicons-video-alt3'], // Video icon
+        'ogtv' => ['name' => 'OGTV', 'icon' => 'dashicons-video-alt3'], // Video icon
     ];
 
     foreach ($post_types as $slug => $data) {
         register_post_type($slug, [
-            'labels'      => [
-                'name'               => __($data['name']),
-                'singular_name'      => __($data['name']),
-                'add_new'            => 'Add New ' . $data['name'],
-                'add_new_item'       => 'New ' . $data['name'],
-                'edit_item'          => 'Edit ' . $data['name'],
-                'view_item'          => 'View ' . $data['name'],
-                'view_items'         => 'View ' . $data['name'],
-                'search_items'       => 'Search ' . $data['name'],
-                'not_found'          => 'No ' . $data['name'] . ' Found',
-                'all_items'          => 'All ' . $data['name'],
-                'archives'           => $data['name'] . ' Archives',
-                'attributes'         => $data['name'] . ' Attributes',
-                'insert_into_item'   => 'Insert into ' . $data['name'],
+            'labels' => [
+                'name' => __($data['name']),
+                'singular_name' => __($data['name']),
+                'add_new' => 'Add New ' . $data['name'],
+                'add_new_item' => 'New ' . $data['name'],
+                'edit_item' => 'Edit ' . $data['name'],
+                'view_item' => 'View ' . $data['name'],
+                'view_items' => 'View ' . $data['name'],
+                'search_items' => 'Search ' . $data['name'],
+                'not_found' => 'No ' . $data['name'] . ' Found',
+                'all_items' => 'All ' . $data['name'],
+                'archives' => $data['name'] . ' Archives',
+                'attributes' => $data['name'] . ' Attributes',
+                'insert_into_item' => 'Insert into ' . $data['name'],
                 'uploaded_to_this_item' => 'Uploaded to this ' . $data['name'],
-                'featured_image'     => $data['name'] . ' Featured image',
+                'featured_image' => $data['name'] . ' Featured image',
             ],
-            'public'      => true,
+            'public' => true,
             'has_archive' => true,
-            'supports'    => ['title', 'editor', 'thumbnail'],
-            'taxonomies'  => ['country'], // Attach global country taxonomy
-            'rewrite'     => ['slug' => $slug],
-            'menu_icon'   => $data['icon'], // Assign specific Dashicon
+            'supports' => ['title', 'editor', 'thumbnail'],
+            'taxonomies' => ['country'], // Attach global country taxonomy
+            'rewrite' => ['slug' => $slug],
+            'menu_icon' => $data['icon'], // Assign specific Dashicon
             'menu_position' => 5,
-            'show_in_rest' => true, // Enable Gutenberg editor
+            'show_in_rest' => true, // ($slug === 'events') ? false : true, // Enable Gutenberg editor
+            'exclude_from_search' => ($slug === 'ogtv') ? true : false, // Exclude OGTV from search results
         ]);
     }
 }

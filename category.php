@@ -1,10 +1,10 @@
 <?php
 
 /*
-* Archive Page of Channels (Category)
-*
-* @package OpenGovAsia
-*/
+ * Archive Page of Channels (Category)
+ *
+ * @package OpenGovAsia
+ */
 
 get_header();
 
@@ -12,111 +12,177 @@ get_header();
 
 <?php opengovasia_breadcrumbs(); ?>
 
-<div class="section py-3 sm:py-6 lg:py-9">
-	<div class="container max-w-xl">
-		<div class="panel vstack gap-3 sm:gap-6 lg:gap-6">
+<header class="page-header panel vstack text-center">
 
+    <?php
 
-            <header class="page-header panel vstack text-center">
-            <h1 class="h3 lg:h1"><?php echo single_cat_title('', false); ?></h1>
+    $category = get_queried_object();
+    $term_id = $category->term_id;
 
-            <?php
-    // Get all categories
-    $categories = get_categories(array(
-        'orderby' => 'name',
-        'order'   => 'ASC',
-        'hide_empty' => true // Only show categories that have posts
-    ));
-    
-    // Loop through each category
-    foreach ($categories as $category) {
-        // Get posts for this category (7 posts - 1 for hero, 6 for regular display)
-        $posts = get_posts(array(
-            'posts_per_page' => 7,
-            'category'       => $category->term_id,
-            'post_type'      => array('post', 'events', 'ogtv'), // Include your custom post types
-            'orderby'        => 'date',
-            'order'          => 'DESC'
-        ));
-        
-        // Only display the category section if it has posts
-        if (count($posts) > 0) :
+    // Retrieve the 'channel_image' meta or use fallback
+    $channel_image = !empty(get_term_meta($term_id, 'channel_image', true))
+        ? get_term_meta($term_id, 'channel_image', true)
+        : get_template_directory_uri() . '/assets/images/demo-three/common/channel-banner.webp';
     ?>
-        <section class="category-section" id="category-<?php echo $category->slug; ?>">
-            <h2 class="category-title"><?php echo $category->name; ?></h2>
-            
-            <?php if (!empty($posts)) : ?>
-                <!-- Hero Section -->
-                <div class="hero-section">
-                    <?php
-                    // Use the first post as the hero
-                    $hero_post = $posts[0];
-                    setup_postdata($GLOBALS['post'] =& $hero_post);
-                    ?>
-                    <article class="hero-post">
-                        <a href="<?php the_permalink(); ?>">
-                            <?php if (has_post_thumbnail()) : ?>
-                                <?php the_post_thumbnail('large'); ?>
-                            <?php endif; ?>
-                            
-                            <div class="hero-content">
-                                <h3 class="hero-title"><?php the_title(); ?></h3>
-                                <div class="hero-excerpt">
-                                    <?php the_excerpt(); ?>
-                                </div>
-                                <span class="read-more">Read More</span>
-                            </div>
-                        </a>
-                    </article>
-                    <?php wp_reset_postdata(); ?>
-                </div>
-                
-                <!-- Regular Posts Grid -->
-                <div class="posts-grid">
-                    <?php
-                    // Skip the first post (already used as hero) and display the next 6
-                    $count = 0;
-                    for ($i = 1; $i < count($posts) && $count < 6; $i++) {
-                        $post = $posts[$i];
-                        setup_postdata($GLOBALS['post'] =& $post);
-                        $count++;
-                    ?>
-                        <article class="grid-post">
-                            <a href="<?php the_permalink(); ?>">
-                                <?php if (has_post_thumbnail()) : ?>
-                                    <div class="grid-thumbnail">
-                                        <?php the_post_thumbnail('medium'); ?>
-                                    </div>
-                                <?php endif; ?>
-                                
-                                <div class="grid-content">
-                                    <h4 class="grid-title"><?php the_title(); ?></h4>
-                                    <div class="grid-excerpt">
-                                        <?php echo wp_trim_words(get_the_excerpt(), 15); ?>
-                                    </div>
-                                </div>
-                            </a>
-                        </article>
-                    <?php
-                    }
-                    wp_reset_postdata();
-                    ?>
-                </div>
-                
-                <!-- View All Link -->
-                <div class="view-all-container">
-                    <a href="<?php echo get_category_link($category->term_id); ?>" class="view-all-link">
-                        View all <?php echo $category->name; ?> articles
+
+    <div class="og_hero-image" style="background-image: url('<?php echo esc_url($channel_image); ?>');">
+
+
+        <?php $sponsor_image = get_term_meta($term_id, 'sponsor_image', true); ?>
+        <?php $sponsor_link_text = get_term_meta($term_id, 'sponsor_link_text', true); ?>
+        <?php $sponsor_link = get_term_meta($term_id, 'sponsor_link', true); ?>
+
+        <?php if ($sponsor_link_text || $sponsor_link): ?>
+
+            <div
+                class="sponsor-link z-2 vstack items-end position-absolute top-0 end-0 m-2 fs-7 fw-bold h-24px px-1 rounded-1 shadow-xs bg-white">
+                <div>Powered by
+                    <a class="text-none text-primary" href="<?php echo esc_url($sponsor_link); ?>" target="_blank"
+                        rel="noopener noreferrer">
+                        <?php echo esc_html($sponsor_link_text); ?>
                     </a>
                 </div>
-            <?php endif; ?>
-        </section>
-    <?php
-        endif; // End if count($posts) > 0
-    } // End foreach
-    ?>
+                <?php if ($sponsor_image): ?>
+                    <div class="sponsor-image m-1">
+                        <?php if (!empty($sponsor_link)): ?>
+                            <a href="<?php echo esc_url($sponsor_link); ?>" target="_blank" rel="noopener noreferrer">
+                                <img width="90px" height="90px" src="<?php echo esc_url($sponsor_image); ?>"
+                                    alt="<?php echo esc_attr($category->name); ?>">
+                            </a>
+                        <?php else: ?>
+                            <img width="90px" height="90px" src="<?php echo esc_url($sponsor_image); ?>"
+                                alt="<?php echo esc_attr($category->name); ?>">
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
 
-        
+        <?php endif; ?>
+
+
+        <div class="container max-w-xl position-absolute top-50 start-50 translate-middle z-2">
+            <h1 class="h3 lg:h1 text-white"><?php echo single_cat_title('', false); ?></h1>
+
+            <?php if (get_the_archive_description()): ?>
+
+                <span class="archive-description text-white">
+                    <?php echo strip_tags(get_the_archive_description()); ?>
+                </span>
+
+            <?php else: ?>
+
+                <?php
+                global $wp_query;
+
+                // Total number of posts found by the query
+                $total_posts = $wp_query->found_posts;
+
+                // Number of posts displayed on the current page
+                $current_post_count = $wp_query->post_count;
+
+                // Get the current term object name
+                $channel_name = single_cat_title('', false);
+
+                // Posts per page setting
+                $posts_per_page = get_option('posts_per_page');
+
+                echo '<span class="text-white">Showing ' . $current_post_count . ' content out of ' . $total_posts . ' under "' . $channel_name . '" channel.</span>';
+                ?>
+
+            <?php endif; ?>
+
+        </div>
+
+    </div>
+
+</header>
+
+<div class="section py-3 sm:py-6 lg:py-6">
+    <div class="container max-w-xl">
+        <div class="panel vstack gap-3 sm:gap-6 lg:gap-7">
+
+
+            <div class="section-inner panel vstack gap-4">
+                <?php
+                $paged = get_query_var('paged') ? (int) get_query_var('paged') : 1;
+                $filter_post_type = isset($_GET['filter_post_type']) ? sanitize_text_field($_GET['filter_post_type']) : null;
+
+
+                $post_types = ['post', 'events', 'ogtv'];
+                if ($paged > 1 && $filter_post_type) {
+                    $post_types = [$filter_post_type]; // Show only selected post type on paginated views
+                }
+
+                foreach ($post_types as $post_type):
+
+                    $args = [
+                        'post_type' => $post_type,
+                        'paged' => $paged,
+                        'tax_query' => [
+                            [
+                                'taxonomy' => 'category',
+                                'field' => 'term_id',
+                                'terms' => $term_id,
+                            ]
+                        ]
+                    ];
+
+                    $query = new Country_Filtered_Query($args);
+
+                    if ($query->have_posts()):
+                        // Headings
+                        echo match ($post_type) {
+                            'post' => '<div class="block-header panel"><h2 class="h4 -ls-1 xl:-ls-2 text-inherit hstack gap-1">Latest News</h2></div>',
+                            'events' => '<div class="block-header panel border-top"><h2 class="h4 -ls-1 xl:-ls-2 text-inherit hstack gap-1 mt-3">Latest Events</h2></div>',
+                            'ogtv' => '<div class="block-header panel border-top"><h2 class="h4 -ls-1 xl:-ls-2 text-inherit hstack gap-1 mt-3">Latest Videos</h2></div>',
+                            default => '<div class="block-header panel border-top"><h2 class="h4 -ls-1 xl:-ls-2 text-inherit hstack gap-1 mt-3">Latest ' . ucfirst($post_type) . 's</h2></div>',
+                        };
+                        ?>
+
+                        <div class="row g-4 xl:g-8">
+                            <div class="col">
+                                <div class="panel">
+                                    <div
+                                        class="row child-cols-12 sm:child-cols-6 lg:child-cols-4 xl:child-cols-3 col-match gy-4 xl:gy-6 gx-2 sm:gx-3">
+                                        <?php
+                                        while ($query->have_posts()):
+                                            $query->the_post();
+                                            match ($post_type) {
+                                                'post' => get_template_part('template-parts/archive-classic'),
+                                                'events' => get_template_part('template-parts/events/archive'),
+                                                'ogtv' => get_template_part('template-parts/ogtv/archive'),
+                                                default => get_template_part('template-parts/archive-classic'),
+                                            };
+                                        endwhile;
+                                        ?>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <?php
+                        // Show View More button if there's a next page
+                        if ($query->max_num_pages > $paged):
+                            $next_page = $paged + 1;
+                            $cat_slug = $category->slug;
+                            $view_more_url = home_url("/channel/{$cat_slug}/page/{$next_page}/?filter_post_type={$post_type}");
+                            ?>
+                            <div class="text-center">
+                                <a href="<?php echo esc_url($view_more_url); ?>"
+                                    class="animate-btn gap-0 btn btn-sm btn-alt-primary bg-transparent dark:text-white border ">
+                                    <span>Next page</span>
+                                    <i class="icon icon-1 unicon-chevron-right"></i></a>
+                            </div>
+                        <?php endif; ?>
+
+                        <?php wp_reset_postdata(); ?>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+
+
+            </div>
+
+
         </div>
     </div>
 </div>

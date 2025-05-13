@@ -12,6 +12,10 @@
  * @package OpenGov_Asia
  */
 
+if (!defined('ABSPATH')) {
+	exit; // Exit if accessed directly.
+}
+
 get_header();
 ?>
 
@@ -35,14 +39,9 @@ get_header();
 								<div
 									class="row child-cols-12 sm:child-cols-6 lg:child-cols-4 xl:child-cols-3 col-match gy-4 xl:gy-6 gx-2 sm:gx-3">
 
-									<?php
-
-									while (have_posts()):
-
+									<?php while (have_posts()):
 										the_post();
-
 										?>
-
 
 										<div>
 											<article class="post type-post panel vstack gap-2">
@@ -103,14 +102,7 @@ get_header();
 												</div>
 											</article>
 										</div>
-
-
-										<?php
-
-									endwhile;
-
-									?>
-
+									<?php endwhile; ?>
 								</div>
 							</div>
 						</div>

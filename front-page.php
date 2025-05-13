@@ -264,6 +264,8 @@ get_header(); ?>
     <div class="section panel overflow-hidden">
         <div class="section-outer panel">
             <div class="container max-w-xl">
+
+
                 <div class="section-inner mt-4">
                     <div class="row g-4 lg:gx-6 xl:gy-8" data-uc-grid>
                         <div>
@@ -271,7 +273,7 @@ get_header(); ?>
 
                                 <div class="block-content">
                                     <div
-                                        class="row child-cols-12 sm:child-cols-6 lg:child-cols-4 xl:child-cols-3 col-matc g-2 gy-3 md:gx-3 md:gy-4">
+                                        class="row child-cols-12 sm:child-cols-6 lg:child-cols-4 xl:child-cols-3 col-match g-2 gy-3 md:gx-3 md:gy-4">
                                         <?php
                                         // WordPress Query Arguments
                                         $args = array(
@@ -295,10 +297,7 @@ get_header(); ?>
 
                                             endwhile;
                                             wp_reset_postdata();
-                                        else:
-
-                                            echo '<p>No posts found.</p>';
-
+                                        
                                         endif;
                                         ?>
 
@@ -334,15 +333,15 @@ get_header(); ?>
                     </div>
                     <div class="section-content">
                         <div class="swiper"
-                            data-uc-swiper="items: 2; gap: 16; autoplay: 2500; dots: .dot-nav; next: .nav-next; prev: .nav-prev; disable-class: opacity-40;"
+                            data-uc-swiper="items: 1; gap: 16; autoplay: 2500; dots: .dot-nav; next: .nav-next; prev: .nav-prev; disable-class: opacity-40;" data-uc-swiper-s="items: 2;"
                             data-uc-swiper-m="items: 3;" data-uc-swiper-m="gap: 24;" data-uc-swiper-l="items: 4; gap: 32;">
                             <div class="swiper-wrapper">
                                 <?php
-                                // WP Query to fetch posts from the 'ogtv' post type
-                                $query = new WP_Query(array(
+                                
+                                $query = new Country_Filtered_Query([
                                     'post_type' => 'ogtv',
-                                    'posts_per_page' => 5, // Change as needed
-                                ));
+                                    'posts_per_page' => 12, // Change as needed
+                                ]);
 
                                 if ($query->have_posts()):
                                     while ($query->have_posts()):
@@ -352,14 +351,17 @@ get_header(); ?>
 
                                         <div class="swiper-slide">
 
-                                        <?php get_template_part('template-parts/ogtv/archive'); ?>
-                                            
+                                            <?php get_template_part('template-parts/ogtv/archive'); ?>
+
                                         </div>
 
                                         <?php
 
                                     endwhile;
                                     wp_reset_postdata();
+                                    else:
+                                        echo '<p>No videos found. Maybe try switching your country?</p>';
+                                    
                                 endif;
                                 ?>
 
@@ -449,39 +451,29 @@ get_header(); ?>
                             </div>
                         </div>
 
-
                         <?php wp_reset_postdata(); ?>
 
                     <?php else: ?>
 
-                        <div>No Upcoming Events found. Try switching your country.</div>
+                        <div>No Upcoming Events found. Maybe try switching your country?</div>
 
                     <?php endif; ?>
-
 
                 </div>
 
                 <div class="border-top mt-4"></div>
-
-
 
             <?php endif; ?>
 
 
             <div class="section-inner panel vstack gap-4 mt-4">
 
-                <!-- <div class="section-header panel vstack items-center justify-center text-center gap-1">
-                    <h3 class="h5 lg:h4 fw-medium m-0 text-inherit hstack">
-                        <span>Latest News</span>
-                    </h3>
-                </div> -->
 
                 <div class="block-header panel">
-                    <h2 class="h5 lg:h4 fw-medium m-0 text-inherit hstack">
-
+                    <h2 class="h4 -ls-1 xl:-ls-2 m-0 text-inherit hstack gap-1">
                         Latest News
-
                     </h2>
+
                 </div>
 
                 <?php if (have_posts()): ?>
@@ -498,13 +490,7 @@ get_header(); ?>
 
                                         the_post();
 
-
-
-
                                         get_template_part('template-parts/archive-classic');
-
-
-
 
                                     endwhile;
 

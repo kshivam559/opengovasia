@@ -1,0 +1,21 @@
+{
+    "name": "OpenGov Asia",
+    "short_name": "OpenGov Asia",
+    "start_url": "/?c=global",
+    "scope": "/",
+    "display": "fullscreen",
+    "orientation": "portrait",
+    "background_color": "#0c50a8",
+    "theme_color": "#0c50a8",
+    "description": "",
+    "lang": "en",
+    "dir": "ltr",
+    "icons": [
+        {
+            "src": "https://opengovasia.local/wp-content/uploads/2025/04/og-logo.jpg",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
+}

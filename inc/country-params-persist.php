@@ -8,25 +8,6 @@
  * @package OpenGovAsia
  */
 
-/**
- * Set country cookie if country parameter is present
- */
-// function oga_set_country_cookie()
-// {
-//     if (isset($_GET['c']) && !empty($_GET['c'])) {
-//         $country = sanitize_text_field($_GET['c']);
-
-//         // Verify this is a valid country term
-//         if (term_exists($country, 'country')) {
-//             setcookie('oga_country', $country, time() + (86400 * 30), '/', '', is_ssl(), true);
-//         }
-//     }
-// }
-// add_action('init', 'oga_set_country_cookie', 5);
-
-/**
- * Add country parameter script to footer
- */
 function oga_add_country_script()
 {
     if (!is_admin()) {
@@ -43,23 +24,16 @@ function oga_output_country_script()
     ?>
     <script>
         (function () {
-            function getCookie(name) {
-                return document.cookie.split('; ').reduce((acc, cookie) => {
-                    let [key, value] = cookie.split('=');
-                    return key === name ? value : acc;
-                }, '');
-            }
-
             function getCountryParam() {
                 const urlParams = new URLSearchParams(window.location.search);
-                return urlParams.get('c') || getCookie('oga_country');
+                return urlParams.get('c');
             }
 
             const country = getCountryParam();
             if (!country) return;
 
             function isInternalLink(url) {
-                return url.hostname === window.location.hostname; // Ensures it's an internal link
+                return url.hostname === window.location.hostname;
             }
 
             function updateUrls() {
@@ -179,13 +153,92 @@ function oga_display_country_switcher()
     <?php
 }
 
+/**
+ * Display current country name
+ */
 
+function get_selected_country_name()
+{
+    $slug = isset($_GET['c']) ? sanitize_text_field($_GET['c']) : 'global';
+    $term = get_term_by('slug', $slug, 'country');
+    return $term ? $term->name : 'Global';
+}
+
+/**
+ * Add hreflang tags for country-specific URLs
+ */
+function output_hreflangs()
+{
+    // Fetch all countries (taxonomy terms)
+    $countries = get_terms(['taxonomy' => 'country', 'hide_empty' => false]);
+
+    // Default (global) hreflang
+    echo '<link rel="alternate" hreflang="x-default" href="' . esc_url(get_permalink()) . '?c=global" />' . "\n";
+
+    // Loop through each country to add hreflang links
+    foreach ($countries as $country) {
+        // Skip 'global' if it's in the terms
+        if ($country->slug == 'global') {
+            continue;
+        }
+
+        // Determine the hreflang tag format (using 'en-' before the country code for example)
+        $hreflang = 'en-' . strtolower($country->slug);  // Assuming English as default language for all countries
+
+        // Generate the URL for the current country
+        $href = add_query_arg('c', $country->slug, get_permalink());
+
+        // Output the hreflang tag
+        echo '<link rel="alternate" hreflang="' . esc_attr($hreflang) . '" href="' . esc_url($href) . '" />' . "\n";
+    }
+}
+add_action('wp_head', 'output_hreflangs');
+
+/**
+ * Add a REST API endpoint to fetch geolocation data
+ */
+
+add_action('rest_api_init', function () {
+    register_rest_route('opengovasia/v1', '/geolocation', [
+        'methods' => 'GET',
+        'callback' => function () {
+
+            $user_ip = $_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['REMOTE_ADDR'];
+
+            if (empty($user_ip) || $user_ip === '127.0.0.1' || $user_ip === '::1') {
+                // return new WP_Error('geo_error', 'Invalid IP address' . $user_ip . '', ['status' => 400]);
+                $user_ip = '106.219.71.118';
+            }
+
+            $response = wp_remote_get("https://ipapi.co/{$user_ip}/json/");
+
+            if (is_wp_error($response)) {
+                return new WP_Error('geo_error', 'Failed to fetch location', ['status' => 500]);
+            }
+
+            $body = wp_remote_retrieve_body($response);
+            $data = json_decode($body, true);
+
+            if (empty($data) || empty($data['country'])) {
+                return new WP_Error('geo_error', 'Invalid location data', ['status' => 500]);
+            }
+
+            return [
+                'country' => strtolower($data['country']),
+                'country_name' => $data['country_name'],
+            ];
+        },
+        'permission_callback' => '__return_true',
+    ]);
+});
 
 
 /**
- * Get current country
+ * Add Cloudflare IP country header to the head
  */
-function oga_get_current_country()
-{
-    return $_GET['c'] ?? $_COOKIE['oga_country'] ?? null;
-}
+
+add_action('wp_head', function () {
+    if (!headers_sent() && isset($_SERVER['HTTP_CF_IPCOUNTRY'])) {
+        echo '<meta name="cf-ipcountry" content="' . esc_attr(strtolower($_SERVER['HTTP_CF_IPCOUNTRY'])) . '">' . "\n";
+    }
+});

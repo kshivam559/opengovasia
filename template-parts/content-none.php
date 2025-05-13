@@ -15,7 +15,7 @@
 	
 
 		<div class="container max-w-xl">
-			<div class="panel vstack justify-center items-center gap-2 sm:gap-4 text-center">
+			<div class="panel vstack justify-center items-center gap-2 sm:gap-4 text-center my-3">
 				<!-- <svg class="py-2 mt-4" version="1.0" xmlns="http://www.w3.org/2000/svg" width="125.000000pt"
 					height="125.000000pt" viewBox="0 0 512.000000 512.000000" preserveAspectRatio="xMidYMid meet" style="color: var(--bs-primary) !important" fill="var(--bs-primary);">
 

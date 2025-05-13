@@ -10,7 +10,7 @@ if (!defined('ABSPATH'))
     exit;
 
 $category = get_the_category();
-$category_name = !empty($category) ? esc_html($category[0]->name) : '#';
+$category_name = !empty($category) ? esc_html($category[0]->name) : 'Uncategorized';
 $category_link = !empty($category) ? esc_url(get_category_link($category[0]->term_id)) : '#';
 $post_thumbnail = get_the_post_thumbnail_url(get_the_ID(), 'full') ?: '../assets/images/common/img-fallback.png';
 $post_link = get_permalink();
@@ -25,6 +25,33 @@ $post_date = get_the_date('M j, Y');
                     src="<?php echo esc_url($post_thumbnail); ?>" alt="<?php echo esc_attr($post_title); ?>"
                     loading="lazy">
             </div>
+
+            <?php if (get_post_type() === 'ogtv'): ?>
+                <div
+                    class="has-video-overlay position-absolute top-0 end-0 w-150px h-150px bg-gradient-45 from-transparent via-transparent to-black opacity-50">
+                </div>
+                <span class="cstack position-absolute top-0 end-0 fs-6 w-40px h-40px text-white">
+                    <i class="icon-narrow unicon-play-filled-alt"></i>
+                </span>
+            <?php elseif (get_post_type() === 'events'): ?>
+                <div
+                    class="has-video-overlay position-absolute top-0 end-0 w-150px h-150px bg-gradient-45 from-transparent via-transparent to-black opacity-50">
+                </div>
+                <span class="cstack position-absolute top-0 end-0 fs-6 w-40px h-40px text-white">
+                    <i class="icon-narrow unicon-calendar"></i>
+                </span>
+
+            <?php elseif (get_post_type() === 'awards'): ?>
+                <div
+                    class="has-video-overlay position-absolute top-0 end-0 w-150px h-150px bg-gradient-45 from-transparent via-transparent to-black opacity-50">
+                </div>
+                <span class="cstack position-absolute top-0 end-0 fs-6 w-40px h-40px text-white">
+                    <i class="icon-narrow unicon-trophy-filled"></i>
+                </span>
+            <?php else: ?>
+
+            <?php endif; ?>
+
             <a href="<?php echo esc_url($post_link); ?>" class="position-cover"></a>
         </div>
         <div class="post-header panel vstack gap-1">
@@ -41,7 +68,17 @@ $post_date = get_the_date('M j, Y');
                 <div class="sep">|</div>
                 <div>
                     <div class="post-date hstack gap-narrow">
-                        <span><?php echo esc_html($post_date); ?></span>
+                        <?php if (get_post_type() === 'events'): ?>
+                            <?php
+                            $events_data = get_post_meta(get_the_ID(), 'events_data', true);
+                            $event_date = isset($events_data['event_date']) ? esc_html($events_data['event_date']) : '';
+                            ?>
+                            
+                            <span><?php echo esc_html(!empty($event_date) ? date('M j, Y', strtotime($event_date)) : $post_date); ?></span>
+
+                        <?php else: ?>
+                            <span><?php echo esc_html($post_date); ?></span>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>

@@ -59,7 +59,7 @@ if (post_password_required()) {
 			comment_form([
 				'class_form' => 'vstack gap-2',
 				'title_reply' => esc_html__('Leave a Comment', 'opengovasia'),
-				'submit_button' => '<button class="btn btn-primary btn-sm w-full" type="submit">Post Comment</button>',
+				'submit_button' => '<button class="btn btn-primary btn-sm w-full mb-3" type="submit">Post Comment</button>',
 				'comment_field' => '<textarea class="form-control h-250px w-full fs-6 bg-white dark:bg-opacity-0 dark:text-white dark:border-gray-300 dark:border-opacity-30" name="comment" placeholder="Your comment" required></textarea>',
 				'fields' => [
 					'author' => '<input class="form-control form-control-sm h-40px w-full fs-6 bg-white dark:bg-opacity-0 dark:text-white dark:border-gray-300 dark:border-opacity-30" name="author" type="text" placeholder="Full name" required value="' . esc_attr(isset($_COOKIE['comment_author_' . COOKIEHASH]) ? $_COOKIE['comment_author_' . COOKIEHASH] : '') . '">',
@@ -68,7 +68,7 @@ if (post_password_required()) {
 					<div class="comment-form-cookies-consent unicore-checkbox flex items-center gap-2">
 						<input id="wp-comment-cookies-consent" name="wp-comment-cookies-consent" type="checkbox" value="yes" ' . (isset($_COOKIE['comment_author_' . COOKIEHASH]) ? 'checked' : '') . ' class="form-check-input hidden m-narrow" required>
 						
-						<label for="wp-comment-cookies-consent" class="form-label" style="display:inline;">By posting this comment, I agree to the <a href="/terms-services/">Terms of Service</a> and <a href="/privacy-policy/">Privacy Policy</a>.</label>
+						<label for="wp-comment-cookies-consent" class="form-label" style="display:inline;">By posting this comment, I agree to the <a class="text-none text-primary" href="/terms-services/">Terms of Service</a> and <a class="text-none text-primary" href="/privacy-policy/">Privacy Policy</a>.</label>
 					</div>
 					',
 				]

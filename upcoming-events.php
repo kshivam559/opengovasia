@@ -4,25 +4,41 @@
  *
  * @package opengovasia
  */
+
 get_header();
 
 ?>
 
-<div class="breadcrumbs panel z-1 py-2 bg-gray-25 dark:bg-gray-100 dark:bg-opacity-5 dark:text-white">
-    <div class="container max-w-xl">
-        <ul class="breadcrumb nav-x justify-center gap-1 fs-7 sm:fs-6 m-0">
-            <li><a href="<?php echo esc_url(home_url('/')); ?>">Home</a></li>
-            <li><i class="unicon-chevron-right opacity-50"></i></li>
-            <li>Upcoming Events</li>
-        </ul>
+<?php opengovasia_breadcrumbs(); ?>
+
+<header class="page-header panel vstack text-center">
+
+    <?php
+
+    $channel_image = get_template_directory_uri() . '/assets/images/demo-three/common/events-banner.webp';
+
+    ?>
+
+    <div class="og_hero-image" style="background-image: url('<?php echo esc_url($channel_image); ?>');">
+
+        <div class="container max-w-xl position-absolute top-50 start-50 translate-middle z-2">
+            <h1 class="h3 lg:h1 text-white">Upcoming Events</h1>
+
+            <div class="archive-description text-white">
+                Be on a lookout for our content rich and engaging events across ASEAN and register now to get informed
+                and empowered.
+            </div>
+
+        </div>
+
     </div>
-</div>
-<div class="section py-3 sm:py-6 lg:py-9">
+
+</header>
+
+<div class="section py-3 sm:py-6 lg:py-6">
     <div class="container max-w-xl">
         <div class="panel vstack gap-3 sm:gap-6 lg:gap-7">
-            <header class="page-header panel vstack text-center">
-                <h1 class="h3 lg:h1">Upcoming Events</h1>
-            </header>
+
 
             <!-- Show only country filter for upcoming events -->
             <?php opengovasia_dynamic_filter_form(['country']); ?>
@@ -74,7 +90,7 @@ get_header();
                 <?php wp_reset_postdata(); ?>
 
             <?php else: ?>
-                <p>No Upcoming Events found. Try switching your country.</p>
+                <p class="text-center">No Upcoming Events found. Try switching your country.</p>
             <?php endif; ?>
 
             <div class="section-footer cstack lg:mt-2">

@@ -72,7 +72,7 @@
 									</h4>
 								</div>
 								<div class="widgt-content">
-									<?php 
+									<?php
 									wp_nav_menu(array(
 										'theme_location' => 'about-menu',
 										'menu_class' => 'nav-y gap-2 fs-6 fw-medium text-dark dark:text-white',
@@ -105,7 +105,8 @@
 										have read and are agreeing to our
 										<a href="/privacy-policy/" class="uc-link dark:text-white">Privacy Policy</a>
 										and
-										<a href="/terms-of-service/" class="uc-link dark:text-white">Terms of Use</a>
+										<a href="/terms-and-conditions/" class="uc-link dark:text-white">Terms and
+											Conditions</a>
 									</p>
 									<ul class="footer-social nav-x gap-2 mt-2 lg:mt-4">
 										<li>
@@ -158,12 +159,12 @@
 						</p>
 						<ul class="footer-site-links nav-x gap-2 fw-medium justify-center lg:justify-start">
 							<li>
-								<a class="uc-link text-underline hover:text-gray-900 dark:hover:text-white duration-150"
+								<a class="uc-link hover:text-gray-900 dark:hover:text-white duration-150"
 									href="/privacy-policy/">Privacy notice</a>
 							</li>
 							<li>
-								<a class="uc-link text-underline hover:text-gray-900 dark:hover:text-white duration-150"
-									href="/terms-of-service/">Terms of condition</a>
+								<a class="uc-link hover:text-gray-900 dark:hover:text-white duration-150"
+									href="/terms-and-conditions/">Terms and Conditions</a>
 							</li>
 
 						</ul>
@@ -333,17 +334,47 @@
 <!--  GDPR modal -->
 <div id="uc-gdpr-notification" class="uc-gdpr-notification uc-notification uc-notification-bottom-left lg:m-2">
 	<div class="uc-notification-message">
-		<a id="uc-close-gdpr-notification" class="uc-notification-close" data-uc-close></a>
+		<div id="uc-close-gdpr-notification" class="uc-notification-close" data-uc-close></div>
 		<h2 class="h5 ft-primary fw-bold -ls-1 m-0">GDPR Compliance</h2>
 		<p class="fs-7 mt-1 mb-2">
 			We use cookies to ensure you get the best experience on our website.
 			By continuing to use our site, you accept our use of cookies,
 			<a href="/privacy-policy/" class="uc-link text-underline">Privacy Policy</a>, and
-			<a href="/terms-of-service/" class="uc-link text-underline">Terms of Service</a>.
+			<a href="/terms-and-conditions/" class="uc-link text-underline">Terms and Conditions</a>.
 		</p>
 		<button class="btn btn-sm btn-primary" id="uc-accept-gdpr">
 			Accept
 		</button>
+	</div>
+</div>
+
+<!--  Country modal -->
+<div id="uc-country-notification"
+	class="uc-notification uc-notification-bottom-right lg:m-2 border border-gray-200 dark:border-gray-700 rounded shadow-sm"
+	style="visibility: hidden; opacity: 0;transform: translateY(8px);transition: all 300ms ease;">
+	<div class="uc-notification-message bg-white dark:bg-gray-900 dark:text-white">
+		<div class="uc-notification-icon">
+
+		</div>
+		<div id="uc-close-country-notification" class="uc-notification-close" data-uc-close></div>
+		<h2 class="h5 ft-primary fw-bold -ls-1 m-0 hstack gap-narrow"><i class="unicon-globe icon-1"></i> Switch
+			Country?</h2>
+		<p class="fs-7 mt-1 mb-2">
+			It looks like you're viewing content tailored for <strong
+				id="current-country"><?php echo get_selected_country_name() ?></strong>. Would you like to switch to
+			content that's more relevant to your current location?
+		</p>
+		<p class="fs-7 text-gray-900 dark:text-white text-opacity-60">
+			You can change this later at the bottom of the page.
+		</p>
+		<div class="mt-3">
+			<button id="redirect-yes" class="btn btn-sm btn-primary">
+				Yes, Show me
+			</button>
+			<button id="redirect-no" class="btn btn-sm dark:text-white">
+				No, let me stay
+			</button>
+		</div>
 	</div>
 </div>
 
@@ -354,6 +385,31 @@
 		<i class="icon-2 unicon-chevron-up"></i>
 	</a>
 </div>
+
+<!-- <div class="position-fixed bg-white dark:bg-gray-900 dark:text-white" id="country-redirect-popup"
+	style="display:none; right:0px; bottom:20px; box-shadow:0 0 10px rgba(0,0,0,0.2); z-index:9999;border-radius:5px;padding:20px;margin:0 20px;">
+	<div class="">
+		<p class="fs-6">
+			It looks like you're viewing content tailored for <strong
+				id="current-country"><?php echo get_selected_country_name() ?></strong>. Would you like to switch to
+			<br>
+			content that's more relevant to your current location?
+		</p>
+
+		<p class="fs-7 text-gray-900 dark:text-white text-opacity-60">
+			You can change this later at the bottom of the page.
+		</p>
+
+		<div class="mt-3">
+			<button id="redirect-yes" class="btn btn-sm btn-primary">
+				Yes, Show me
+			</button>
+			<button id="redirect-no" class="btn btn-sm dark:text-white">
+				No, let me stay
+			</button>
+		</div>
+	</div>
+</div> -->
 
 
 <?php wp_footer(); ?>
@@ -368,6 +424,81 @@
 	} else if (getSchema === "light") {
 		setDarkMode(0);
 	}
+</script>
+
+<script>
+	(async () => {
+		if (sessionStorage.getItem("countryPopupDismissed")) return;
+
+		let userCountry = localStorage.getItem("userCountry");
+		let userCountryName = localStorage.getItem("userCountryName");
+
+		// Attempt to get country from Cloudflare header via meta tag
+		if (!userCountry) {
+			const metaTag = document.querySelector('meta[name="cf-ipcountry"]');
+			if (metaTag) {
+				userCountry = metaTag.content.toLowerCase();
+				localStorage.setItem("userCountry", userCountry);
+			}
+		}
+
+		// Fallback to API if Cloudflare header not available
+		if (!userCountry) {
+			try {
+				const res = await fetch("/wp-json/opengovasia/v1/geolocation");
+				const data = await res.json();
+				userCountry = data.country.toLowerCase();
+				userCountryName = data.country_name;
+				localStorage.setItem("userCountry", userCountry);
+				localStorage.setItem("userCountryName", userCountryName);
+			} catch (e) {
+				console.warn("Geo fallback failed", e);
+				return;
+			}
+		}
+
+		const url = new URL(window.location.href);
+		const params = url.searchParams;
+		const currentCountry = params.get("c");
+
+		if (!userCountry || userCountry === currentCountry) return;
+
+		// const popup = document.getElementById("country-redirect-popup");
+		const popup = document.getElementById("uc-country-notification");
+		if (!popup) return;
+
+		const closeBtn = document.getElementById("uc-close-country-notification");
+
+
+		closeBtn.addEventListener("click", function () {
+			popup.style.transform = "translateY(400px)";
+			popup.style.visibility = "hidden";
+
+		});
+
+		setTimeout(() => {
+			popup.style.visibility = "visible";
+			popup.style.transform = "translateY(0)";
+			popup.style.opacity = "1";
+		}, 2000);
+
+
+		document
+			.getElementById("redirect-yes")
+			.addEventListener("click", function () {
+				params.set("c", userCountry);
+				window.location.href = url.pathname + "?" + params.toString();
+			});
+
+		document
+			.getElementById("redirect-no")
+			.addEventListener("click", function () {
+				popup.style.transform = "translateY(400px)";
+				popup.style.visibility = "hidden";
+				sessionStorage.setItem("countryPopupDismissed", "true");
+			});
+	})();
+
 </script>
 
 </body>

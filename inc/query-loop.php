@@ -71,6 +71,84 @@ function fetch_header_channel_posts($post_type = 'post', $posts_per_page = 2, $t
             </div>
         <?php endwhile;
         wp_reset_postdata();
+    else:
+        // No posts found
+        echo '<p class="text-center">No posts found.</p>';
     endif;
 }
 
+/**
+ * Display related posts with support for different post types
+ * 
+ * @param int    $post_id       The current post ID
+ * @param string $post_type     The post type to query (default: 'post')
+ * @param string $display_title The title to display above related posts
+ * @param int    $limit         Number of posts to display (default: 3)
+ */
+
+ function display_related_posts($post_id, $post_type = '', $display_title = "Latest from %s:", $limit = 3)
+ {
+     // Only show on single post pages
+     if (!is_single() || empty($post_id)) {
+         return;
+     }
+ 
+     if (empty($post_type)) {
+         $post_type = get_post_type($post_id); // Get the current post type
+     }
+ 
+     $taxonomies = get_object_taxonomies($post_type); // Get taxonomies for the post type
+ 
+     if (empty($taxonomies)) {
+         return;
+     }
+ 
+     $terms = wp_get_post_terms($post_id, $taxonomies[0]); // Get terms from the first taxonomy
+ 
+     if (empty($terms)) {
+         return;
+     }
+ 
+     // Get the first term name to use in the title
+     $term_name = $terms[0]->name;
+     
+     // Replace %s in the display title with the term name
+     $formatted_title = str_replace('%s', $term_name, $display_title);
+     
+     $term_ids = wp_list_pluck($terms, 'term_id');
+ 
+     $args = [
+         'post_type' => $post_type, // Use the same post type
+         'posts_per_page' => $limit,
+         'post__not_in' => [$post_id], // Exclude current post
+         'orderby' => 'date',
+         'order' => 'DESC',
+         'tax_query' => [
+             [
+                 'taxonomy' => $taxonomies[0], // Use the first taxonomy
+                 'field' => 'term_id',
+                 'terms' => $term_ids,
+             ],
+         ],
+     ];
+ 
+     $related_posts = new Country_Filtered_Query($args);
+ 
+     if ($related_posts->have_posts()): ?>
+         <div class="post-related panel border-top pt-4 mt-4">
+             <h4 class="h5 xl:h4 mb-4 xl:mb-4"><?php echo $formatted_title; ?></h4>
+             <div class="row child-cols-12 sm:child-cols-6 lg:child-cols-4 xl:child-cols-4 col-match gy-4 xl:gy-6 gx-2 sm:gx-3">
+                 <?php
+                 while ($related_posts->have_posts()):
+ 
+                     $related_posts->the_post();
+ 
+                     get_template_part('template-parts/archive-classic');
+ 
+                 endwhile;
+                 ?>
+             </div>
+         </div>
+         <?php wp_reset_postdata(); ?>
+     <?php endif;
+ }

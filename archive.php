@@ -13,11 +13,67 @@ get_header();
 
 <?php opengovasia_breadcrumbs(); ?>
 
-<div class="section py-3 sm:py-6 lg:py-9">
-	<div class="container max-w-xl">
-		<div class="panel vstack gap-3 sm:gap-6 lg:gap-6">
+<header class="page-header panel vstack text-center">
 
-			<header class="page-header panel vstack text-center">
+	<?php
+
+	$taxonomy = get_queried_object();
+	$term_id = $taxonomy->term_id;
+
+	$sponsor_image = get_term_meta($term_id, 'sponsor_image', true);
+	$sponsor_link_text = get_term_meta($term_id, 'sponsor_link_text', true);
+	$sponsor_link = get_term_meta($term_id, 'sponsor_link', true);
+
+	if (is_category()):
+
+		// Retrieve the 'channel_image' meta or use fallback
+		$channel_image = !empty(get_term_meta($term_id, 'channel_image', true))
+			? get_term_meta($term_id, 'channel_image', true)
+			: get_template_directory_uri() . '/assets/images/demo-three/common/channel-banner.webp';
+
+	elseif (is_tax()):
+
+		$channel_image = !empty(get_term_meta($term_id, 'channel_image', true))
+			? get_term_meta($term_id, 'channel_image', true)
+			: get_template_directory_uri() . '/assets/images/demo-three/common/events-banner.webp';
+	else:
+		$channel_image = get_template_directory_uri() . '/assets/images/demo-three/common/channel-banner.webp';
+	endif;
+
+	?>
+
+	<div class="og_hero-image" style="background-image: url('<?php echo esc_url($channel_image); ?>');">
+
+
+
+		<?php if ($sponsor_link_text || $sponsor_link): ?>
+			<div
+				class="sponsor-link z-2 position-absolute top-0 end-0 m-2 fs-7 fw-bold h-24px px-1 rounded-1 shadow-xs bg-white">
+				<span>Powered by
+					<a class="text-none text-primary" href="<?php echo esc_url($sponsor_link); ?>" target="_blank"
+						rel="noopener noreferrer">
+						<?php echo esc_html($sponsor_link_text); ?>
+					</a>
+				</span>
+				<?php if ($sponsor_image): ?>
+					<div class="sponsor-image m-1">
+						<?php if (!empty($sponsor_link)): ?>
+							<a href="<?php echo esc_url($sponsor_link); ?>" target="_blank" rel="noopener noreferrer">
+								<img width="90px" height="90px" src="<?php echo esc_url($sponsor_image); ?>"
+									alt="<?php echo esc_attr($taxonomy->name); ?>">
+							</a>
+						<?php else: ?>
+							<img width="90px" height="90px" src="<?php echo esc_url($sponsor_image); ?>"
+								alt="<?php echo esc_attr($taxonomy->name); ?>">
+						<?php endif; ?>
+					</div>
+				<?php endif; ?>
+			</div>
+		<?php endif; ?>
+
+
+		<div class="container max-w-xl position-absolute top-50 start-50 translate-middle z-2">
+			<h1 class="h3 lg:h1 text-white">
 				<?php
 				// Determine the header title dynamically
 				$title = 'Archive'; // Default title
@@ -49,48 +105,56 @@ get_header();
 				}
 
 				// Output the title
-				echo '<h1 class="h3 lg:h1">' . esc_html($title) . '</h1>';
+				echo esc_html($title);
+				?>
+			</h1>
+
+			<?php if (get_the_archive_description()): ?>
+
+				<span class="archive-description text-white">
+					<?php echo strip_tags(get_the_archive_description()); ?>
+				</span>
+
+			<?php else: ?>
+
+				<?php
+				global $wp_query;
+				$total_posts = $wp_query->found_posts;
+				$current_posts = $wp_query->post_count;
+
+				// Get the current term object
+				$term = get_queried_object();
+				$taxonomy_label = '';
+
+				if ($term) {
+					if (is_category()) {
+						$taxonomy_label = 'Channel';
+					} elseif (is_tag()) {
+						$taxonomy_label = 'Tag';
+					} elseif (is_tax() && isset($term->taxonomy)) {
+						$taxonomy = get_taxonomy($term->taxonomy);
+						$taxonomy_label = $taxonomy ? $taxonomy->label : '';
+
+					} elseif (is_post_type_archive()) {
+						$taxonomy_label = post_type_archive_title('', false);
+					}
+				}
+
+				echo '<span class="text-white">Showing ' . $current_posts . ' content out of ' . $total_posts . ' under "' . esc_html(single_term_title('', false)) . '" ' . strtoLower(esc_html($taxonomy_label)) . '.</span>';
 				?>
 
-				<?php if (get_the_archive_description()): ?>
+			<?php endif; ?>
 
-					<span class="archive-description m-0 opacity-60">
-						<?php echo strip_tags(get_the_archive_description()); ?>
-					</span>
+		</div>
 
-				<?php else: ?>
+	</div>
 
-					<?php
-					global $wp_query;
-					$total_posts = $wp_query->found_posts;
-					$current_posts = $wp_query->post_count;
+</header>
 
-					// Get the current term object
-					$term = get_queried_object();
-					$taxonomy_label = '';
+<div class="section py-3 sm:py-6 lg:py-6">
+	<div class="container max-w-xl">
+		<div class="panel vstack gap-3 sm:gap-6 lg:gap-7">
 
-					if ($term) {
-						if (is_category()) {
-							$taxonomy_label = 'Channel';
-						} elseif (is_tag()) {
-							$taxonomy_label = 'Tag';
-						} elseif (is_tax() && isset($term->taxonomy)) {
-							$taxonomy = get_taxonomy($term->taxonomy);
-							$taxonomy_label = $taxonomy ? $taxonomy->label : '';
-						}
-					}
-					?>
-
-					<span class="m-0 opacity-60">
-						Showing <?php echo esc_html($current_posts); ?> posts out of <?php echo esc_html($total_posts); ?>
-						total under
-						<br class="d-block lg:d-none"> "<?php echo esc_html(single_term_title('', false)); ?>"
-						<?php echo esc_html($taxonomy_label); ?>.
-					</span>
-
-				<?php endif; ?>
-
-			</header>
 
 			<?php // opengovasia_country_filter_dropdown(); ?>
 
@@ -114,7 +178,7 @@ get_header();
 					<div class="col">
 						<div class="panel">
 							<div
-								class="row child-cols-12 sm:child-cols-6 lg:child-cols-4 col-match gy-4 xl:gy-6 gx-2 sm:gx-4">
+								class="row child-cols-12 sm:child-cols-6 lg:child-cols-4 xl:child-cols-3 col-match gy-4 xl:gy-6 gx-2 sm:gx-3">
 
 								<?php while (have_posts()):
 

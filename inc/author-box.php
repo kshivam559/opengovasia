@@ -70,6 +70,10 @@ function opengovasia_author_box()
         return;
     }
     $author_id = get_the_author_meta('ID');
+
+    // Get the author page URL
+    $author_url = get_author_posts_url($author_id);
+
     $twitter = get_the_author_meta('twitter', $author_id);
     $linkedin = get_the_author_meta('linkedin', $author_id);
     $facebook = get_the_author_meta('facebook', $author_id);
@@ -84,7 +88,11 @@ function opengovasia_author_box()
             </div>
             <div class="col">
                 <div class="panel vstack items-start gap-2 md:gap-3">
-                    <h4 class="h5 lg:h4 m-0"><?php echo get_the_author(); ?></h4>
+                    <h4 class="h5 lg:h4 m-0">
+                        <a class="text-none hover:text-primary" href="<?php echo esc_url($author_url); ?>">
+                            <?php echo get_the_author(); ?>
+                        </a>
+                    </h4>
                     <p class="fs-6 lg:fs-5"><?php echo get_the_author_meta('description', $author_id); ?></p>
                     <ul class="nav-x gap-1 text-gray-400 dark:text-white">
                         <?php if ($facebook): ?>

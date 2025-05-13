@@ -17,81 +17,7 @@ function opengovasia_pingback_header()
 }
 add_action('wp_head', 'opengovasia_pingback_header');
 
-// Display related posts
-function display_related_posts($post_id, $limit = 4, $display_title = "Related to this topic:")
-{
-	// Only show on single post pages
-	if (!is_single() || empty($post_id)) {
-		return;
-	}
 
-
-
-	$post_type = get_post_type($post_id); // Get the current post type
-	$taxonomies = get_object_taxonomies($post_type); // Get taxonomies for the post type
-
-	if (empty($taxonomies)) {
-		return;
-	}
-
-	$terms = wp_get_post_terms($post_id, $taxonomies[0]); // Get terms from the first taxonomy
-
-	if (empty($terms)) {
-		return;
-	}
-
-	$term_ids = wp_list_pluck($terms, 'term_id');
-
-	$args = [
-		'post_type' => $post_type, // Use the same post type
-		'posts_per_page' => $limit,
-		'post__not_in' => [$post_id], // Exclude current post
-		'orderby' => 'date',
-		'order' => 'DESC',
-		'tax_query' => [
-			[
-				'taxonomy' => $taxonomies[0], // Use the first taxonomy
-				'field' => 'term_id',
-				'terms' => $term_ids,
-			],
-		],
-	];
-
-	$related_posts = new Country_Filtered_Query($args);
-
-	if ($related_posts->have_posts()): ?>
-		<div class="post-related panel border-top pt-2 mt-8 xl:mt-9">
-			<h4 class="h5 xl:h4 mb-4 xl:mb-4"><?php echo $display_title; ?></h4>
-			<div class="row child-cols-6 md:child-cols-3 gx-2 gy-4 sm:gx-3 sm:gy-6">
-				<?php while ($related_posts->have_posts()):
-					$related_posts->the_post(); ?>
-					<div>
-						<article class="post type-post panel vstack gap-2">
-							<figure
-								class="featured-image m-0 ratio ratio-4x3 rounded uc-transition-toggle overflow-hidden bg-gray-25 dark:bg-gray-800">
-								<img class="media-cover image uc-transition-scale-up uc-transition-opaque"
-									src="<?php echo get_template_directory_uri(); ?>/assets/images/common/img-fallback.png"
-									data-src="<?php echo esc_url(get_the_post_thumbnail_url(get_the_ID(), 'medium')); ?>"
-									alt="<?php the_title_attribute(); ?>" data-uc-img="loading: lazy">
-								<a href="<?php the_permalink(); ?>" class="position-cover"
-									data-caption="<?php the_title_attribute(); ?>"></a>
-							</figure>
-							<div class="post-header panel vstack gap-1">
-								<h5 class="h6 md:h5 m-0">
-									<a class="text-none" href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
-								</h5>
-								<div class="post-date hstack gap-narrow fs-7 opacity-60">
-									<span><?php echo get_the_date('M j, Y'); ?></span>
-								</div>
-							</div>
-						</article>
-					</div>
-				<?php endwhile; ?>
-			</div>
-		</div>
-		<?php wp_reset_postdata(); ?>
-	<?php endif;
-}
 
 /**
  * Breadcrumbs functionality for the OpenGovAsia theme.
@@ -321,32 +247,33 @@ function opengovasia_breadcrumbs()
  */
 function opengovasia_pagination($query = null)
 {
-    if (!$query) {
-        global $wp_query;
-        $query = $wp_query;
-    }
+	if (!$query) {
+		global $wp_query;
+		$query = $wp_query;
+	}
 
-    $total_pages = $query->max_num_pages;
-    if ($total_pages <= 1) return; // Don't show pagination if only one page
+	$total_pages = $query->max_num_pages;
+	if ($total_pages <= 1)
+		return; // Don't show pagination if only one page
 
-    $pagination_links = paginate_links([
-        'prev_text' => '<span class="icon icon-1 unicon-chevron-left"></span>',
-        'next_text' => '<span class="icon icon-1 unicon-chevron-right"></span>',
-        'type' => 'array', // Returns an array to format in <ul>
-        'mid_size' => 2,
-        'end_size' => 1,
-        'total' => $total_pages,
-        'current' => max(1, get_query_var('paged', 1)), // Ensure current page is correct
-    ]);
+	$pagination_links = paginate_links([
+		'prev_text' => '<span class="icon icon-1 unicon-chevron-left"></span>',
+		'next_text' => '<span class="icon icon-1 unicon-chevron-right"></span>',
+		'type' => 'array', // Returns an array to format in <ul>
+		'mid_size' => 2,
+		'end_size' => 1,
+		'total' => $total_pages,
+		'current' => max(1, get_query_var('paged', 1)), // Ensure current page is correct
+	]);
 
-    if (!empty($pagination_links)) {
-        echo '<div class="nav-pagination pt-3 mt-3 lg:mt-4 border-top border-gray-100 dark:border-gray-800">';
-        echo '<ul class="nav-x uc-pagination hstack gap-1 justify-center ft-secondary">';
-        foreach ($pagination_links as $link) {
-            echo '<li>' . str_replace('page-numbers', 'page-numbers uc-active', $link) . '</li>';
-        }
-        echo '</ul></div>';
-    }
+	if (!empty($pagination_links)) {
+		echo '<div class="nav-pagination pt-3 mt-3 lg:mt-4 border-top">';
+		echo '<ul class="nav-x uc-pagination hstack gap-1 justify-center ft-secondary">';
+		foreach ($pagination_links as $link) {
+			echo '<li>' . str_replace('page-numbers', 'page-numbers uc-active', $link) . '</li>';
+		}
+		echo '</ul></div>';
+	}
 }
 
 
@@ -459,83 +386,105 @@ function opengovasia_country_filter_dropdown()
  * @package OpenGovAsia
  */
 
-// Dynamic filter form using Years taxonomy
+// Dynamic filter form content and taxonomy
 function opengovasia_dynamic_filter_form($filters = [])
 {
-    if ((is_date() || (!is_archive() && !is_search())) && !is_page('upcoming-events') || is_paged()) {
-        return;
-    }
+	if ((is_date() || (!is_archive() && !is_search())) && !is_page('upcoming-events')) {
+		return;
+	}
 
-    $selected_values = [
-        'filter_post_type' => filter_input(INPUT_GET, 'filter_post_type', FILTER_SANITIZE_STRING) ?? '',
-        'country' => filter_input(INPUT_GET, 'c', FILTER_SANITIZE_STRING) ?? '',
-        'filter_year' => filter_input(INPUT_GET, 'filter_year', FILTER_SANITIZE_STRING) ?? ''
-    ];
+	$selected_values = [
+		'filter_post_type' => filter_input(INPUT_GET, 'filter_post_type', FILTER_SANITIZE_STRING) ?? '',
+		'country' => filter_input(INPUT_GET, 'c', FILTER_SANITIZE_STRING) ?? '',
+		'filter_year' => filter_input(INPUT_GET, 'filter_year', FILTER_SANITIZE_STRING) ?? ''
+	];
 
-    $is_search_page = filter_input(INPUT_GET, 's', FILTER_SANITIZE_STRING) ?? '';
+	$is_search_page = filter_input(INPUT_GET, 's', FILTER_SANITIZE_STRING) ?? '';
 
-    $post_type_options = [
-        '' => 'Post Type',
-        'post' => 'Posts',
-        'events' => 'Events',
-        
-        'ogtv' => 'OGTV'
-    ];
+	$post_type_options = [
+		'' => 'Post Type',
+		'post' => 'Posts',
+		'events' => 'Events',
+		'ogtv' => 'OGTV'
+	];
 
-    $country_options = get_transient('opengovasia_country_terms_filter') ?: ['' => 'Country'];
-    if ($country_options === ['' => 'Country']) {
-        $countries = get_terms(['taxonomy' => 'country', 'hide_empty' => false]);
-        if (!is_wp_error($countries)) {
-            foreach ($countries as $country) {
-                $country_options[$country->slug] = $country->name;
-            }
-            set_transient('opengovasia_country_terms', $country_options, 1 * HOUR_IN_SECONDS);
-        }
-    }
+	$country_options = get_transient('opengovasia_country_terms_filter') ?: ['' => 'Country'];
+	if ($country_options === ['' => 'Country']) {
+		$countries = get_terms(['taxonomy' => 'country', 'hide_empty' => false]);
+		if (!is_wp_error($countries)) {
+			foreach ($countries as $country) {
+				$country_options[$country->slug] = $country->name;
+			}
+			set_transient('opengovasia_country_terms', $country_options, 1 * HOUR_IN_SECONDS);
+		}
+	}
 
-    // Retrieve Years from taxonomy instead of static range
-    $year_options = ['' => 'Year'];
-    $years = get_terms(['taxonomy' => 'years', 'hide_empty' => false]);
-    if (!is_wp_error($years)) {
-        foreach ($years as $year) {
-            $year_options[$year->slug] = $year->name;
-        }
-    }
+	// Retrieve Years from taxonomy instead of static range
+	$year_options = ['' => 'Year'];
+	$years = get_terms(['taxonomy' => 'years', 'hide_empty' => false]);
+	if (!is_wp_error($years)) {
+		foreach ($years as $year) {
+			$year_options[$year->slug] = $year->name;
+		}
+	}
 
-    $filter_definitions = [
-        'filter_post_type' => ['label' => 'Filter by:', 'options' => $post_type_options, 'param' => 'filter_post_type'],
-        'country' => ['label' => 'Filter by:', 'options' => $country_options, 'param' => 'c'],
-        'filter_year' => ['label' => 'Filter by:', 'options' => $year_options, 'param' => 'filter_year']
-    ];
+	$filter_definitions = [
+		'filter_post_type' => [
+			'label' => 'Filter by:',
+			'options' => $post_type_options,
+			'param' => 'filter_post_type',
+			'icon' => 'unicon-document-alt' // Unicon icon for post type
+		],
+		'country' => [
+			'label' => 'Filter by:',
+			'options' => $country_options,
+			'param' => 'c',
+			'icon' => ' unicon-earth-filled' // Unicon icon for country
+		],
+		'filter_year' => [
+			'label' => 'Filter by:',
+			'options' => $year_options,
+			'param' => 'filter_year',
+			'icon' => 'unicon-calendar' // Unicon icon for year
+		]
+	];
 
-    $current_url = remove_query_arg(array_keys($filter_definitions), add_query_arg(null, null));
-    ?>
+	$current_url = remove_query_arg(array_keys($filter_definitions), add_query_arg(null, null));
+	?>
 
-    <form method="get" action="<?php echo esc_url($current_url); ?>" class="vstack items-center gap-2 sm:hstack">
-        <?php if (!empty($is_search_page)): ?>
-            <input type="hidden" name="s" value="<?php echo esc_attr($is_search_page); ?>">
-        <?php endif; ?>
+	<form method="get" action="<?php echo esc_url($current_url); ?>" class="hstack items-center gap-2 justify-between">
+		<?php if (!empty($is_search_page)): ?>
+			<input type="hidden" name="s" value="<?php echo esc_attr($is_search_page); ?>">
+		<?php endif; ?>
 
-        <div class="opacity-60">Filter by:</div>
+		<div class="opacity-60 hstack gap-1"><i class="icon icon-1 unicon-settings-adjust-filled"></i>Filter by:</div>
 
-        <?php foreach (array_intersect(array_keys($filter_definitions), $filters) as $filter):
-            $filter_data = $filter_definitions[$filter]; ?>
-            <div>
-				<!-- <label for="<?php echo esc_attr($filter); ?>" class="form-label"><?php echo esc_html($filter_data['label']); ?></label> -->
-                <div class="hstack gap-1 fs-6 justify-between">
-                    <select name="<?php echo esc_attr($filter_data['param']); ?>"
-                        class="form-select form-control-xs fs-6 w-150px dark:bg-gray-900 dark:text-white dark:border-gray-700"
-                        onchange="this.form.submit();">
-                        <?php foreach ($filter_data['options'] as $value => $name): ?>
-                            <option value="<?php echo esc_attr($value); ?>" <?php selected($selected_values[$filter] ?? '', $value); ?>>
-                                <?php echo esc_html($name); ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-            </div>
-        <?php endforeach; ?>
-    </form>
+		<div class="hstack gap-2 ">
 
-    <?php
+			<?php foreach (array_intersect(array_keys($filter_definitions), $filters) as $filter):
+				$filter_data = $filter_definitions[$filter];
+
+				?>
+				<div>
+					<div class="hstack gap-2 fs-6 justify-between position-relative items-center">
+						<select name="<?php echo esc_attr($filter_data['param']); ?>"
+							class="form-select form-control-xs fs-6 w-150px dark:bg-gray-900 dark:text-white dark:border-gray-700 select-filter-type"
+							onchange="this.form.submit();">
+							<?php foreach ($filter_data['options'] as $value => $name): ?>
+								<option value="<?php echo esc_attr($value); ?>" <?php selected($selected_values[$filter] ?? '', $value); ?>>
+									<?php echo esc_html($name); ?>
+								</option>
+							<?php endforeach; ?>
+
+						</select>
+						<!-- Mobile trigger icon -->
+						<i
+							class="position-absolute filter-select-icon icon icon-2 <?php echo esc_attr($filter_data['icon']); ?> d-none"></i>
+
+					</div>
+				</div>
+			<?php endforeach; ?>
+		</div>
+	</form>
+	<?php
 }

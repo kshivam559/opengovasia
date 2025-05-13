@@ -16,14 +16,22 @@ if (!defined('ABSPATH'))
                 class="featured-image m-0 ratio ratio-16x9 rounded uc-transition-toggle overflow-hidden bg-gray-25 dark:bg-gray-800">
                 <?php if (has_post_thumbnail()): ?>
                     <img class="media-cover image uc-transition-scale-up uc-transition-opaque"
-                        src="<?php echo get_the_post_thumbnail_url(get_the_ID(), 'medium'); ?>" alt="<?php the_title(); ?>">
+                        src="<?php echo get_the_post_thumbnail_url(get_the_ID(), 'full'); ?>" alt="<?php the_title(); ?>">
                 <?php else: ?>
                     <img class="media-cover image uc-transition-scale-up uc-transition-opaque"
                         src="<?php echo get_template_directory_uri(); ?>/assets/images/common/img-fallback.png"
                         alt="No Image Available">
                 <?php endif; ?>
-                <a href="<?php the_permalink(); ?>" class="position-cover" data-caption="<?php the_title(); ?>"></a>
+                
             </figure>
+            <div
+                class="has-video-overlay position-absolute top-0 end-0 w-150px h-150px bg-gradient-45 from-transparent via-transparent to-black opacity-50">
+            </div>
+            
+            <span class="cstack position-absolute top-0 end-0 fs-6 w-40px h-40px text-white">
+                <i class="icon-narrow unicon-trophy-filled"></i>
+            </span>
+            <a href="<?php the_permalink(); ?>" class="position-cover" data-caption="<?php the_title(); ?>"></a>
             <!-- <?php
             $categories = get_the_category();
             if (!empty($categories)):
@@ -33,9 +41,6 @@ if (!defined('ABSPATH'))
                 echo '</div>';
             endif;
             ?> -->
-            <span class="cstack position-absolute top-0 end-0 fs-6 w-40px h-40px text-white">
-                <i class="icon-narrow unicon-trophy-filled"></i>
-            </span>
         </div>
         <div class="post-header panel vstack gap-1 lg:gap-2">
             <h3 class="post-title h6 sm:h5 m-0 text-truncate-2 m-0">
@@ -43,7 +48,7 @@ if (!defined('ABSPATH'))
             </h3>
             <div>
                 <div
-                    class="post-meta panel hstack justify-center fs-7 fw-medium text-gray-900 dark:text-white text-opacity-60 d-none md:d-flex">
+                    class="post-meta panel hstack justify-center fs-7 fw-medium text-gray-900 dark:text-white text-opacity-60">
                     <div class="meta">
                         <div class="hstack gap-2">
                             <!-- <div class="post-author hstack gap-1">
@@ -58,13 +63,13 @@ if (!defined('ABSPATH'))
                                 <i class="icon-narrow unicon-calendar"></i>
                                 <span><?php echo get_the_date('M j, Y'); ?></span>
                             </div>
-                            <div>
+                            <!-- <div>
                                 <a href="<?php the_permalink(); ?>#comments"
                                     class="post-comments text-none hstack gap-narrow">
                                     <i class="icon-narrow unicon-chat"></i>
                                     <span><?php echo get_comments_number(); ?></span>
                                 </a>
-                            </div>
+                            </div> -->
                         </div>
                     </div>
                 </div>

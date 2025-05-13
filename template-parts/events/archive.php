@@ -16,18 +16,27 @@ if (!defined('ABSPATH'))
     <article class="post type-post panel vstack gap-2">
         <div class="post-image panel overflow-hidden">
             <figure
-                class="featured-image m-0 ratio ratio-16x9 rounded uc-transition-toggle overflow-hidden bg-gray-25 dark:bg-gray-800">
+                class="featured-image m-0 ratio rounded ratio-16x9 uc-transition-toggle overflow-hidden bg-gray-25 dark:bg-gray-800">
                 <?php if (has_post_thumbnail()): ?>
                     <img class="media-cover image uc-transition-scale-up uc-transition-opaque"
-                        src="<?php echo get_the_post_thumbnail_url(get_the_ID(), 'medium'); ?>" alt="<?php the_title(); ?>">
+                        src="<?php echo get_the_post_thumbnail_url(get_the_ID(), 'full'); ?>" alt="<?php the_title(); ?>">
                 <?php else: ?>
                     <img class="media-cover image uc-transition-scale-up uc-transition-opaque"
                         src="<?php echo get_template_directory_uri(); ?>/assets/images/common/img-fallback.png"
                         alt="No Image Available">
                 <?php endif; ?>
                 <a href="<?php the_permalink(); ?>" class="position-cover" data-caption="<?php the_title(); ?>"></a>
+
             </figure>
 
+            <div
+                class="has-video-overlay rounded position-absolute top-0 end-0 w-150px h-150px bg-gradient-45 from-transparent via-transparent to-black opacity-50">
+            </div>
+
+            <span class="cstack position-absolute top-0 end-0 fs-6 w-40px h-40px text-white">
+                <i class="icon-narrow unicon-calendar"></i>
+            </span>
+            
             <?php
             $categories = get_the_category();
             if (!empty($categories)):
@@ -37,10 +46,6 @@ if (!defined('ABSPATH'))
                 echo '</div>';
             endif;
             ?>
-
-            <span class="cstack position-absolute top-0 end-0 fs-6 w-40px h-40px text-white">
-                <i class="icon-narrow unicon-calendar"></i>
-            </span>
         </div>
         <div class="post-header panel vstack gap-1 lg:gap-2 text-center">
             <h3 class="post-title h6 lg:h5 m-0 text-truncate-2 mb-1">

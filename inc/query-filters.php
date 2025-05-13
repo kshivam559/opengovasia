@@ -23,11 +23,20 @@ class Country_Filtered_Query extends WP_Query
         $country = isset($args['country']) ? sanitize_text_field($args['country']) : (isset($_GET['c']) ? sanitize_text_field($_GET['c']) : '');
         $term_exists = $country ? term_exists($country, 'country') : false;
 
+        // if (!empty($country) && $country !== 'global' && is_array($term_exists)) {
+        //     $args['tax_query'][] = [
+        //         'taxonomy' => 'country',
+        //         'field' => 'slug',
+        //         'terms' => $country,
+        //     ];
+        // }
+
         if (!empty($country) && $country !== 'global' && is_array($term_exists)) {
             $args['tax_query'][] = [
                 'taxonomy' => 'country',
                 'field' => 'slug',
-                'terms' => $country,
+                'terms' => [$country, 'global'],
+                'operator' => 'IN',
             ];
         }
 
@@ -73,11 +82,21 @@ function filter_posts_by_country_query($query)
         $term_exists = term_exists($country, 'country');
 
         if (!empty($term_exists) && is_array($term_exists)) {
+
+            // $query->set('tax_query', [
+            //     [
+            //         'taxonomy' => 'country',
+            //         'field' => 'slug',
+            //         'terms' => $country,
+            //     ]
+            // ]);
+
             $query->set('tax_query', [
                 [
                     'taxonomy' => 'country',
                     'field' => 'slug',
-                    'terms' => $country,
+                    'terms' => [$country, 'global'],
+                    'operator' => 'IN',
                 ]
             ]);
         }
@@ -138,25 +157,41 @@ function filter_archive_by_years_taxonomy($query)
 }
 add_action('pre_get_posts', 'filter_archive_by_years_taxonomy');
 
+// Include ogtv custom post type in playlists taxonomy queries
+
+function include_ogtv_in_playlists_query($query)
+{
+    // Only modify the main query on the frontend
+    if (!is_admin() && $query->is_main_query()) {
+        // If it's a taxonomy archive for playlists
+        if ($query->is_tax('playlists')) {
+            // Set post_type to include your CPT
+            $query->set('post_type', ['ogtv']);
+        }
+    }
+}
+add_action('pre_get_posts', 'include_ogtv_in_playlists_query');
+
 
 /**
  * Manage post type filtering and archive displays
  * 
  * @param WP_Query $query The WordPress query object
  */
-function manage_post_types_and_archives($query) {
+function manage_post_types_and_archives($query)
+{
     if (!is_admin() && $query->is_main_query()) {
         // Handle post type filtering via URL parameter
         if ((is_archive() || is_search()) && isset($_GET['filter_post_type']) && !empty($_GET['filter_post_type'])) {
             $query->set('post_type', sanitize_text_field($_GET['filter_post_type']));
         }
-        
+
         // Handle category and taxonomy archives
         elseif ($query->is_category() || $query->is_tax('country')) {
             // Include all custom post types in category pages
             $query->set('post_type', ['post', 'events', 'ogtv']);
         }
-        
+
         // Handle events archive - Only filter future events on the events archive page
         elseif ($query->is_post_type_archive('events')) {
             $current_date = current_time('Y-m-d');
@@ -180,10 +215,13 @@ add_action('pre_get_posts', 'manage_post_types_and_archives');
  * @param string $template The path of the template to include
  * @return string The path of the template to include
  */
-function prevent_custom_archive_page_redirect($template) {
+function prevent_custom_archive_page_redirect($template)
+{
     // Check if we're on a category page with a filter
-    if ((is_category() || is_tax('country') || is_date()) && 
-        isset($_GET['filter_post_type']) && !empty($_GET['filter_post_type'])) {
+    if (
+        (is_category() || is_tax('country') || is_date()) &&
+        isset($_GET['filter_post_type']) && !empty($_GET['filter_post_type'])
+    ) {
         // Use archive.php or index.php template instead of forcing specific post type archive
         $template = locate_template(['archive.php', 'index.php']);
     }

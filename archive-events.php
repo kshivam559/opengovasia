@@ -1,8 +1,11 @@
 <?php
 /**
- * The template for displaying archive pages for Awards
+ * Archive Past Events Template
+ *
+ * This template is used to display the archive page for events.
  *
  * @package OpenGovAsia
+ * @since 1.0.0
  */
 
 get_header();
@@ -13,25 +16,20 @@ opengovasia_breadcrumbs();
 
 <header class="page-header panel vstack text-center">
 
-    <?php $channel_image = get_template_directory_uri() . '/assets/images/demo-three/common/channel-banner.webp'; ?>
+    <?php
+
+    $channel_image = get_template_directory_uri() . '/assets/images/demo-three/common/events-banner.webp';
+
+    ?>
 
     <div class="og_hero-image" style="background-image: url('<?php echo esc_url($channel_image); ?>');">
 
         <div class="container max-w-xl position-absolute top-50 start-50 translate-middle z-2">
-            <h1 class="h3 lg:h1 text-white">- Awards -</h1>
+            <h1 class="h3 lg:h1 text-white">Past Events</h1>
 
             <div class="archive-description text-white">
-                OpenGov Asia Recognition of Excellence Awards recognise and encourage new initiatives that have been
-                designed to assist citizens, learners, healthcare seekers and clients in the respective industries.
-                </br>
-                </br>
-                Recognition of Excellence Awards focuses on Public Sector, Education, Healthcare and FSI.
-                </br>
-                </br>
-                With the new normal in place, the ongoing digital transformation journey in these industries has been
-                accelerated. We want to discover and recognise their efforts in this direction and understand how it is
-                helping people.
-
+                Be on a lookout for our content rich and engaging events across ASEAN and register now to get informed
+                and empowered.
             </div>
 
         </div>
@@ -44,7 +42,7 @@ opengovasia_breadcrumbs();
     <div class="container max-w-xl">
         <div class="panel vstack gap-3 sm:gap-6 lg:gap-7">
 
-            <?php opengovasia_dynamic_filter_form(['country', 'filter_year']); ?>
+            <?php opengovasia_dynamic_filter_form(['country', 'filter_year', '']); ?>
 
             <?php if (have_posts()): ?>
 
@@ -64,7 +62,7 @@ opengovasia_breadcrumbs();
                                      * called content-___.php (where ___ is the Post Type name) and that will be used instead.
                                      */
 
-                                    get_template_part('template-parts/archive-classic');
+                                    get_template_part('template-parts/events/archive');
 
                                 endwhile; ?>
 
@@ -85,5 +83,7 @@ opengovasia_breadcrumbs();
     </div>
 </div>
 
+
 <?php
+
 get_footer();
