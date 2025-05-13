@@ -161,7 +161,7 @@ $event_end_time = $events_data['event_end_time'] ?? '';
     </div>
 
     <div class="panel">
-        <div class="container max-w-lg">
+        <div class="container max-w-lg position-relative bg-white dark:bg-gray-900 z-3">
 
             <?php if (!empty($events_data['event_description'])): ?>
 

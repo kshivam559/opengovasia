@@ -160,7 +160,7 @@
 						<ul class="footer-site-links nav-x gap-2 fw-medium justify-center lg:justify-start">
 							<li>
 								<a class="uc-link hover:text-gray-900 dark:hover:text-white duration-150"
-									href="/privacy-policy/">Privacy notice</a>
+									href="/privacy-policy/">Privacy Policy</a>
 							</li>
 							<li>
 								<a class="uc-link hover:text-gray-900 dark:hover:text-white duration-150"

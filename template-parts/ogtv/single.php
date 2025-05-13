@@ -136,7 +136,7 @@ $channel_image = !empty(get_term_meta($term_id, 'channel_image', true))
     </div>
 
     <div class="panel">
-        <div class="container max-w-lg">
+        <div class="container max-w-lg position-relative bg-white dark:bg-gray-900 z-3">
             <div class="post-content panel fs-6 md:fs-5" data-uc-lightbox="animation: scale">
                 <?php the_content(); ?>
             </div>

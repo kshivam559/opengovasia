@@ -29,7 +29,7 @@ get_header();
 <div class="section panel overflow-hidden swiper-parent uc-dark">
     <div class="section-outer panel py-5 lg:py-8 bg-gray-25 dark:bg-gray-800 dark:text-white">
         <div class="container max-w-xl">
-            
+
             <div class="section-inner panel vstack gap-4">
 
                 <?php
@@ -106,15 +106,9 @@ get_header();
                             wp_reset_postdata();
                         }
                     }
-                } else {
-                    echo '<p>No playlists found.</p>';
                 }
                 ?>
-
-
             </div>
-
-
 
             <div class="section-inner panel vstack gap-4">
                 <div class="section-header panel">

@@ -12,7 +12,7 @@ if (!defined('ABSPATH'))
 $category = get_the_category();
 $category_name = !empty($category) ? esc_html($category[0]->name) : 'Uncategorized';
 $category_link = !empty($category) ? esc_url(get_category_link($category[0]->term_id)) : '#';
-$post_thumbnail = get_the_post_thumbnail_url(get_the_ID(), 'full') ?: '../assets/images/common/img-fallback.png';
+$post_thumbnail = get_the_post_thumbnail_url(get_the_ID(), 'full') ?: get_template_directory_uri() . '/assets/images/common/img-fallback.png';
 $post_link = get_permalink();
 $post_title = get_the_title();
 $post_date = get_the_date('M j, Y');
@@ -73,7 +73,7 @@ $post_date = get_the_date('M j, Y');
                             $events_data = get_post_meta(get_the_ID(), 'events_data', true);
                             $event_date = isset($events_data['event_date']) ? esc_html($events_data['event_date']) : '';
                             ?>
-                            
+
                             <span><?php echo esc_html(!empty($event_date) ? date('M j, Y', strtotime($event_date)) : $post_date); ?></span>
 
                         <?php else: ?>

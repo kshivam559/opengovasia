@@ -297,7 +297,7 @@ get_header(); ?>
 
                                             endwhile;
                                             wp_reset_postdata();
-                                        
+
                                         endif;
                                         ?>
 
@@ -333,11 +333,12 @@ get_header(); ?>
                     </div>
                     <div class="section-content">
                         <div class="swiper"
-                            data-uc-swiper="items: 1; gap: 16; autoplay: 2500; dots: .dot-nav; next: .nav-next; prev: .nav-prev; disable-class: opacity-40;" data-uc-swiper-s="items: 2;"
-                            data-uc-swiper-m="items: 3;" data-uc-swiper-m="gap: 24;" data-uc-swiper-l="items: 4; gap: 32;">
+                            data-uc-swiper="items: 1; gap: 16; autoplay: 2500; dots: .dot-nav; next: .nav-next; prev: .nav-prev; disable-class: opacity-40;"
+                            data-uc-swiper-s="items: 2;" data-uc-swiper-m="items: 3;" data-uc-swiper-m="gap: 24;"
+                            data-uc-swiper-l="items: 4; gap: 32;">
                             <div class="swiper-wrapper">
                                 <?php
-                                
+
                                 $query = new Country_Filtered_Query([
                                     'post_type' => 'ogtv',
                                     'posts_per_page' => 12, // Change as needed
@@ -359,9 +360,9 @@ get_header(); ?>
 
                                     endwhile;
                                     wp_reset_postdata();
-                                    else:
-                                        echo '<p>No videos found. Maybe try switching your country?</p>';
-                                    
+                                else:
+                                    echo '<p>No videos found. Maybe try switching your country?</p>';
+
                                 endif;
                                 ?>
 
