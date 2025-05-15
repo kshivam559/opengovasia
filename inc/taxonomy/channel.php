@@ -65,7 +65,6 @@ function custom_category_base_on_theme_activation() {
 }
 add_action('after_switch_theme', 'custom_category_base_on_theme_activation');
 
-
 function enqueue_category_image_uploader($hook)
 {
     if ('edit-tags.php' === $hook || 'term.php' === $hook || 'edit-category' === $hook) {

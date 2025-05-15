@@ -71,7 +71,7 @@ $term_id = $term->term_id;
         <div class="container max-w-xl">
             <div class="panel vstack gap-3 sm:gap-6 lg:gap-7">
 
-            <?php opengovasia_dynamic_filter_form(['country']) ?>
+                <?php opengovasia_dynamic_filter_form(['country']) ?>
 
                 <div class="section-inner panel vstack gap-4">
 

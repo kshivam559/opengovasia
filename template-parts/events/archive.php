@@ -36,7 +36,7 @@ if (!defined('ABSPATH'))
             <span class="cstack position-absolute top-0 end-0 fs-6 w-40px h-40px text-white">
                 <i class="icon-narrow unicon-calendar"></i>
             </span>
-            
+
             <?php
             $categories = get_the_category();
             if (!empty($categories)):

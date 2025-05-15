@@ -42,7 +42,8 @@ add_action('admin_init', function () {
         'description' => '',
         'dir' => 'ltr',
         'categories' => '',
-        'screenshots' => ''
+        'screenshots' => '',
+        'shortcuts' => '[]'
     ];
     foreach ($fields as $field => $default) {
         register_setting('opengovasia_pwa_settings', "opengovasia_pwa_{$field}");
@@ -253,6 +254,58 @@ function opengovasia_pwa_settings_page()
                 </tr>
             </table>
             <p><span style="color:red;">*</span> Required fields</p>
+
+            <h2>PWA Shortcuts</h2>
+            <p class="description">Define shortcuts for your PWA. These appear in the app's context menu and provide quick
+                access to key features.</p>
+
+            <div id="pwa-shortcuts-container">
+                <!-- Shortcut items will be dynamically added here -->
+            </div>
+
+            <button type="button" class="button button-secondary" id="add-pwa-shortcut">Add Shortcut</button>
+
+            <!-- Hidden field to store the shortcuts data as JSON -->
+            <input type="hidden" name="opengovasia_pwa_shortcuts" id="opengovasia_pwa_shortcuts"
+                value="<?php echo esc_attr(get_option('opengovasia_pwa_shortcuts', '[]')); ?>">
+
+            <template id="shortcut-template">
+                <div class="pwa-shortcut-item"
+                    style="border: 1px solid #ccc; padding: 15px; margin: 15px 0; background: #f9f9f9; position: relative;">
+                    <button type="button" class="button button-link remove-shortcut"
+                        style="position: absolute; right: 10px; top: 10px; color: #cc0000;">Remove</button>
+
+                    <table class="form-table">
+                        <tr>
+                            <th scope="row">Name <span style="color:red;">*</span></th>
+                            <td><input type="text" class="regular-text shortcut-name" required></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Short Name <span style="color:red;">*</span></th>
+                            <td><input type="text" class="regular-text shortcut-short-name" required></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">URL <span style="color:red;">*</span></th>
+                            <td><input type="text" class="regular-text shortcut-url" required></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Description</th>
+                            <td><input type="text" class="regular-text shortcut-description"></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Icon</th>
+                            <td>
+                                <input type="text" class="regular-text shortcut-icon">
+                                <button type="button"
+                                    class="button opengovasia-pwa-media-upload shortcut-icon-button">Choose Icon</button>
+                                <div class="image-preview shortcut-icon-preview">
+                                    <img src="" style="max-width:100px;margin-top:10px;display:none;">
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </template>
             <?php submit_button('Save Settings'); ?>
         </form>
     </div>
@@ -331,6 +384,154 @@ add_action('admin_enqueue_scripts', function ($hook) {
                     if (!field.val()) {
                         alert('Please fill in all required fields marked with *');
                         field.focus();
+                        valid = false;
+                        return false;
+                    }
+                });
+                
+                if (!valid) {
+                    e.preventDefault();
+                }
+            });
+
+            // Initialize shortcuts from the hidden input
+            const shortcutsContainer = $('#pwa-shortcuts-container');
+            const shortcutsInput = $('#opengovasia_pwa_shortcuts');
+            const shortcutTemplate = $('#shortcut-template').html();
+            let shortcuts = [];
+            
+            try {
+                shortcuts = JSON.parse(shortcutsInput.val() || '[]');
+            } catch (e) {
+                shortcuts = [];
+            }
+            
+            // Render existing shortcuts
+            function renderShortcuts() {
+                shortcutsContainer.empty();
+                shortcuts.forEach((shortcut, index) => {
+                    addShortcutItem(shortcut, index);
+                });
+            }
+            
+            // Add a new shortcut item to the UI
+            function addShortcutItem(shortcut = {}, index) {
+                const shortcutElement = $(shortcutTemplate);
+                
+                // Set values if they exist
+                shortcutElement.find('.shortcut-name').val(shortcut.name || '');
+                shortcutElement.find('.shortcut-short-name').val(shortcut.short_name || '');
+                shortcutElement.find('.shortcut-url').val(shortcut.url || '');
+                shortcutElement.find('.shortcut-description').val(shortcut.description || '');
+                shortcutElement.find('.shortcut-icon').val(shortcut.icon || '');
+                
+                // Show icon preview if it exists
+                if (shortcut.icon) {
+                    const previewImg = shortcutElement.find('.shortcut-icon-preview img');
+                    previewImg.attr('src', shortcut.icon);
+                    previewImg.show();
+                }
+                
+                // Add data index for tracking
+                shortcutElement.attr('data-index', index);
+                
+                // Add to container
+                shortcutsContainer.append(shortcutElement);
+                
+                // Setup media uploader for icon
+                shortcutElement.find('.shortcut-icon-button').on('click', function() {
+                    const button = $(this);
+                    const inputField = button.prev('.shortcut-icon');
+                    const previewImg = button.next('.shortcut-icon-preview').find('img');
+                    
+                    const frame = wp.media({
+                        title: 'Select or Upload Icon Image',
+                        button: { text: 'Use this image' },
+                        multiple: false
+                    });
+                    
+                    frame.on('select', function() {
+                        const attachment = frame.state().get('selection').first().toJSON();
+                        inputField.val(attachment.url);
+                        
+                        // Update preview
+                        previewImg.attr('src', attachment.url);
+                        previewImg.show();
+                        
+                        // Update the shortcuts data
+                        updateShortcut(inputField.closest('.pwa-shortcut-item'));
+                    });
+                    
+                    frame.open();
+                });
+                
+                // Handle remove button
+                shortcutElement.find('.remove-shortcut').on('click', function() {
+                    const itemIndex = $(this).closest('.pwa-shortcut-item').attr('data-index');
+                    shortcuts.splice(itemIndex, 1);
+                    updateShortcutsInput();
+                    renderShortcuts();
+                });
+                
+                // Update data when fields change
+                shortcutElement.find('input[type=\"text\"]').on('change', function() {
+                    updateShortcut($(this).closest('.pwa-shortcut-item'));
+                });
+            }
+            
+            // Update a shortcut item in the data array
+            function updateShortcut(shortcutElement) {
+                const index = shortcutElement.attr('data-index');
+                
+                shortcuts[index] = {
+                    name: shortcutElement.find('.shortcut-name').val(),
+                    short_name: shortcutElement.find('.shortcut-short-name').val(),
+                    url: shortcutElement.find('.shortcut-url').val(),
+                    description: shortcutElement.find('.shortcut-description').val(),
+                    icon: shortcutElement.find('.shortcut-icon').val()
+                };
+                
+                updateShortcutsInput();
+            }
+            
+            // Update the hidden input with the current shortcuts data
+            function updateShortcutsInput() {
+                shortcutsInput.val(JSON.stringify(shortcuts));
+            }
+            
+            // Initialize
+            renderShortcuts();
+            
+            // Add a new shortcut when the button is clicked
+            $('#add-pwa-shortcut').on('click', function() {
+                shortcuts.push({
+                    name: '',
+                    short_name: '',
+                    url: '',
+                    description: '',
+                    icon: ''
+                });
+                
+                updateShortcutsInput();
+                addShortcutItem({}, shortcuts.length - 1);
+            });
+            
+            // Validate shortcuts before form submission
+            $('form').on('submit', function(e) {
+                if (!$('input[name=\"opengovasia_pwa_enable\"]').is(':checked')) {
+                    return true; // Skip validation if PWA is disabled
+                }
+                
+                // Validate each shortcut
+                let valid = true;
+                
+                $('.pwa-shortcut-item').each(function() {
+                    const name = $(this).find('.shortcut-name').val();
+                    const shortName = $(this).find('.shortcut-short-name').val();
+                    const url = $(this).find('.shortcut-url').val();
+                    
+                    if (!name || !shortName || !url) {
+                        alert('Please fill in all required fields for shortcuts (Name, Short Name and URL)');
                         valid = false;
                         return false;
                     }
@@ -458,6 +659,49 @@ function opengovasia_pwa_generate_manifest()
             array_unshift($manifest['screenshots'], ['src' => $splash_screen]);
         }
     }
+
+    // Add shortcuts to manifest
+    $shortcuts_json = get_option('opengovasia_pwa_shortcuts', '[]');
+    $shortcuts = json_decode($shortcuts_json, true);
+
+    if (is_array($shortcuts) && !empty($shortcuts)) {
+        $manifest_shortcuts = [];
+
+        foreach ($shortcuts as $shortcut) {
+            // Validate required fields
+            if (empty($shortcut['name']) || empty($shortcut['url'])) {
+                continue;
+            }
+
+            $manifest_shortcut = [
+                'name' => $shortcut['name'],
+                'short_name' => !empty($shortcut['short_name']) ? $shortcut['short_name'] : $shortcut['name'],
+                'url' => $shortcut['url']
+            ];
+
+            // Add optional fields if provided
+            if (!empty($shortcut['description'])) {
+                $manifest_shortcut['description'] = $shortcut['description'];
+            }
+
+            if (!empty($shortcut['icon'])) {
+                $manifest_shortcut['icons'] = [
+                    [
+                        'src' => $shortcut['icon'],
+                        'sizes' => '96x96',
+                        'type' => 'image/png'
+                    ]
+                ];
+            }
+
+            $manifest_shortcuts[] = $manifest_shortcut;
+        }
+
+        if (!empty($manifest_shortcuts)) {
+            $manifest['shortcuts'] = $manifest_shortcuts;
+        }
+    }
+
 
     // Save manifest file
     file_put_contents(

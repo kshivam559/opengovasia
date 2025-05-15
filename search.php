@@ -37,7 +37,7 @@ $post_type = isset($_GET['post_type']) ? sanitize_text_field($_GET['post_type'])
 			</header>
 
 
-			<?php opengovasia_dynamic_filter_form(['country','filter_post_type']); ?>
+			<?php opengovasia_dynamic_filter_form(['country', 'filter_post_type']); ?>
 
 			<?php if (have_posts()): ?>
 

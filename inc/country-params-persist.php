@@ -85,11 +85,16 @@ function oga_display_country_switcher()
     $countries = get_terms(['taxonomy' => 'country', 'hide_empty' => true]);
     $selected_country = isset($_GET['c']) ? sanitize_text_field($_GET['c']) : '';
     $selected_country_name = 'Select Country';
+    $selected_country_flag_html = '<i class="icon icon-1 unicon-earth-filled"></i>';
 
     if ($selected_country) {
         $selected_term = get_term_by('slug', $selected_country, 'country');
-        if ($selected_term) {
+        if ($selected_term && !is_wp_error($selected_term)) {
             $selected_country_name = esc_html($selected_term->name);
+            $flag_url = get_term_meta($selected_term->term_id, 'country_flag', true);
+            if (!empty($flag_url)) {
+                $selected_country_flag_html = '<img src="' . esc_url($flag_url) . '" alt="' . esc_attr($selected_country_name) . ' Flag" style="width: 20px; height: auto;">';
+            }
         }
     }
 
@@ -98,7 +103,7 @@ function oga_display_country_switcher()
     <div class="panel hstack justify-center gap-2 lg:gap-3">
         <div class="footer-lang d-inline-block oga-country-switcher">
             <a href="#" class="hstack gap-1 text-none fw-medium oga-country-toggle">
-                <i class="icon icon-1 unicon-earth-filled"></i>
+                <?php echo $selected_country_flag_html; ?>
                 <span class="oga-current-country"><?php echo $selected_country_name; ?></span>
                 <span data-uc-drop-parent-icon=""></span>
             </a>
@@ -206,8 +211,9 @@ add_action('rest_api_init', function () {
             $user_ip = $_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['REMOTE_ADDR'];
 
             if (empty($user_ip) || $user_ip === '127.0.0.1' || $user_ip === '::1') {
-                // return new WP_Error('geo_error', 'Invalid IP address' . $user_ip . '', ['status' => 400]);
-                $user_ip = '106.219.71.118';
+
+                return new WP_Error('geo_error', 'Invalid IP address' . $user_ip . '', ['status' => 400]);
+                // $user_ip = '106.219.00.100'; // Test IP
             }
 
             $response = wp_remote_get("https://ipapi.co/{$user_ip}/json/");
@@ -239,6 +245,6 @@ add_action('rest_api_init', function () {
 
 add_action('wp_head', function () {
     if (!headers_sent() && isset($_SERVER['HTTP_CF_IPCOUNTRY'])) {
-        echo '<meta name="cf-ipcountry" content="' . esc_attr(strtolower($_SERVER['HTTP_CF_IPCOUNTRY'])) . '">' . "\n";
+        echo '<meta name="user-country" content="' . esc_attr(strtolower($_SERVER['HTTP_CF_IPCOUNTRY'])) . '">' . "\n";
     }
 });

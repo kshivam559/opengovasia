@@ -386,7 +386,6 @@ function opengovasia_country_filter_dropdown()
  * @package OpenGovAsia
  */
 
-// Dynamic filter form content and taxonomy
 function opengovasia_dynamic_filter_form($filters = [])
 {
 	if ((is_date() || (!is_archive() && !is_search())) && !is_page('upcoming-events')) {

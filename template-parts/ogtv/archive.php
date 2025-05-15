@@ -11,7 +11,7 @@ $post_id = get_the_ID();
 $category = get_the_category();
 $category_link = !empty($category) ? get_category_link($category[0]->term_id) : '#';
 $category_name = !empty($category) ? $category[0]->name : 'Uncategorized';
-$featured_image = get_the_post_thumbnail_url($post_id, 'full');
+$featured_image = !empty(get_the_post_thumbnail_url($post_id, 'full')) ? get_the_post_thumbnail_url($post_id, 'full') : get_template_directory_uri() . '/assets/images/common/img-fallback.png';
 // $media_url = $video_url ? $video_url : $featured_image;
 $media_url = $featured_image;
 ?>

@@ -93,7 +93,7 @@ $channel_image = !empty(get_term_meta($term_id, 'channel_image', true))
                 </li>
                 <li>
                     <a class="btn btn-md p-0 border-gray-900 border-opacity-15 w-32px lg:w-48px h-32px lg:h-48px text-white border-white hover:bg-primary hover:border-primary hover:text-white rounded-circle"
-                        href="javascript:void(0);" onclick="sharePage()"><i class="unicon-link icon-1"></i></a>
+                        href="javascript:void(0);" onclick="sharePage()"><i class="unicon-share-filled icon-1"></i></a>
                 </li>
             </ul>
         </div>
@@ -109,7 +109,7 @@ $channel_image = !empty(get_term_meta($term_id, 'channel_image', true))
 
             <?php if (has_post_thumbnail()): ?>
                 <figure
-                    class="featured-image m-0 ratio ratio-2x1 rounded uc-transition-toggle overflow-hidden bg-gray-25 dark:bg-gray-800">
+                    class="featured-image m-0 ratio ratio-2x1 rounded-1 uc-transition-toggle overflow-hidden bg-gray-25 dark:bg-gray-800">
 
                     <?php
                     $video_url = get_post_meta(get_the_ID(), 'ogtv_details', true)['video_url'] ?? '';
@@ -121,7 +121,7 @@ $channel_image = !empty(get_term_meta($term_id, 'channel_image', true))
                         echo '<div class="video-container" style="aspect-ratio: 16 / 9;">';
 
                         echo '<iframe class="youtube-player" src="https://www.youtube.com/embed/' . esc_attr($video_id) . '" style="height: 100%; width: 100%;" frameborder="0" scrolling="no" loading="lazy" allowfullscreen></iframe>';
-                        
+
                         echo '</div>';
 
                     } else {
@@ -137,7 +137,7 @@ $channel_image = !empty(get_term_meta($term_id, 'channel_image', true))
 
     <div class="panel">
         <div class="container max-w-lg position-relative bg-white dark:bg-gray-900 z-3">
-            <div class="post-content panel fs-6 md:fs-5" data-uc-lightbox="animation: scale">
+            <div class="post-content panel fs-6 md:fs-5">
                 <?php the_content(); ?>
             </div>
         </div>
@@ -270,7 +270,7 @@ $channel_image = !empty(get_term_meta($term_id, 'channel_image', true))
                     <li>
                         <a class="btn btn-md btn-outline-gray-100 p-0 w-32px lg:w-40px h-32px lg:h-40px text-dark dark:text-white dark:border-gray-600 hover:bg-primary hover:border-primary hover:text-white rounded-circle"
                             href="javascript:void(0);" onclick="sharePage()">
-                            <i class="unicon-link icon-1"></i>
+                            <i class="unicon-share-filled icon-1"></i>
                         </a>
                     </li>
                 </ul>

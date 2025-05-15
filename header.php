@@ -130,7 +130,16 @@
                                 <div class="uc-logo d-none md:d-block text-white dark:text-white">
                                     <a href="<?php echo esc_url(home_url('/')); ?>">
                                         <?php if (has_custom_logo()): ?>
-                                            <?php the_custom_logo(); ?>
+
+                                            <?php
+                                            $custom_logo_id = get_theme_mod('custom_logo');
+                                            $logo = wp_get_attachment_image_src($custom_logo_id, 'full');
+                                            ?>
+
+                                            <img src="<?php echo esc_url($logo[0]); ?>"
+                                                class="w-80px text-white dark:text-white" alt="<?php bloginfo('name'); ?>"
+                                                data-uc-svg>
+
                                         <?php else: ?>
                                             <img class="w-80px text-white dark:text-white"
                                                 src="<?php echo get_template_directory_uri(); ?>/assets/images/demo-three/common/logo.svg"
@@ -143,7 +152,7 @@
                                     style="--uc-nav-height: 80px">
                                     <li class="fw-bold">
                                         <a href="#">Latest <span data-uc-navbar-parent-icon></span></a>
-                                        <div class="uc-navbar-dropdown ft-primary text-unset p-3 pb-4 hide-scrollbar shadow-xs"
+                                        <div class="uc-navbar-dropdown ft-primary text-unset border border-gray-900 border-opacity-15 p-3 pb-4 hide-scrollbar shadow-xs"
                                             data-uc-drop=" offset: 0; boundary: !.uc-navbar; stretch: x; animation: uc-animation-slide-top-small; duration: 150;">
                                             <div class="row child-cols col-match g-3">
                                                 <div class="col-2">
@@ -209,7 +218,7 @@
 
                                     <li class="fw-bold">
                                         <a href="#">Events <span data-uc-navbar-parent-icon></span></a>
-                                        <div class="uc-navbar-dropdown ft-primary text-unset p-3 pb-4 hide-scrollbar shadow-xs"
+                                        <div class="uc-navbar-dropdown ft-primary text-unset border border-gray-900 border-opacity-15 p-3 pb-4 hide-scrollbar shadow-xs"
                                             data-uc-drop=" offset: 0; boundary: !.uc-navbar; stretch: x; animation: uc-animation-slide-top-small; duration: 150;">
                                             <div class="row child-cols col-match g-3">
                                                 <div
@@ -341,15 +350,37 @@
 
                                     <li class="fw-bold"><a href="/awards/">Awards</a></li>
                                     <li class="fw-bold"><a href="/ogtv/">OGTV</a></li>
+                                    <?php
+                                    wp_nav_menu(array(
+                                        'theme_location' => 'primary-menu',
+                                        'container' => false,
+                                        'items_wrap' => '%3$s', // to exclude <ul>
+                                        'walker' => new Primary_Menu_Nav_Walker(),
+                                        'fallback_cb' => false,
+                                    ));
+                                    ?>
 
                                 </ul>
                             </div>
                             <div class="uc-navbar-center">
-                                <div class="uc-logo d-block md:d-none text-white dark:text-white">
+                                <div class="uc-logo d-block md:d-none text-white dark:text-white w-80px">
                                     <a href="<?php echo get_home_url(); ?>">
-                                        <img class="w-80px text-white dark:text-white"
-                                            src="/wp-content/themes/opengovasia/assets/images/demo-three/common/logo.svg"
-                                            alt="News5" data-uc-svg>
+                                        <?php if (has_custom_logo()): ?>
+
+                                            <?php
+                                            $custom_logo_id = get_theme_mod('custom_logo');
+                                            $logo = wp_get_attachment_image_src($custom_logo_id, 'full');
+                                            ?>
+
+                                            <img src="<?php echo esc_url($logo[0]); ?>"
+                                                class="w-80px h-72px text-white dark:text-white"
+                                                alt="<?php bloginfo('name'); ?>" data-uc-svg>
+
+                                        <?php else: ?>
+                                            <img class="w-80px h-72px text-white dark:text-white"
+                                                src="<?php echo get_template_directory_uri(); ?>/assets/images/demo-three/common/logo.svg"
+                                                alt="<?php bloginfo('name'); ?>" data-uc-svg>
+                                        <?php endif; ?>
                                     </a>
                                 </div>
                             </div>
@@ -375,16 +406,14 @@
 
                                 <ul class="uc-navbar-nav gap-3 fs-5 fw-medium ms-4 d-none md:d-flex"
                                     style="--uc-nav-height: 80px">
-                                    <li class="fw-bold hover:opacity-100 oga-country-switcher">
-                                        <a href="#"
-                                            class="hstack gap-1 text-white text-none fw-medium oga-country-toggle"
-                                            title="Select Country">
+                                    <li class="fw-medium oga-country-switcher">
+                                        <a href="#" class="oga-country-toggle hstack gap-1" title="Select Country">
                                             <?php echo $selected_flag; ?>
                                             <span
                                                 class="oga-current-country"><?php echo $selected_country_name; ?></span>
-                                            <span data-uc-drop-parent-icon=""></span>
+                                            <span data-uc-navbar-parent-icon></span>
                                         </a>
-                                        <div class="uc-navbar-dropdown p-3 bg-white dark:bg-gray-800 shadow-xs rounded"
+                                        <div class="uc-navbar-dropdown p-3 border border-gray-900 border-opacity-15 bg-white dark:bg-gray-800 shadow-xs rounded"
                                             data-uc-drop="mode: click; boundary: !.uc-navbar;">
                                             <div class="vstack gap-1 fw-medium items-end oga-country-list">
                                                 <?php foreach ($countries as $country): ?>

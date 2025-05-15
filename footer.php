@@ -147,7 +147,7 @@
 							if ($logo) {
 								echo '<img class="uc-logo w-100px text-gray-900 dark:text-white" src="' . esc_url($logo[0]) . '" alt="' . esc_attr(get_bloginfo('name')) . '" data-uc-svg />';
 							} else {
-								echo '<h4 class="text-gray-900 dark:text-white">' . get_bloginfo('name') . '</h4>'; // Fallback if no logo is set
+								echo '<h4 class="text-gray-900 dark:text-white m-0">' . get_bloginfo('name') . '</h4>'; // Fallback if no logo is set
 							}
 							?>
 						</div>
@@ -159,11 +159,11 @@
 						</p>
 						<ul class="footer-site-links nav-x gap-2 fw-medium justify-center lg:justify-start">
 							<li>
-								<a class="uc-link hover:text-gray-900 dark:hover:text-white duration-150"
+								<a class="uc-link text-underline hover:text-gray-900 dark:hover:text-white duration-150"
 									href="/privacy-policy/">Privacy Policy</a>
 							</li>
 							<li>
-								<a class="uc-link hover:text-gray-900 dark:hover:text-white duration-150"
+								<a class="uc-link text-underline hover:text-gray-900 dark:hover:text-white duration-150"
 									href="/terms-and-conditions/">Terms and Conditions</a>
 							</li>
 
@@ -276,16 +276,11 @@
 				</li>
 			</ul>
 
-			<div class="py-2 hstack gap-2 mt-4 bg-white dark:bg-gray-900" data-uc-sticky="position: bottom">
-				<div class="vstack gap-1">
-					<span class="fs-7 opacity-60">Select theme:</span>
-					<div class="darkmode-trigger" data-darkmode-switch="">
-						<label class="switch">
-							<input type="checkbox" />
-							<span class="slider fs-5"></span>
-						</label>
-					</div>
-				</div>
+			<div class="py-2 hstack gap-2 mt-4 bg-white dark:bg-gray-900 border-top" data-uc-sticky="position: bottom">
+
+				<p class="fs-7 text-gray-900 dark:text-white text-opacity-50 m-0">
+					<?php echo get_bloginfo('name'); ?> © <?php echo date('Y'); ?>, All rights reserved.
+				</p>
 			</div>
 		</div>
 	</div>
@@ -386,31 +381,6 @@
 	</a>
 </div>
 
-<!-- <div class="position-fixed bg-white dark:bg-gray-900 dark:text-white" id="country-redirect-popup"
-	style="display:none; right:0px; bottom:20px; box-shadow:0 0 10px rgba(0,0,0,0.2); z-index:9999;border-radius:5px;padding:20px;margin:0 20px;">
-	<div class="">
-		<p class="fs-6">
-			It looks like you're viewing content tailored for <strong
-				id="current-country"><?php echo get_selected_country_name() ?></strong>. Would you like to switch to
-			<br>
-			content that's more relevant to your current location?
-		</p>
-
-		<p class="fs-7 text-gray-900 dark:text-white text-opacity-60">
-			You can change this later at the bottom of the page.
-		</p>
-
-		<div class="mt-3">
-			<button id="redirect-yes" class="btn btn-sm btn-primary">
-				Yes, Show me
-			</button>
-			<button id="redirect-no" class="btn btn-sm dark:text-white">
-				No, let me stay
-			</button>
-		</div>
-	</div>
-</div> -->
-
 
 <?php wp_footer(); ?>
 
@@ -435,7 +405,7 @@
 
 		// Attempt to get country from Cloudflare header via meta tag
 		if (!userCountry) {
-			const metaTag = document.querySelector('meta[name="cf-ipcountry"]');
+			const metaTag = document.querySelector('meta[name="user-country"]');
 			if (metaTag) {
 				userCountry = metaTag.content.toLowerCase();
 				localStorage.setItem("userCountry", userCountry);
@@ -463,7 +433,6 @@
 
 		if (!userCountry || userCountry === currentCountry) return;
 
-		// const popup = document.getElementById("country-redirect-popup");
 		const popup = document.getElementById("uc-country-notification");
 		if (!popup) return;
 

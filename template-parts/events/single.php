@@ -92,7 +92,7 @@ $channel_image = !empty(get_term_meta($term_id, 'channel_image', true))
                 </li>
                 <li>
                     <a class="btn btn-md p-0 border-gray-900 border-opacity-15 w-32px lg:w-48px h-32px lg:h-48px text-white border-white hover:bg-primary hover:border-primary hover:text-white rounded-circle"
-                        href="javascript:void(0);" onclick="sharePage()"><i class="unicon-link icon-1"></i></a>
+                        href="javascript:void(0);" onclick="sharePage()"><i class="unicon-share-filled icon-1"></i></a>
                 </li>
             </ul>
         </div>
@@ -431,7 +431,7 @@ $event_end_time = $events_data['event_end_time'] ?? '';
                                     <?php foreach ($events_data['testimonials'] as $testimonial): ?>
                                         <div>
                                             <div
-                                                class="testimonial border py-2 px-2 rounded-1 shadow-xs dark:bg-gray-900 dark:text-white">
+                                                class="testimonial border border-gray-900 border-opacity-15 py-2 px-2 rounded-1 shadow-xs dark:bg-gray-900 dark:text-white">
                                                 <?php if (!empty($testimonial['image'])): ?>
                                                     <div class="testimonial-image">
                                                         <img src="<?php echo $testimonial['image']; ?>"
@@ -616,9 +616,7 @@ $event_end_time = $events_data['event_end_time'] ?? '';
 
             </div>
 
-
-
-            <div class="post-footer panel vstack sm:hstack gap-3 justify-between border-top py-3 mt-4">
+            <div class="post-footer panel vstack sm:hstack gap-3 justify-between border-top pt-3 mt-4">
                 <ul class="nav-x gap-narrow text-primary">
                     <li><span class="text-black dark:text-white me-narrow">Channel:</span></li>
                     <?php
@@ -667,7 +665,7 @@ $event_end_time = $events_data['event_end_time'] ?? '';
                     <li>
                         <a class="btn btn-md btn-outline-gray-100 p-0 w-32px lg:w-40px h-32px lg:h-40px text-dark dark:text-white dark:border-gray-600 hover:bg-primary hover:border-primary hover:text-white rounded-circle"
                             href="javascript:void(0);" onclick="sharePage()">
-                            <i class="unicon-link icon-1"></i>
+                            <i class="unicon-share-filled icon-1"></i>
                         </a>
                     </li>
                 </ul>

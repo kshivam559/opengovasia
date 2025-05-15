@@ -22,9 +22,9 @@ if (!defined('ABSPATH'))
                         src="<?php echo get_template_directory_uri(); ?>/assets/images/common/img-fallback.png"
                         alt="No Image Available">
                 <?php endif; ?>
-                
+
             </figure>
-            
+
             <div
                 class="has-video-overlay position-absolute top-0 end-0 w-150px h-150px bg-gradient-45 from-transparent via-transparent to-black opacity-50">
             </div>

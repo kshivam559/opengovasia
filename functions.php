@@ -119,6 +119,17 @@ function opengovasia_widgets_init()
 add_action('widgets_init', 'opengovasia_widgets_init');
 
 /**
+ * Remove post tags from the post type
+ */
+
+function remove_post_tags()
+{
+	unregister_taxonomy_for_object_type('post_tag', 'post');
+}
+add_action('init', 'remove_post_tags');
+
+
+/**
  * Enqueue scripts and styles.
  */
 function opengovasia_scripts()

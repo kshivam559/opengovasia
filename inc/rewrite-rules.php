@@ -15,7 +15,7 @@ function theme_register_events_rewrite_rules()
 {
     add_rewrite_rule('^upcoming-events/?$', 'index.php?pagename=upcoming-events', 'top');
     add_rewrite_rule('^channels/?$', 'index.php?pagename=channels', 'top');
-    
+
 }
 add_action('init', 'theme_register_events_rewrite_rules');
 
@@ -39,7 +39,7 @@ function theme_register_pages()
 
     }
 
-        // If the page doesn't exist, create it
+    // If the page doesn't exist, create it
     if (!$channels_page) {
         $page_id = wp_insert_post(array(
             'post_title' => 'Channels',
@@ -86,9 +86,14 @@ function theme_channels_template($channels_template)
 
 add_filter('template_include', 'theme_channels_template');
 
-// 
+/**
+ * Exclude custom pages from search results
+ *
+ * @param WP_Query $query The WP_Query instance (passed by reference).
+ */
 
-function theme_exclude_custom_pages_from_search($query) {
+function theme_exclude_custom_pages_from_search($query)
+{
     if ($query->is_search() && $query->is_main_query()) {
         // Get the IDs of the pages to exclude
         $channels_page = get_page_by_path('channels');
@@ -111,15 +116,16 @@ function theme_exclude_custom_pages_from_search($query) {
 add_action('pre_get_posts', 'theme_exclude_custom_pages_from_search');
 
 
-function theme_add_custom_page_labels( $post_states, $post ) {
-    if ( $post->post_type === 'page' ) {
-        if ( $post->post_name === 'channels' ) {
+function theme_add_custom_page_labels($post_states, $post)
+{
+    if ($post->post_type === 'page') {
+        if ($post->post_name === 'channels') {
             $post_states['custom_channels'] = 'Channels Page';
         }
-        if ( $post->post_name === 'upcoming-events' ) {
+        if ($post->post_name === 'upcoming-events') {
             $post_states['custom_upcoming'] = 'Upcoming Events Page';
         }
     }
     return $post_states;
 }
-add_filter( 'display_post_states', 'theme_add_custom_page_labels', 10, 2 );
+add_filter('display_post_states', 'theme_add_custom_page_labels', 10, 2);
