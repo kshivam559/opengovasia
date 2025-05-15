@@ -145,29 +145,11 @@ function display_event_details_meta_box($post)
         </table>
     </div>
 
-    <!-- Who Should Attend -->
-    <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 15px;">
-        <h3>Who Should Attend</h3>
-        <div id="who-should-attend-list">
-            <?php if (!empty($who_should_attend)): ?>
-                <?php foreach ($who_should_attend as $index => $item): ?>
-                    <div class="who-should-attend-item" style="display: flex; margin-top:10px; justify-content: space-between;">
-                        <input type="text" name="events_data[who_should_attend][<?php echo $index; ?>]"
-                            value="<?php echo esc_attr($item); ?>" placeholder="Who Should Attend" style="flex: 1;">
-                        <button type="button" class="remove-who-should-attend button button-secondary"
-                            style="margin-left:10px;">Remove</button>
-                    </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
-        <button type="button" class="add-who-should-attend button button-primary" style="margin-top:10px;">+ Add
-            Item</button>
-    </div>
 
     <!-- Meet Our Distinguished Speakers -->
     <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 15px;">
         <h3>Meet Our Distinguished Speakers</h3>
-        
+
         <div id="speakers-list" style="display: flex; flex-wrap: wrap;">
             <?php if (!empty($speakers)): ?>
                 <?php foreach ($speakers as $index => $speaker): ?>
@@ -210,10 +192,30 @@ function display_event_details_meta_box($post)
     </div>
 
 
+    <!-- Who Should Attend -->
+    <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 15px;">
+        <h3>Who Should Attend</h3>
+        <div id="who-should-attend-list">
+            <?php if (!empty($who_should_attend)): ?>
+                <?php foreach ($who_should_attend as $index => $item): ?>
+                    <div class="who-should-attend-item" style="display: flex; margin-top:10px; justify-content: space-between;">
+                        <input type="text" name="events_data[who_should_attend][<?php echo $index; ?>]"
+                            value="<?php echo esc_attr($item); ?>" placeholder="Who Should Attend" style="flex: 1;">
+                        <button type="button" class="remove-who-should-attend button button-secondary"
+                            style="margin-left:10px;">Remove</button>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+        <button type="button" class="add-who-should-attend button button-primary" style="margin-top:10px;">+ Add
+            Item</button>
+    </div>
+
+
     <!-- In Collaboration With Partners -->
     <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 15px;">
         <h3>In Collaboration With</h3>
-        
+
         <div id="partners-list">
             <?php if (!empty($partners)): ?>
                 <?php foreach ($partners as $index => $partner): ?>
@@ -338,13 +340,16 @@ function display_event_details_meta_box($post)
 
         <!-- Multiple Content Editor Sections -->
         <div>
-            <h4>Content Sections</h4>
+            <h4>Tab Sections</h4>
             <div id="special-events-list">
                 <?php if (!empty($special_events)): ?>
                     <?php foreach ($special_events as $index => $event): ?>
                         <div class="special-event-item" style="margin-top:20px; border: 1px solid #eee; padding: 10px;">
                             <input type="text" name="events_data[special_events][<?php echo $index; ?>][title]"
-                                value="<?php echo esc_attr($event['title'] ?? ''); ?>" placeholder="Section Title"
+                                value="<?php echo esc_attr($event['title'] ?? ''); ?>" placeholder="Tab Title"
+                                style="width:100%; margin-bottom:10px;">
+                            <input type="text" name="events_data[special_events][<?php echo $index; ?>][heading]"
+                                value="<?php echo esc_attr($event['heading'] ?? ''); ?>" placeholder="Tab Heading"
                                 style="width:100%; margin-bottom:10px;">
                             <input type="url" name="events_data[special_events][<?php echo $index; ?>][video_url]"
                                 value="<?php echo esc_url($event['video_url'] ?? ''); ?>" placeholder="Video URL"
@@ -367,13 +372,13 @@ function display_event_details_meta_box($post)
                             </div>
 
                             <div style="text-align: right;">
-                                <button type="button" class="remove-special-event button button-secondary">Remove Section</button>
+                                <button type="button" class="remove-special-event button button-secondary">Remove Tab</button>
                             </div>
                         </div>
                     <?php endforeach; ?>
                 <?php endif; ?>
             </div>
-            <button type="button" class="add-special-event button button-primary" style="margin-top:10px;">+ Add Content
+            <button type="button" class="add-special-event button button-primary" style="margin-top:10px;">+ Add Tab
                 Section</button>
         </div>
     </div>
@@ -444,25 +449,6 @@ function display_event_details_meta_box($post)
                 mediaFrame.open();
             });
 
-            // "Who Should Attend" functionality
-            $('.add-who-should-attend').on('click', function () {
-                var list = $('#who-should-attend-list');
-                var index = list.children().length;
-                var newItem = $('<div class="who-should-attend-item" style="display: flex; margin-top:10px; justify-content: space-between;">' +
-                    '<input type="text" name="events_data[who_should_attend][' + index + ']" placeholder="Who Should Attend" style="flex: 1;">' +
-                    '<button type="button" class="remove-who-should-attend button button-secondary" style="margin-left:10px;">Remove</button>' +
-                    '</div>');
-                list.append(newItem);
-            });
-
-            $(document).on('click', '.remove-who-should-attend', function () {
-                $(this).closest('.who-should-attend-item').remove();
-                // Reindex the remaining items
-                $('#who-should-attend-list .who-should-attend-item').each(function (index) {
-                    $(this).find('input').attr('name', 'events_data[who_should_attend][' + index + ']');
-                });
-            });
-
             // Add Speaker dynamically
             $('.add-speaker').on('click', function () {
                 var speakersList = $('#speakers-list');
@@ -499,6 +485,25 @@ function display_event_details_meta_box($post)
                         }
                     });
                     $(this).find('.choose-image').attr('data-index', index);
+                });
+            });
+
+            // "Who Should Attend" functionality
+            $('.add-who-should-attend').on('click', function () {
+                var list = $('#who-should-attend-list');
+                var index = list.children().length;
+                var newItem = $('<div class="who-should-attend-item" style="display: flex; margin-top:10px; justify-content: space-between;">' +
+                    '<input type="text" name="events_data[who_should_attend][' + index + ']" placeholder="Who Should Attend" style="flex: 1;">' +
+                    '<button type="button" class="remove-who-should-attend button button-secondary" style="margin-left:10px;">Remove</button>' +
+                    '</div>');
+                list.append(newItem);
+            });
+
+            $(document).on('click', '.remove-who-should-attend', function () {
+                $(this).closest('.who-should-attend-item').remove();
+                // Reindex the remaining items
+                $('#who-should-attend-list .who-should-attend-item').each(function (index) {
+                    $(this).find('input').attr('name', 'events_data[who_should_attend][' + index + ']');
                 });
             });
 
@@ -648,13 +653,14 @@ function display_event_details_meta_box($post)
                 var editorId = 'special_event_content_' + index;
 
                 var newItem = $('<div class="special-event-item" style="margin-top:20px; border: 1px solid #eee; padding: 10px;">' +
-                    '<input type="text" name="events_data[special_events][' + index + '][title]" placeholder="Section Title" style="width:100%; margin-bottom:10px;">' +
+                    '<input type="text" name="events_data[special_events][' + index + '][title]" placeholder="Tab Title" style="width:100%; margin-bottom:10px;">' +
+                    '<input type="text" name="events_data[special_events][' + index + '][heading]" placeholder="Tab Heading" style="width:100%; margin-bottom:10px;">' +
                     '<input type="url" name="events_data[special_events][' + index + '][video_url]" placeholder="Video URL" style="width:100%; margin-bottom:10px;">' +
                     '<div class="wp-editor-container" style="margin-bottom:10px;">' +
                     '<textarea id="' + editorId + '" name="events_data[special_events][' + index + '][content]" rows="10" style="width:100%;"></textarea>' +
                     '</div>' +
                     '<div style="text-align: right;">' +
-                    '<button type="button" class="remove-special-event button button-secondary">Remove Section</button>' +
+                    '<button type="button" class="remove-special-event button button-secondary">Remove Tab</button>' +
                     '</div>' +
                     '</div>');
 
@@ -844,6 +850,7 @@ function save_event_details_meta_box_data($post_id)
         if (isset($events_data['special_events']) && is_array($events_data['special_events'])) {
             foreach ($events_data['special_events'] as $key => $event) {
                 $sanitized_data['special_events'][$key]['title'] = sanitize_text_field($event['title'] ?? '');
+                $sanitized_data['special_events'][$key]['heading'] = sanitize_text_field($event['heading'] ?? '');
                 $sanitized_data['special_events'][$key]['video_url'] = esc_url_raw($event['video_url'] ?? '');
                 $sanitized_data['special_events'][$key]['content'] = wp_kses_post($event['content'] ?? '');
             }

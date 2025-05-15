@@ -567,8 +567,8 @@ $event_end_time = $events_data['event_end_time'] ?? '';
 
                                 <div id="<?php echo str_replace(" ", "-", $special_event['title']); ?>"
                                     class="og-event-tab-content special-event">
-                                    <?php if (!empty($special_event['title'])): ?>
-                                        <h4 class="h4"><?php echo $special_event['title']; ?></h4>
+                                    <?php if (!empty($special_event['heading'])): ?>
+                                        <h4 class="h4"><?php echo $special_event['heading']; ?></h4>
                                     <?php endif; ?>
 
                                     <?php if (!empty($special_event['video_url'])): ?>
