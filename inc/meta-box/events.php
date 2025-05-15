@@ -44,6 +44,7 @@ function display_event_details_meta_box($post)
     $who_should_attend = $events_data['who_should_attend'] ?? [];
     $attendees = $events_data['attendees'] ?? [];
     $speakers = $events_data['speakers'] ?? [];
+    $speakers_heading = esc_attr($events_data['speakers_heading'] ?? '');
     $partners = $events_data['partners'] ?? [];
     $testimonials = $events_data['testimonials'] ?? [];
     $topics_covered = $events_data['topics_covered'] ?? [];
@@ -148,8 +149,11 @@ function display_event_details_meta_box($post)
 
     <!-- Meet Our Distinguished Speakers -->
     <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 15px;">
-        <h3>Meet Our Distinguished Speakers</h3>
-
+        <h3>Speakers</h3>
+        <div style="flex: 1; max-width: 100%; margin-left: 20px;">
+            <input type="text" name="events_data[speakers_heading]" value="<?php echo $speakers_heading; ?>"
+                placeholder="Speakers Tab Heading (eg. Meet Our Distinguished Speakers)" style="width:100%;">
+        </div>
         <div id="speakers-list" style="display: flex; flex-wrap: wrap;">
             <?php if (!empty($speakers)): ?>
                 <?php foreach ($speakers as $index => $speaker): ?>
@@ -800,6 +804,7 @@ function save_event_details_meta_box_data($post_id)
         $sanitized_data['event_link'] = esc_url_raw($events_data['event_link'] ?? '');
         $sanitized_data['event_description'] = sanitize_textarea_field($events_data['event_description'] ?? '');
         $sanitized_data['theme_color'] = sanitize_hex_color($events_data['theme_color'] ?? '#0073aa');
+        $sanitized_data['speakers_heading'] = sanitize_text_field($events_data['speakers_heading'] ?? '');
 
         // Who Should Attend
         if (isset($events_data['who_should_attend']) && is_array($events_data['who_should_attend'])) {

@@ -305,27 +305,38 @@ $event_end_time = $events_data['event_end_time'] ?? '';
 
                 <div class="event-tab d-flex vstack sm:hstack gap-narrow my-2">
 
-                    <button class="og-event-tab dark:text-white dark:border-gray-700 w-100 dark:bg-gray-900"
+                    <button
+                        class="og-event-tab text-truncate dark:text-white dark:border-gray-700 w-100 dark:bg-gray-900"
                         onclick="openPage('details', this)" id="defaultOpen">Overview</button>
 
                     <?php if (!empty($events_data['speakers'])): ?>
-                        <button class="og-event-tab dark:bg-gray-900 dark:text-white dark:border-gray-700 w-100"
+                        <button
+                            class="og-event-tab text-truncate dark:bg-gray-900 dark:text-white dark:border-gray-700 w-100"
                             onclick="openPage('speakers', this)">Speakers</button>
                     <?php endif; ?>
 
                     <?php if (!empty($events_data['who_should_attend'])): ?>
-                        <button class="og-event-tab dark:bg-gray-900 dark:text-white dark:border-gray-700 w-100"
+                        <button
+                            class="og-event-tab text-truncate dark:bg-gray-900 dark:text-white dark:border-gray-700 w-100"
                             onclick="openPage('who_should_attend', this)">Who Should Attend</button>
                     <?php endif; ?>
 
                     <?php if (!empty($events_data['topics_covered'])): ?>
-                        <button class="og-event-tab dark:bg-gray-900 dark:text-white dark:border-gray-700 w-100"
+                        <button
+                            class="og-event-tab text-truncate dark:bg-gray-900 dark:text-white dark:border-gray-700 w-100"
                             onclick="openPage('topics_covered', this)">Topics Covered</button>
+                    <?php endif; ?>
+
+                    <?php if (!empty($events_data['partners'])): ?>
+                        <button
+                            class="og-event-tab text-truncate dark:bg-gray-900 dark:text-white dark:border-gray-700 w-100"
+                            onclick="openPage('partners', this)">Partners</button>
                     <?php endif; ?>
 
                     <?php if (!empty($events_data['special_events'])): ?>
                         <?php foreach ($events_data['special_events'] as $special_event): ?>
-                            <button class="og-event-tab dark:bg-gray-900 dark:text-white dark:border-gray-700 w-100"
+                            <button
+                                class="og-event-tab text-truncate dark:bg-gray-900 dark:text-white dark:border-gray-700 w-100"
                                 onclick="openPage('<?php echo str_replace(" ", "-", $special_event['title']); ?>', this)">
                                 <?php if (!empty($special_event['title'])): ?>
                                     <?php echo $special_event['title']; ?>
@@ -342,84 +353,6 @@ $event_end_time = $events_data['event_end_time'] ?? '';
 
                         <div class="post-content panel fs-6 md:fs-5">
                             <?php the_content(); ?>
-                        </div>
-
-                        <div id="partners" class="mt-3">
-
-                            <!-- Partners Section -->
-                            <?php if (!empty($events_data['partners'])): ?>
-                                <div class="partners-section panel">
-                                    <h4 class="h5">In Collaboration With</h4>
-
-                                    <div class="partners-list mt-3">
-
-                                        <?php foreach ($events_data['partners'] as $partner): ?>
-
-                                            <div
-                                                class="partner border py-2 px-2 rounded-1 shadow-xs mb-2 dark:bg-gray-900 dark:text-white vstack gap-2 sm:hstack align-items-center">
-
-                                                <?php if (!empty($partner['logo'])): ?>
-                                                    <div>
-                                                        <img class="max-w-100px mr-2" src="<?php echo $partner['logo']; ?>"
-                                                            alt="<?php echo $partner['name']; ?>">
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <div>
-                                                    <?php if (!empty($partner['name'])): ?>
-                                                        <h3 class="h5 my-1 dark:text-white"><?php echo $partner['name']; ?></h3>
-                                                    <?php endif; ?>
-
-                                                    <?php if (!empty($partner['info'])): ?>
-                                                        <p class="my-1"><?php echo $partner['info']; ?></p>
-                                                    <?php endif; ?>
-
-                                                    <?php if (!empty($partner['socials'])): ?>
-                                                        <div class="social-links py-2">
-                                                            <?php foreach ($partner['socials'] as $social): ?>
-                                                                <?php if (!empty($social['platform']) && !empty($social['url'])): ?>
-                                                                    <a href="<?php echo $social['url']; ?>"
-                                                                        class="text-none hover:text-primary mx-1" target="_blank">
-                                                                        <?php
-                                                                        $icon = '';
-                                                                        switch ($social['platform']) {
-                                                                            case 'facebook':
-                                                                                $icon = '<i class="icon icon-1 unicon-logo-facebook"></i>';
-                                                                                break;
-                                                                            case 'twitter':
-                                                                                $icon = '<i class="icon icon-1 unicon-logo-x"></i>';
-                                                                                break;
-                                                                            case 'linkedin':
-                                                                                $icon = '<i class="icon icon-1 unicon-logo-linkedin"></i>';
-                                                                                break;
-                                                                            case 'instagram':
-                                                                                $icon = '<i class="icon icon-1 unicon-logo-instagram"></i>';
-                                                                                break;
-                                                                            case 'youtube':
-                                                                                $icon = '<i class="icon icon-1 unicon-logo-youtube"></i>';
-                                                                                break;
-                                                                            case 'website':
-                                                                                $icon = '<i class="icon icon-1 unicon-earth-americas"></i>';
-                                                                                break;
-                                                                            default:
-                                                                                $icon = '<i class="icon icon-1 unicon-earth-americas"></i>';
-                                                                        }
-                                                                        //echo $icon . ' ' . ucfirst($social['platform']);
-                                                                        echo $icon;
-                                                                        ?>
-                                                                    </a>
-                                                                <?php endif; ?>
-                                                            <?php endforeach; ?>
-                                                        </div>
-                                                    <?php endif; ?>
-                                                </div>
-
-                                            </div>
-                                        <?php endforeach; ?>
-                                    </div>
-                                </div>
-                            <?php endif; ?>
-
                         </div>
 
                         <!-- Testimonials Section -->
@@ -470,7 +403,9 @@ $event_end_time = $events_data['event_end_time'] ?? '';
                         <!-- Speakers Section -->
                         <?php if (!empty($events_data['speakers'])): ?>
                             <div class="speakers-section panel">
-                                <h4 class="h4">Meet Our Distinguished Speakers</h4>
+                                <h4 class="h4">
+                                    <?php echo !empty($events_data['speakers_heading']) ? $events_data['speakers_heading'] : 'Meet Our Distinguished Speakers'; ?>
+                                </h4>
 
                                 <div
                                     class="speakers-list row child-cols-12 sm:child-cols-6 md:child-cols-4 col-match gy-3 gx-2 h-100">
@@ -560,6 +495,84 @@ $event_end_time = $events_data['event_end_time'] ?? '';
                         <?php endif; ?>
                     </div>
 
+                    <div id="partners" class="og-event-tab-content">
+
+                        <!-- Partners Section -->
+                        <?php if (!empty($events_data['partners'])): ?>
+                            <div class="partners-section panel">
+                                <h4 class="h5">In Collaboration With</h4>
+
+                                <div class="partners-list mt-3">
+
+                                    <?php foreach ($events_data['partners'] as $partner): ?>
+
+                                        <div
+                                            class="partner border py-2 px-2 rounded-1 shadow-xs mb-2 dark:bg-gray-900 dark:text-white vstack gap-2 sm:hstack align-items-center">
+
+                                            <?php if (!empty($partner['logo'])): ?>
+                                                <div>
+                                                    <img class="max-w-100px mr-2" src="<?php echo $partner['logo']; ?>"
+                                                        alt="<?php echo $partner['name']; ?>">
+                                                </div>
+                                            <?php endif; ?>
+
+                                            <div>
+                                                <?php if (!empty($partner['name'])): ?>
+                                                    <h3 class="h5 my-1 dark:text-white"><?php echo $partner['name']; ?></h3>
+                                                <?php endif; ?>
+
+                                                <?php if (!empty($partner['info'])): ?>
+                                                    <p class="my-1"><?php echo $partner['info']; ?></p>
+                                                <?php endif; ?>
+
+                                                <?php if (!empty($partner['socials'])): ?>
+                                                    <div class="social-links py-2">
+                                                        <?php foreach ($partner['socials'] as $social): ?>
+                                                            <?php if (!empty($social['platform']) && !empty($social['url'])): ?>
+                                                                <a href="<?php echo $social['url']; ?>"
+                                                                    class="text-none hover:text-primary mx-1" target="_blank">
+                                                                    <?php
+                                                                    $icon = '';
+                                                                    switch ($social['platform']) {
+                                                                        case 'facebook':
+                                                                            $icon = '<i class="icon icon-1 unicon-logo-facebook"></i>';
+                                                                            break;
+                                                                        case 'twitter':
+                                                                            $icon = '<i class="icon icon-1 unicon-logo-x"></i>';
+                                                                            break;
+                                                                        case 'linkedin':
+                                                                            $icon = '<i class="icon icon-1 unicon-logo-linkedin"></i>';
+                                                                            break;
+                                                                        case 'instagram':
+                                                                            $icon = '<i class="icon icon-1 unicon-logo-instagram"></i>';
+                                                                            break;
+                                                                        case 'youtube':
+                                                                            $icon = '<i class="icon icon-1 unicon-logo-youtube"></i>';
+                                                                            break;
+                                                                        case 'website':
+                                                                            $icon = '<i class="icon icon-1 unicon-earth-americas"></i>';
+                                                                            break;
+                                                                        default:
+                                                                            $icon = '<i class="icon icon-1 unicon-earth-americas"></i>';
+                                                                    }
+                                                                    //echo $icon . ' ' . ucfirst($social['platform']);
+                                                                    echo $icon;
+                                                                    ?>
+                                                                </a>
+                                                            <?php endif; ?>
+                                                        <?php endforeach; ?>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
+
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+
+                    </div>
+
                     <!-- Special Events Sections -->
                     <?php if (!empty($events_data['special_events'])): ?>
                         <div class="special-events-section">
@@ -616,7 +629,7 @@ $event_end_time = $events_data['event_end_time'] ?? '';
 
             </div>
 
-            <div class="post-footer panel vstack sm:hstack gap-3 justify-between border-top pt-3 mt-4">
+            <div class="post-footer panel vstack sm:hstack gap-3 justify-between pt-3 mt-4">
                 <ul class="nav-x gap-narrow text-primary">
                     <li><span class="text-black dark:text-white me-narrow">Channel:</span></li>
                     <?php
@@ -673,9 +686,9 @@ $event_end_time = $events_data['event_end_time'] ?? '';
 
 
             <!-- Related Posts -->
-            <?php display_related_posts(get_the_ID(), 'post', 'Latest News from %s:'); ?>
+            <?php display_related_posts(get_the_ID(), 'post', 'Latest News in %s:'); ?>
             <?php display_related_posts(get_the_ID(), 'events', 'Latest Events on %s:'); ?>
-            <?php display_related_posts(get_the_ID(), 'ogtv', 'Latest Videos from %s:'); ?>
+            <?php display_related_posts(get_the_ID(), 'ogtv', 'Latest Videos in %s:'); ?>
             <!-- End Related Posts -->
 
 

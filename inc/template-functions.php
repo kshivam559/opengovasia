@@ -409,7 +409,7 @@ function opengovasia_dynamic_filter_form($filters = [])
 
 	$country_options = get_transient('opengovasia_country_terms_filter') ?: ['' => 'Country'];
 	if ($country_options === ['' => 'Country']) {
-		$countries = get_terms(['taxonomy' => 'country', 'hide_empty' => false]);
+		$countries = get_terms(['taxonomy' => 'country', 'hide_empty' => true]);
 		if (!is_wp_error($countries)) {
 			foreach ($countries as $country) {
 				$country_options[$country->slug] = $country->name;
@@ -420,7 +420,7 @@ function opengovasia_dynamic_filter_form($filters = [])
 
 	// Retrieve Years from taxonomy instead of static range
 	$year_options = ['' => 'Year'];
-	$years = get_terms(['taxonomy' => 'years', 'hide_empty' => false]);
+	$years = get_terms(['taxonomy' => 'years', 'hide_empty' => true]);
 	if (!is_wp_error($years)) {
 		foreach ($years as $year) {
 			$year_options[$year->slug] = $year->name;

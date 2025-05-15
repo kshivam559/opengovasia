@@ -185,9 +185,9 @@ $channel_image = !empty(get_term_meta($term_id, 'channel_image', true))
 
 
             <!-- Related Posts -->
-            <?php display_related_posts(get_the_ID(), 'post', 'Latest News from %s:'); ?>
+            <?php display_related_posts(get_the_ID(), 'post', 'Latest News in %s:'); ?>
             <?php display_related_posts(get_the_ID(), 'events', 'Latest Events on %s:'); ?>
-            <?php display_related_posts(get_the_ID(), 'ogtv', 'Latest Videos from %s:'); ?>
+            <?php display_related_posts(get_the_ID(), 'ogtv', 'Latest Videos in %s:'); ?>
             <!-- End Related Posts -->
 
 
