@@ -31,7 +31,7 @@ add_action('admin_init', function () {
         'bg_color' => '#0c50a8',
         'start_url' => '/',
         'display' => 'standalone',
-        'orientation' => 'any',
+        'orientation' => 'portrait',
         'icon_512' => '',
         'icon_192' => '',
         'icon_144' => '',

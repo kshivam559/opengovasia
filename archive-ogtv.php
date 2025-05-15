@@ -84,7 +84,13 @@ get_header();
                                 $query->the_post();
                                 ?>
                                 <div class="swiper-slide">
-                                    <?php get_template_part('template-parts/ogtv/archive'); ?>
+                                    <?php get_template_part(
+                                        'template-parts/ogtv/archive-playlists',
+                                        null,
+                                        array(
+                                            'playlist_slug' => $term->slug,
+                                        )
+                                    ); ?>
                                 </div>
                                 <?php
                             }

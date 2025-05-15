@@ -1,10 +1,33 @@
 <?php
+
 /**
- * Infinite Scroll Implementation for OpenGovAsia
- * Loads next post when user reaches end of current post
+ * Infinite Scroll for OpenGovAsia
+ * Version: 1.0
+ * Author: Shivam Kumar
+ * Author URI: https://www.github.com/kshivam559/
+ *
+ * Text Domain: opengovasia
+ *
+ * Description: This file contains the implementation of infinite scroll functionality for the theme.
+ * It allows users to load more posts dynamically as they scroll down the page.
+ * The script is compatible with WordPress and follows best practices for theme development.
  * 
+ * This file is part of the OpenGovAsia theme.
+ *
+ * The script also includes a filter to set the number of posts loaded per request.
+ * The default is set to 1, but can be changed to 4 by modifying the filter.
+ * 
+ * Usage: opengovasia_default_posts_per_load($number);
+ *
  * @package OpenGovAsia
+ * @since 1.0
+ * 
  */
+
+// Prevent direct access to the file
+if (!defined('ABSPATH')) {
+    exit; // Exit if accessed directly
+}
 
 // Enqueue necessary scripts
 function opengovasia_enqueue_infinite_scroll_script()

@@ -158,7 +158,7 @@
                                                 <div class="col-2">
                                                     <div
                                                         class="uc-navbar-switcher-nav p-1 rounded bg-gray-25 dark:bg-gray-800">
-                                                        <ul class="uc-tab-left fs-5 text-end"
+                                                        <ul class="uc-tab-left fs-5"
                                                             data-uc-tab="connect: #uc-navbar-switcher-tending; animation: uc-animation-slide-right-small, uc-animation-slide-left-small">
                                                             <?php
                                                             // Get top 5 categories dynamically
@@ -166,6 +166,7 @@
                                                                 'orderby' => 'count',
                                                                 'order' => 'DESC',
                                                                 'number' => 5, // Get top 5 categories
+                                                                'hide_empty' => true,
                                                             ));
 
                                                             // Loop through categories and create tabs

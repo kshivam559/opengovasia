@@ -39,3 +39,8 @@ opengovasia/
 │   ├── content-page.php
 │   ├── content-search.php
 │   ├── content.php
+
+# If the manifest file already exists but can't be modified:
+sudo touch /var/www/html/wp-content/themes/opengovasia/manifest.json
+sudo chown www-data:www-data /var/www/html/wp-content/themes/opengovasia/manifest.json
+sudo chmod 664 /var/www/html/wp-content/themes/opengovasia/manifest.json

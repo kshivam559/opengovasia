@@ -93,7 +93,9 @@ $term_id = $term->term_id;
                                                  * Include the template for the content.
                                                  */
 
-                                                get_template_part('template-parts/ogtv/archive');
+                                                get_template_part('template-parts/ogtv/archive-playlists', null, array(
+                                                    'playlist_slug' => $term->slug,
+                                                ));
 
                                             endwhile; ?>
 

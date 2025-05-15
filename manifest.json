@@ -1,9 +1,9 @@
 {
     "name": "OpenGov Asia",
     "short_name": "OpenGov Asia",
-    "start_url": "/?c=global",
+    "start_url": "/",
     "scope": "/",
-    "display": "fullscreen",
+    "display": "standalone",
     "orientation": "portrait",
     "background_color": "#0c50a8",
     "theme_color": "#0c50a8",
@@ -12,10 +12,39 @@
     "dir": "ltr",
     "icons": [
         {
-            "src": "https://opengovasia.local/wp-content/uploads/2025/04/og-logo.jpg",
+            "src": "https://opengovasia.com/wp-content/uploads/2025/05/og-logo.jpg",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any maskable"
+        },
+        {
+            "src": "https://opengovasia.com/wp-content/uploads/2025/05/og-logo.jpg",
+            "sizes": "144x144",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "https://opengovasia.com/wp-content/uploads/2025/05/og-logo.jpg",
+            "sizes": "96x96",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Events",
+            "short_name": "Events",
+            "url": "/events/"
+        },
+        {
+            "name": "OGTV",
+            "short_name": "OGTV",
+            "url": "/ogtv/"
+        },
+        {
+            "name": "Awards",
+            "short_name": "Awards",
+            "url": "/awards/"
         }
     ]
 }

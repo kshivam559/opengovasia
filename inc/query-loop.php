@@ -152,3 +152,102 @@ function display_related_posts($post_id, $post_type = '', $display_title = "Late
         <?php wp_reset_postdata(); ?>
     <?php endif;
 }
+
+/**
+ * Display Related Playlists content of OGTV
+ * 
+ * @param int $post_id The current post ID
+ * @param int $limit   Number of posts to display (default: 4)
+ * 
+ */
+
+function display_related_ogtv_by_playlist($post_id = null, $limit = 4)
+{
+    if (!$post_id) {
+        $post_id = get_the_ID();
+    }
+
+    $requested_playlist_slug = isset($_GET['playlist']) ? sanitize_text_field($_GET['playlist']) : null;
+    $playlist_ids = array();
+    $playlist_for_header = null;
+
+    if ($requested_playlist_slug) {
+        $requested_playlist = get_term_by('slug', $requested_playlist_slug, 'playlists');
+
+        if ($requested_playlist && !is_wp_error($requested_playlist)) {
+            $playlist_ids[] = $requested_playlist->term_id;
+            $playlist_for_header = $requested_playlist;
+        }
+    }
+
+    if (empty($playlist_ids)) {
+        $playlists = get_the_terms($post_id, 'playlists');
+
+        if ($playlists && !is_wp_error($playlists)) {
+            foreach ($playlists as $playlist) {
+                $playlist_ids[] = $playlist->term_id;
+            }
+            $playlist_for_header = $playlists[0]; // Use first one for header
+        }
+    }
+
+    if (!empty($playlist_ids)) {
+        $related_query = new Country_Filtered_Query(array(
+            'post_type' => 'ogtv',
+            'post__not_in' => array($post_id),
+            'posts_per_page' => $limit,
+            'tax_query' => array(
+                array(
+                    'taxonomy' => 'playlists',
+                    'field' => 'term_id',
+                    'terms' => $playlist_ids,
+                ),
+            ),
+        ));
+
+        if ($related_query->have_posts()) {
+            ?>
+            <div class="section panel overflow-hidden swiper-parent uc-dark mt-3">
+                <div class="section-outer panel py-5 lg:py-8 bg-gray-25 dark:bg-gray-800 dark:text-white">
+                    <div class="container max-w-lg">
+
+                        <div class="section-inner panel vstack gap-4">
+                            <?php if ($playlist_for_header): ?>
+                                <div class="section-header panel">
+                                    <h3 class="h5 lg:h4 fw-medium m-0 text-inherit hstack">
+                                        <a href="<?php echo esc_url(get_term_link($playlist_for_header)); ?>"
+                                            class="text-none hover:text-primary">
+                                            <?php echo 'More from ' . esc_html($playlist_for_header->name); ?>
+                                        </a>
+                                        <i class="icon-2 lg:icon-3 unicon-chevron-right opacity-40"></i>
+                                    </h3>
+                                </div>
+                            <?php endif; ?>
+
+                            <div class="row g-4 xl:g-8">
+                                <div class="col">
+                                    <div class="panel">
+                                        <div
+                                            class="row child-cols-12 sm:child-cols-6 lg:child-cols-4 col-match gy-4 xl:gy-6 gx-2 sm:gx-3">
+                                            <?php
+                                            while ($related_query->have_posts()) {
+                                                $related_query->the_post();
+                                                get_template_part('template-parts/ogtv/archive-playlists', null, array(
+                                                    'playlist_slug' => $requested_playlist_slug,
+                                                ));
+                                            }
+                                            ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <?php
+            wp_reset_postdata();
+        }
+    }
+}
