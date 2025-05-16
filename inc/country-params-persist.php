@@ -84,7 +84,7 @@ function oga_display_country_switcher()
 {
     $countries = get_terms(['taxonomy' => 'country', 'hide_empty' => true]);
     $selected_country = isset($_GET['c']) ? sanitize_text_field($_GET['c']) : '';
-    $selected_country_name = 'Select Country';
+    $selected_country_name = 'Global';
     $selected_country_flag_html = '<i class="icon icon-1 unicon-earth-filled"></i>';
 
     if ($selected_country) {
@@ -107,7 +107,7 @@ function oga_display_country_switcher()
                 <span class="oga-current-country"><?php echo $selected_country_name; ?></span>
                 <span data-uc-drop-parent-icon=""></span>
             </a>
-            <div class="p-2 bg-white dark:bg-gray-800 shadow-xs rounded w-150px" data-uc-drop="mode: click;">
+            <div class="p-2 bg-white dark:bg-gray-800 border border-opacity-15 shadow-xs rounded w-150px" data-uc-drop="mode: click;">
                 <ul class="nav-y gap-1 fw-medium items-end oga-country-list">
                     <?php foreach ($countries as $country): ?>
                         <li>

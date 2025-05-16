@@ -145,14 +145,15 @@ function display_event_details_meta_box($post)
             </tr>
         </table>
     </div>
-
+    
 
     <!-- Meet Our Distinguished Speakers -->
     <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 15px;">
         <h3>Speakers</h3>
-        <div style="flex: 1; max-width: 100%; margin-left: 20px;">
+        <div style="flex: 1; max-width: 99%; margin-bottom: 10px;">
+            <p><strong>Speakers Tab Heading: (optional)</strong></p>
             <input type="text" name="events_data[speakers_heading]" value="<?php echo $speakers_heading; ?>"
-                placeholder="Speakers Tab Heading (eg. Meet Our Distinguished Speakers)" style="width:100%;">
+                placeholder="Meet Our Distinguished Speakers" style="width:100%;">
         </div>
         <div id="speakers-list" style="display: flex; flex-wrap: wrap;">
             <?php if (!empty($speakers)): ?>

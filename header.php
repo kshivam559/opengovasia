@@ -285,8 +285,8 @@
                                                                         </div>
                                                                         <div class="post-header panel vstack gap-narrow">
                                                                             <div
-                                                                                class="post-meta panel hstack justify-start gap-1 fs-7 ft-tertiary fw-medium text-gray-900 dark:text-white text-opacity-60 d-none md:d-flex z-1">
-                                                                                <div>
+                                                                                class="post-meta panel hstack justify-start gap-1 fs-7 ft-tertiary fw-medium text-gray-900 dark:text-white text-opacity-60 d-flex z-1">
+                                                                                <div class="text-truncate">
                                                                                     <div
                                                                                         class="post-category hstack gap-narrow fw-semibold">
                                                                                         <?php if (!empty($event_category)): ?>
@@ -297,8 +297,8 @@
                                                                                         <?php endif; ?>
                                                                                     </div>
                                                                                 </div>
-                                                                                <div class="sep d-none md:d-block">|</div>
-                                                                                <div class="d-none md:d-block">
+                                                                                <div class="sep d-block">|</div>
+                                                                                <div class="text-truncate">
                                                                                     <div class="post-date hstack gap-narrow">
                                                                                         <span>
                                                                                             <?php
@@ -390,7 +390,7 @@
                                 <?php
                                 $countries = get_terms(['taxonomy' => 'country', 'hide_empty' => true]);
                                 $selected_country = isset($_GET['c']) ? sanitize_text_field($_GET['c']) : '';
-                                $selected_country_name = 'Select Country';
+                                $selected_country_name = 'Global';
                                 $selected_flag = '<i class="icon icon-1 unicon-earth-filled"></i>';
 
                                 if ($selected_country) {

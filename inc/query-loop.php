@@ -45,7 +45,7 @@ function fetch_header_channel_posts($post_type = 'post', $posts_per_page = 2, $t
                     <div class="post-header panel vstack gap-narrow">
                         <div
                             class="post-meta panel hstack justify-start gap-1 fs-7 ft-tertiary fw-medium text-gray-900 dark:text-white text-opacity-60 d-none md:d-flex z-1">
-                            <div>
+                            <div class="text-truncate">
                                 <div class="post-category hstack gap-narrow fw-semibold">
                                     <?php
                                     $categories = get_the_category();
@@ -55,8 +55,8 @@ function fetch_header_channel_posts($post_type = 'post', $posts_per_page = 2, $t
                                     ?>
                                 </div>
                             </div>
-                            <div class="sep d-none md:d-block">|</div>
-                            <div class="d-none md:d-block">
+                            <div class="sep d-block">|</div>
+                            <div class="d-block text-truncate">
                                 <div class="post-date hstack gap-narrow">
                                     <span><?php echo human_time_diff(get_the_time('U'), current_time('timestamp')) . ' ago'; ?></span>
                                 </div>

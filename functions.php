@@ -148,11 +148,13 @@ function opengovasia_scripts()
 	wp_enqueue_style('opengovasia-style', get_stylesheet_uri(), array(), _S_VERSION);
 	wp_style_add_data('opengovasia-style', 'rtl', 'replace');
 
-	wp_dequeue_style('wp-block-library');
-	wp_dequeue_style('wp-block-library-theme');
-	wp_dequeue_style('wc-blocks-style'); // Remove WooCommerce block CSS
-	wp_dequeue_style('global-styles');
-	wp_dequeue_style('classic-theme-styles');
+	// wp_dequeue_style('wp-block-library');
+	// wp_dequeue_style('wp-block-library-theme');
+	// wp_dequeue_style('wc-blocks-style'); // Remove WooCommerce block CSS
+	// wp_dequeue_style('global-styles');
+	// wp_dequeue_style('classic-theme-styles');
+
+	// wp_add_inline_style('opengovasia-style', '.bg-primary { background-color: red !important; }');
 
 	/* Enqueue scripts */
 
