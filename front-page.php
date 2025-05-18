@@ -392,74 +392,77 @@ get_header(); ?>
 
 
 <!-- Section start -->
-<div id="latest-news" class="latest-news section panel overflow-hidden">
+<div id="latest-news" class="section panel overflow-hidden">
     <div class="section-outer panel mb-4">
         <div class="container max-w-xl">
 
             <?php if (!is_paged()): ?>
 
-                <div class="block-header panel mt-4">
-                    <h2 class="h5 lg:h4 fw-medium m-0 text-inherit hstack">
-                        <a class="text-none dark:text-white hover:text-primary duration-150"
-                            href="/upcoming-events/">Upcoming Events</a>
-                        <i class="icon-2 lg:icon-3 unicon-chevron-right opacity-40"></i>
-                    </h2>
-                </div>
+                <div class="section-inner panel vstack gap-4">
+                    <div class="section-header panel mt-4">
 
-                <div class="section-inner mt-4">
+                        <h2 class="h5 lg:h4 fw-medium m-0 text-inherit hstack">
+                            <a class="text-none dark:text-white hover:text-primary duration-150"
+                                href="/upcoming-events/">Upcoming Events</a>
+                            <i class="icon-2 lg:icon-3 unicon-chevron-right opacity-40"></i>
+                        </h2>
+                    </div>
 
-                    <?php
-                    // WordPress Query Arguments
-                    $args = array(
-                        'post_type' => 'events',
-                        'posts_per_page' => 8,
-                        'meta_key' => 'event_date',
-                        'orderby' => 'meta_value',
-                        'order' => 'ASC',
-                        'meta_query' => array(
-                            array(
-                                'key' => 'event_date',
-                                'value' => current_time('Y-m-d'),
-                                'compare' => '>=',
-                                'type' => 'DATE'
+                    <div class="section-content">
+
+                        <?php
+                        // WordPress Query Arguments
+                        $args = array(
+                            'post_type' => 'events',
+                            'posts_per_page' => 8,
+                            'meta_key' => 'event_date',
+                            'orderby' => 'meta_value',
+                            'order' => 'ASC',
+                            'meta_query' => array(
+                                array(
+                                    'key' => 'event_date',
+                                    'value' => current_time('Y-m-d'),
+                                    'compare' => '>=',
+                                    'type' => 'DATE'
+                                )
                             )
-                        )
-                    );
+                        );
 
 
-                    // Execute the query with country filtering
-                    $events = new Country_Filtered_Query($args);
-                    ?>
+                        // Execute the query with country filtering
+                        $events = new Country_Filtered_Query($args);
+                        ?>
 
-                    <?php if ($events->have_posts()): ?>
+                        <?php if ($events->have_posts()): ?>
 
-                        <div class="row g-4 xl:g-8">
-                            <div class="col">
-                                <div class="panel">
-                                    <div
-                                        class="row child-cols-12 sm:child-cols-6 lg:child-cols-4 xl:child-cols-3 col-match gy-4 xl:gy-6 gx-2 sm:gx-3">
+                            <div class="row g-4 xl:g-8">
+                                <div class="col">
+                                    <div class="panel">
+                                        <div
+                                            class="row child-cols-12 sm:child-cols-6 lg:child-cols-4 xl:child-cols-3 col-match gy-4 xl:gy-6 gx-2 sm:gx-3">
 
 
-                                        <?php while ($events->have_posts()):
-                                            $events->the_post(); ?>
+                                            <?php while ($events->have_posts()):
+                                                $events->the_post(); ?>
 
-                                            <?php get_template_part('template-parts/events/archive'); ?>
+                                                <?php get_template_part('template-parts/events/archive'); ?>
 
-                                        <?php endwhile; ?>
+                                            <?php endwhile; ?>
 
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <?php wp_reset_postdata(); ?>
+                            <?php wp_reset_postdata(); ?>
 
-                    <?php else: ?>
+                        <?php else: ?>
 
-                        <div>No Upcoming Events found. Maybe try switching your country?</div>
+                            <div>No Upcoming Events found. Maybe try switching your country?</div>
 
-                    <?php endif; ?>
+                        <?php endif; ?>
 
+                    </div>
                 </div>
 
                 <div class="border-top mt-4"></div>
