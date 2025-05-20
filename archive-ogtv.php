@@ -1,17 +1,21 @@
 <?php
+
 /**
- * The template for displaying archive pages for OGTV.
+ * OpenGovAsia Theme
  *
  * @package OpenGovAsia
+ * @since 1.0.0
+ *
+ * Template Name: OGTV Archive
+ *
+ * This template displays the archive page for OGTV, including playlists and latest videos.
  */
 
 get_header();
 
 ?>
 
-
 <?php opengovasia_breadcrumbs(); ?>
-
 
 <header class="page-header panel vstack text-center">
 

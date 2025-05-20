@@ -349,8 +349,6 @@
                                         </div>
                                     </li>
 
-                                    <li class="fw-bold"><a href="/awards/">Awards</a></li>
-                                    <li class="fw-bold"><a href="/ogtv/">OGTV</a></li>
                                     <?php
                                     wp_nav_menu(array(
                                         'theme_location' => 'primary-menu',
