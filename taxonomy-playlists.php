@@ -66,7 +66,7 @@ $term_id = $term->term_id;
 
 </header>
 
-<div class="section  uc-dark">
+<div id="primary" class="section uc-dark">
     <div class="section-outer panel py-5 lg:py-8 bg-gray-25 dark:bg-gray-800 dark:text-white">
         <div class="container max-w-xl">
             <div class="panel vstack gap-3 sm:gap-6 lg:gap-7">

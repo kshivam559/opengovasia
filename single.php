@@ -11,41 +11,53 @@ get_header();
 
 opengovasia_breadcrumbs();
 
-while (have_posts()):
+?>
 
-	the_post();
+<main id="primary">
 
-	switch (get_post_type()) {
-		case 'awards':
-			get_template_part("template-parts/awards/single", "");
-			break;
-		case 'events':
-			get_template_part("template-parts/events/single", "");
-			break;
-		case 'ogtv':
-			get_template_part("template-parts/ogtv/single", "");
-			break;
-		default:
-			?>
+	<?php
 
-			<div class="single-post-container">
-				<div class="single-post-content" data-post-id="<?php the_ID(); ?>">
-					<?php get_template_part('template-parts/single'); ?>
+	while (have_posts()):
+
+		the_post();
+
+		switch (get_post_type()) {
+			case 'awards':
+				get_template_part("template-parts/awards/single", "");
+				break;
+			case 'events':
+				get_template_part("template-parts/events/single", "");
+				break;
+			case 'ogtv':
+				get_template_part("template-parts/ogtv/single", "");
+				break;
+			default:
+				?>
+
+				<div class="single-post-container">
+					<div class="single-post-content" data-post-id="<?php the_ID(); ?>">
+						<?php get_template_part('template-parts/single'); ?>
+					</div>
 				</div>
-			</div>
 
-			<div id="infinite-scroll-posts" class="border-top"></div> <!-- Container for dynamically loaded posts -->
+				<div id="infinite-scroll-posts" class="border-top"></div> <!-- Container for dynamically loaded posts -->
 
-			<div class="loading-spinner" style="display: none; text-align: center;">
-				<div class="spinner-border text-primary" role="status">
-					<span class="visually-hidden">Loading...</span>
+				<div class="loading-spinner" style="display: none; text-align: center;">
+					<div class="spinner-border text-primary" role="status">
+						<span class="visually-hidden">Loading...</span>
+					</div>
 				</div>
-			</div>
 
-			<?php
-			break;
-	}
+				<?php
+				break;
+		}
 
-endwhile; // End of the loop.
+	endwhile; // End of the loop.
+	
+	?>
+
+</main>
+
+<?php
 
 get_footer();

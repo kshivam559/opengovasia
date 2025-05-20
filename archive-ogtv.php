@@ -26,7 +26,7 @@ get_header();
     </div>
 </header>
 
-<div class="section panel overflow-hidden swiper-parent uc-dark">
+<div id="primary" class="section panel overflow-hidden swiper-parent uc-dark">
     <div class="section-outer panel py-5 lg:py-8 bg-gray-25 dark:bg-gray-800 dark:text-white">
         <div class="container max-w-xl">
 

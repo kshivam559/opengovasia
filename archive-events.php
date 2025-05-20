@@ -37,7 +37,7 @@ opengovasia_breadcrumbs();
 
 </header>
 
-<div class="section py-3 sm:py-6 lg:py-6">
+<div id="primary" class="section py-3 sm:py-6 lg:py-6">
     <div class="container max-w-xl">
         <div class="panel vstack gap-3 sm:gap-6 lg:gap-7">
 
