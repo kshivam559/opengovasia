@@ -45,7 +45,6 @@ function display_event_details_meta_box($post)
     $attendees = $events_data['attendees'] ?? [];
     $speakers = $events_data['speakers'] ?? [];
     $speakers_heading = esc_attr($events_data['speakers_heading'] ?? '');
-
     $testimonials = $events_data['testimonials'] ?? [];
     $topics_covered = $events_data['topics_covered'] ?? [];
     $special_events = $events_data['special_events'] ?? [];
@@ -55,18 +54,24 @@ function display_event_details_meta_box($post)
         <table style="width:100%; border-spacing: 0 10px;">
             <tr>
                 <td><strong>Event Date:</strong></td>
-                <td><input type="date" name="events_data[event_date]" value="<?php echo $event_date; ?>"
-                        style="width:100%;"></td>
+                <td>
+                    <input type="date" name="events_data[event_date]"
+                        value="<?php echo !empty($event_date) ? $event_date : date('Y-m-d'); ?>" style="width:100%;">
+                </td>
             </tr>
             <tr>
                 <td><strong>Start Time:</strong></td>
-                <td><input type="time" name="events_data[event_start_time]" value="<?php echo $event_start_time; ?>"
-                        style="width:100%;"></td>
+                <td>
+                    <input type="time" name="events_data[event_start_time]"
+                        value="<?php echo !empty($event_start_time) ? $event_start_time : '08:00'; ?>" style="width:100%;">
+                </td>
             </tr>
             <tr>
                 <td><strong>End Time:</strong></td>
-                <td><input type="time" name="events_data[event_end_time]" value="<?php echo $event_end_time; ?>"
-                        style="width:100%;"></td>
+                <td>
+                    <input type="time" name="events_data[event_end_time]"
+                        value="<?php echo !empty($event_end_time) ? $event_end_time : '11:10'; ?>" style="width:100%;">
+                </td>
             </tr>
             <tr>
                 <td><strong>Time Zone:</strong></td>
@@ -220,22 +225,22 @@ function display_event_details_meta_box($post)
     <!-- Testimonials -->
     <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 15px;">
         <h3>Testimonials</h3>
-        <div id="testimonials-list" data-count="<?php echo count($testimonials); ?>">
-            <?php foreach ($testimonials as $index => $testimonial): ?>
-                <div class="testimonial-item" style="margin-top:10px; border: 1px solid #eee; padding: 10px;">
-                    <div class="wp-editor-container" style="margin-bottom:10px;">
-                        <textarea id="testimonial_content_<?php echo $index; ?>"
-                            name="events_data[testimonials][<?php echo $index; ?>][content]" rows="6"
-                            style="width:100%; height:150px;"><?php echo esc_textarea($testimonial['content'] ?? ''); ?></textarea>
+        <div id="testimonials-list">
+            <?php if (!empty($testimonials)): ?>
+                <?php foreach ($testimonials as $index => $testimonial): ?>
+                    <div class="testimonial-item" style="margin-top:10px; border: 1px solid #eee; padding: 10px;">
+                        <textarea name="events_data[testimonials][<?php echo $index; ?>][content]" rows="3"
+                            placeholder="Testimonial Content"
+                            style="width:100%; margin-bottom:10px;"><?php echo esc_textarea($testimonial['content'] ?? ''); ?></textarea>
+                        <input type="text" name="events_data[testimonials][<?php echo $index; ?>][author]"
+                            value="<?php echo esc_attr($testimonial['author'] ?? ''); ?>" placeholder="Author Name"
+                            style="width:100%; margin-bottom:5px;">
+                        <div style="text-align: right;">
+                            <button type="button" class="remove-testimonial button button-secondary">Remove</button>
+                        </div>
                     </div>
-                    <input type="text" name="events_data[testimonials][<?php echo $index; ?>][author]"
-                        value="<?php echo esc_attr($testimonial['author'] ?? ''); ?>" placeholder="Author Name"
-                        style="width:100%; margin-bottom:5px;">
-                    <div style="text-align: right;">
-                        <button type="button" class="remove-testimonial button button-secondary">Remove</button>
-                    </div>
-                </div>
-            <?php endforeach; ?>
+                <?php endforeach; ?>
+            <?php endif; ?>
         </div>
         <button type="button" class="add-testimonial button button-primary" style="margin-top:10px;">+ Add
             Testimonial</button>
@@ -404,65 +409,30 @@ function display_event_details_meta_box($post)
             });
 
             // Testimonials functionality
+            $('.add-testimonial').on('click', function () {
+                var list = $('#testimonials-list');
+                var index = list.children().length;
+                var newItem = $('<div class="testimonial-item" style="margin-top:10px; border: 1px solid #eee; padding: 10px;">' +
+                    '<textarea name="events_data[testimonials][' + index + '][content]" rows="3" placeholder="Testimonial Content" style="width:100%; margin-bottom:10px;"></textarea>' +
+                    '<input type="text" name="events_data[testimonials][' + index + '][author]" placeholder="Author Name" style="width:100%; margin-bottom:5px;">' +
+                    '<div style="text-align: right;">' +
+                    '<button type="button" class="remove-testimonial button button-secondary">Remove</button>' +
+                    '</div>' +
+                    '</div>');
+                list.append(newItem);
+            });
 
-            function initEditor(id) {
-                if (tinymce.get(id)) {
-                    tinymce.get(id).remove();
-                }
-                tinymce.init({
-                    selector: '#' + id,
-
-                    menubar: false,
-                    toolbar: 'undo redo | accordion accordionremove | ' +
-                        'importword exportword exportpdf | math | ' +
-                        'blocks fontfamily fontsize | bold italic underline strikethrough | ' +
-                        'align numlist bullist | link image | table media | ' +
-                        'lineheight outdent indent | forecolor backcolor removeformat | ' +
-                        'charmap emoticons | code fullscreen preview | save print | ' +
-                        'pagebreak anchor codesample | ltr rtl',
-                    setup: function (editor) {
-                        editor.on('init', function () {
-                            this.getDoc().body.style.fontSize = '14px';
-                        });
-                    }
+            $(document).on('click', '.remove-testimonial', function () {
+                $(this).closest('.testimonial-item').remove();
+                // Reindex the remaining testimonials
+                $('#testimonials-list .testimonial-item').each(function (index) {
+                    $(this).find('textarea, input').each(function () {
+                        var name = $(this).attr('name');
+                        if (name) {
+                            $(this).attr('name', name.replace(/\[testimonials\]\[\d+\]/, '[testimonials][' + index + ']'));
+                        }
+                    });
                 });
-            }
-
-            // Init existing
-            $('#testimonials-list textarea').each(function () {
-                initEditor(this.id);
-            });
-
-            let testimonialIndex = parseInt($('#testimonials-list').data('count')) || 0;
-
-            $('.add-testimonial').on('click', function (e) {
-                e.preventDefault();
-                const newId = 'testimonial_content_' + testimonialIndex;
-
-                const html = `
-                <div class="testimonial-item" style="margin-top:10px; border: 1px solid #eee; padding: 10px;">
-                    <div class="wp-editor-container" style="margin-bottom:10px;">
-                        <textarea id="${newId}" name="events_data[testimonials][${testimonialIndex}][content]" rows="6" style="width:100%; height:150px;"></textarea>
-                    </div>
-                    <input type="text" name="events_data[testimonials][${testimonialIndex}][author]" value="" placeholder="Author Name" style="width:100%; margin-bottom:5px;">
-                    <div style="text-align: right;">
-                        <button type="button" class="remove-testimonial button button-secondary">Remove</button>
-                    </div>
-                </div>
-            `;
-
-                $('#testimonials-list').append(html);
-                setTimeout(() => initEditor(newId), 100);
-                testimonialIndex++;
-            });
-
-            $('#testimonials-list').on('click', '.remove-testimonial', function () {
-                const container = $(this).closest('.testimonial-item');
-                const textarea = container.find('textarea');
-                if (textarea.length && tinymce.get(textarea.attr('id'))) {
-                    tinymce.get(textarea.attr('id')).remove();
-                }
-                container.remove();
             });
 
             // Topics Covered functionality
@@ -515,7 +485,7 @@ function display_event_details_meta_box($post)
                                 toolbar2: 'strikethrough hr forecolor backcolor pastetext removeformat charmap outdent indent undo redo wp_help'
                             },
                             quicktags: true,
-                            mediaButtons: false,
+                            mediaButtons: true,
                             editor_height: 200
                         });
                     } else {
@@ -560,7 +530,7 @@ function display_event_details_meta_box($post)
                             wp.editor.initialize(newId, {
                                 tinymce: true,
                                 quicktags: true,
-                                mediaButtons: false,
+                                mediaButtons: true,
                                 editor_height: 200
                             });
                             if (content) {
@@ -585,7 +555,6 @@ function display_event_details_meta_box($post)
                     }
                 }
             });
-
 
         });
     </script>
@@ -625,7 +594,7 @@ function save_event_details_meta_box_data($post_id)
         $sanitized_data['event_address'] = sanitize_text_field($events_data['event_address'] ?? '');
         $sanitized_data['event_link'] = esc_url_raw($events_data['event_link'] ?? '');
         $sanitized_data['event_description'] = sanitize_textarea_field($events_data['event_description'] ?? '');
-        $sanitized_data['theme_color'] = sanitize_hex_color($events_data['theme_color'] ?? '#0073aa');
+        $sanitized_data['theme_color'] = sanitize_hex_color($events_data['theme_color'] ?? '#0c50a8');
         $sanitized_data['speakers_heading'] = sanitize_text_field($events_data['speakers_heading'] ?? '');
 
         // Who Should Attend
@@ -646,7 +615,7 @@ function save_event_details_meta_box_data($post_id)
         // Testimonials
         if (isset($events_data['testimonials']) && is_array($events_data['testimonials'])) {
             foreach ($events_data['testimonials'] as $key => $testimonial) {
-                $sanitized_data['testimonials'][$key]['content'] = wp_kses_post($testimonial['content'] ?? '');
+                $sanitized_data['testimonials'][$key]['content'] = sanitize_textarea_field($testimonial['content'] ?? '');
                 $sanitized_data['testimonials'][$key]['author'] = sanitize_text_field($testimonial['author'] ?? '');
             }
         }
@@ -692,9 +661,6 @@ function event_meta_box_scripts($hook)
 
     // Enqueue WordPress media uploader
     wp_enqueue_media();
-
-    // Enqueue WordPress editor scripts
-    wp_enqueue_editor();
 }
 add_action('admin_enqueue_scripts', 'event_meta_box_scripts');
 
@@ -742,10 +708,3 @@ function display_event_columns($column, $post_id)
     }
 }
 add_action('manage_events_posts_custom_column', 'display_event_columns', 10, 2);
-
-add_action('admin_footer', function () {
-    // Dummy hidden editor to force script output
-    echo '<div style="display:none;">';
-    wp_editor('', 'dummy_editor_id');
-    echo '</div>';
-});
