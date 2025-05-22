@@ -33,28 +33,28 @@ function display_event_details_meta_box($post)
 {
     wp_nonce_field('save_event_details', 'event_details_nonce');
     $events_data = get_post_meta($post->ID, 'events_data', true);
-    $event_date = esc_attr($events_data['event_date'] ?? '');
-    $event_start_time = esc_attr($events_data['event_start_time'] ?? '');
-    $event_end_time = esc_attr($events_data['event_end_time'] ?? '');
-    $event_timezone = esc_attr($events_data['event_timezone'] ?? '');
-    $event_address = esc_attr($events_data['event_address'] ?? '');
-    $event_link = esc_url($events_data['event_link'] ?? '');
-    $event_description = esc_textarea($events_data['event_description'] ?? '');
-    $theme_color = esc_attr($events_data['theme_color'] ?? '#0c50a8');
-    $who_should_attend = $events_data['who_should_attend'] ?? [];
-    $attendees = $events_data['attendees'] ?? [];
-    $speakers = $events_data['speakers'] ?? [];
-    $speakers_heading = esc_attr($events_data['speakers_heading'] ?? '');
-    $partners = $events_data['partners'] ?? [];
-    $testimonials = $events_data['testimonials'] ?? [];
-    $topics_covered = $events_data['topics_covered'] ?? [];
-    $special_events = $events_data['special_events'] ?? [];
+    
+    // Safely get values with proper defaults
+    $event_date = isset($events_data['event_date']) ? esc_attr($events_data['event_date']) : '';
+    $event_start_time = isset($events_data['event_start_time']) ? esc_attr($events_data['event_start_time']) : '';
+    $event_end_time = isset($events_data['event_end_time']) ? esc_attr($events_data['event_end_time']) : '';
+    $event_timezone = isset($events_data['event_timezone']) ? esc_attr($events_data['event_timezone']) : '';
+    $event_address = isset($events_data['event_address']) ? esc_attr($events_data['event_address']) : '';
+    $event_link = isset($events_data['event_link']) ? esc_url($events_data['event_link']) : '';
+    $event_description = isset($events_data['event_description']) ? esc_textarea($events_data['event_description']) : '';
+    $theme_color = isset($events_data['theme_color']) ? esc_attr($events_data['theme_color']) : '#0c50a8';
+    $who_should_attend = isset($events_data['who_should_attend']) && is_array($events_data['who_should_attend']) ? $events_data['who_should_attend'] : [];
+    $speakers = isset($events_data['speakers']) && is_array($events_data['speakers']) ? $events_data['speakers'] : [];
+    $speakers_heading = isset($events_data['speakers_heading']) ? esc_attr($events_data['speakers_heading']) : '';
+    $testimonials = isset($events_data['testimonials']) && is_array($events_data['testimonials']) ? $events_data['testimonials'] : [];
+    $topics_covered = isset($events_data['topics_covered']) && is_array($events_data['topics_covered']) ? $events_data['topics_covered'] : [];
+    $special_events = isset($events_data['special_events']) && is_array($events_data['special_events']) ? $events_data['special_events'] : [];
     ?>
     <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 15px;">
         <h3>Event Details</h3>
         <table style="width:100%; border-spacing: 0 10px;">
             <tr>
-                <td><strong>Event Date:</strong></td>
+                <td style="width: 150px;"><strong>Event Date:</strong></td>
                 <td><input type="date" name="events_data[event_date]" value="<?php echo $event_date; ?>"
                         style="width:100%;"></td>
             </tr>
@@ -106,7 +106,7 @@ function display_event_details_meta_box($post)
                         );
 
                         foreach ($timezone_regions as $region_name => $region) {
-                            echo '<optgroup label="' . $region_name . '">';
+                            echo '<optgroup label="' . esc_attr($region_name) . '">';
                             foreach ($timezones as $timezone) {
                                 if (strpos($timezone, $region_name . '/') !== false) {
                                     $selected = selected($event_timezone, $timezone, false);
@@ -163,16 +163,16 @@ function display_event_details_meta_box($post)
                         <div style="display: flex; flex-wrap: wrap;">
                             <div style="flex: 1 0 70%;">
                                 <input type="text" name="events_data[speakers][<?php echo $index; ?>][name]"
-                                    value="<?php echo esc_attr($speaker['name'] ?? ''); ?>" placeholder="Name"
+                                    value="<?php echo isset($speaker['name']) ? esc_attr($speaker['name']) : ''; ?>" placeholder="Name"
                                     style="width:100%; margin-bottom:5px;">
                                 <input type="text" name="events_data[speakers][<?php echo $index; ?>][designation]"
-                                    value="<?php echo esc_attr($speaker['designation'] ?? ''); ?>" placeholder="Designation"
+                                    value="<?php echo isset($speaker['designation']) ? esc_attr($speaker['designation']) : ''; ?>" placeholder="Designation"
                                     style="width:100%; margin-bottom:5px;">
                                 <input type="text" name="events_data[speakers][<?php echo $index; ?>][organization]"
-                                    value="<?php echo esc_attr($speaker['organization'] ?? ''); ?>" placeholder="Organization"
+                                    value="<?php echo isset($speaker['organization']) ? esc_attr($speaker['organization']) : ''; ?>" placeholder="Organization"
                                     style="width:100%; margin-bottom:5px;">
                                 <input type="url" name="events_data[speakers][<?php echo $index; ?>][image]"
-                                    value="<?php echo esc_url($speaker['image'] ?? ''); ?>" placeholder="Image URL"
+                                    value="<?php echo isset($speaker['image']) ? esc_url($speaker['image']) : ''; ?>" placeholder="Image URL"
                                     style="width:100%; margin-bottom:5px;" class="speaker-image-url">
                                 <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                                     <button type="button" class="choose-image button button-secondary"
@@ -226,7 +226,7 @@ function display_event_details_meta_box($post)
                     <div class="testimonial-item" style="margin-top:10px; border: 1px solid #eee; padding: 10px;">
                         <div class="wp-editor-container" style="margin-bottom:10px;">
                             <?php
-                            $content = $testimonial['content'] ?? '';
+                            $content = isset($testimonial['content']) ? $testimonial['content'] : '';
                             $editor_id = 'testimonial_content_' . $index;
                             wp_editor($content, $editor_id, array(
                                 'textarea_name' => 'events_data[testimonials][' . $index . '][content]',
@@ -240,7 +240,7 @@ function display_event_details_meta_box($post)
                             ?>
                         </div>
                         <input type="text" name="events_data[testimonials][<?php echo $index; ?>][author]"
-                            value="<?php echo esc_attr($testimonial['author'] ?? ''); ?>" placeholder="Author Name"
+                            value="<?php echo isset($testimonial['author']) ? esc_attr($testimonial['author']) : ''; ?>" placeholder="Author Name"
                             style="width:100%; margin-bottom:5px;">
                         <div style="text-align: right;">
                             <button type="button" class="remove-testimonial button button-secondary">Remove</button>
@@ -283,18 +283,18 @@ function display_event_details_meta_box($post)
                     <?php foreach ($special_events as $index => $event): ?>
                         <div class="special-event-item" style="margin-top:20px; border: 1px solid #eee; padding: 10px;">
                             <input type="text" name="events_data[special_events][<?php echo $index; ?>][title]"
-                                value="<?php echo esc_attr($event['title'] ?? ''); ?>" placeholder="Tab Title"
+                                value="<?php echo isset($event['title']) ? esc_attr($event['title']) : ''; ?>" placeholder="Tab Title"
                                 style="width:100%; margin-bottom:10px;">
                             <input type="text" name="events_data[special_events][<?php echo $index; ?>][heading]"
-                                value="<?php echo esc_attr($event['heading'] ?? ''); ?>" placeholder="Tab Heading"
+                                value="<?php echo isset($event['heading']) ? esc_attr($event['heading']) : ''; ?>" placeholder="Tab Heading"
                                 style="width:100%; margin-bottom:10px;">
                             <input type="url" name="events_data[special_events][<?php echo $index; ?>][video_url]"
-                                value="<?php echo esc_url($event['video_url'] ?? ''); ?>" placeholder="Video URL"
+                                value="<?php echo isset($event['video_url']) ? esc_url($event['video_url']) : ''; ?>" placeholder="Video URL"
                                 style="width:100%; margin-bottom:10px;">
 
                             <div class="wp-editor-container" style="margin-bottom:10px;">
                                 <?php
-                                $content = $event['content'] ?? '';
+                                $content = isset($event['content']) ? $event['content'] : '';
                                 $editor_id = 'special_event_content_' . $index;
                                 wp_editor($content, $editor_id, array(
                                     'textarea_name' => 'events_data[special_events][' . $index . '][content]',
@@ -324,7 +324,9 @@ function display_event_details_meta_box($post)
     <script type="text/javascript">
         jQuery(document).ready(function ($) {
             // Initialize Color Picker
-            $('.color-picker').wpColorPicker();
+            if ($.fn.wpColorPicker) {
+                $('.color-picker').wpColorPicker();
+            }
 
             // Media Library Image Picker for Speakers
             $(document).on('click', '.choose-image', function (e) {
@@ -334,6 +336,11 @@ function display_event_details_meta_box($post)
                 var imageField = speakerItem.find('.speaker-image-url');
                 var previewContainer = speakerItem.find('.speaker-image-preview');
                 var rightColumn = speakerItem.find('div[style*="flex: 1 0 25%"]');
+
+                if (!wp.media) {
+                    console.error('WordPress media library not available');
+                    return;
+                }
 
                 var mediaFrame = wp.media({
                     title: 'Select Speaker Image',
@@ -348,36 +355,6 @@ function display_event_details_meta_box($post)
                     // Update preview or create it if it doesn't exist
                     if (previewContainer.length === 0) {
                         $('<div class="speaker-image-preview" style="margin-bottom: 10px;"><img src="' + attachment.url + '" style="max-width: 100%; height: auto; max-height: 100px;"></div>').prependTo(rightColumn);
-                    } else {
-                        previewContainer.find('img').attr('src', attachment.url);
-                    }
-                });
-
-                mediaFrame.open();
-            });
-
-            // Media Library Image Picker for Partner Logo
-            $(document).on('click', '.choose-partner-logo', function (e) {
-                e.preventDefault();
-                var button = $(this);
-                var partnerItem = button.closest('.partner-item');
-                var logoField = partnerItem.find('.partner-logo-url');
-                var previewContainer = partnerItem.find('.partner-logo-preview');
-                var rightColumn = partnerItem.find('div[style*="flex: 1 0 25%"]');
-
-                var mediaFrame = wp.media({
-                    title: 'Select Partner Logo',
-                    button: { text: 'Use this logo' },
-                    multiple: false
-                });
-
-                mediaFrame.on('select', function () {
-                    var attachment = mediaFrame.state().get('selection').first().toJSON();
-                    logoField.val(attachment.url);
-
-                    // Update preview or create it if it doesn't exist
-                    if (previewContainer.length === 0) {
-                        $('<div class="partner-logo-preview" style="margin-bottom: 10px;"><img src="' + attachment.url + '" style="max-width: 100%; height: auto; max-height: 80px;"></div>').prependTo(rightColumn);
                     } else {
                         previewContainer.find('img').attr('src', attachment.url);
                     }
@@ -408,7 +385,6 @@ function display_event_details_meta_box($post)
                     '</div>');
                 speakersList.append(newSpeaker);
             });
-
 
             // Remove Speaker
             $(document).on('click', '.remove-speaker', function () {
@@ -464,7 +440,7 @@ function display_event_details_meta_box($post)
 
                 // Initialize the WP Editor
                 setTimeout(function () {
-                    if (document.getElementById(editorId)) {
+                    if (document.getElementById(editorId) && wp.editor) {
                         wp.editor.initialize(editorId, {
                             tinymce: {
                                 wpautop: true,
@@ -506,7 +482,7 @@ function display_event_details_meta_box($post)
                     });
 
                     // If the ID needs to be updated, reinitialize the editor
-                    if (oldId !== newId) {
+                    if (oldId !== newId && wp.editor) {
                         var content = wp.editor.getContent(oldId);
                         wp.editor.remove(oldId);
                         $(this).find('textarea').attr('id', newId);
@@ -567,7 +543,7 @@ function display_event_details_meta_box($post)
 
                 // Initialize the WP Editor - need to use setTimeout to make sure the element is added to DOM first
                 var initEditor = function () {
-                    if (document.getElementById(editorId)) {
+                    if (document.getElementById(editorId) && wp.editor) {
                         wp.editor.initialize(editorId, {
                             tinymce: {
                                 wpautop: true,
@@ -612,7 +588,7 @@ function display_event_details_meta_box($post)
                     });
 
                     // If the ID needs to be updated, reinitialize the editor
-                    if (oldId !== newId) {
+                    if (oldId !== newId && wp.editor) {
                         var content = wp.editor.getContent(oldId);
                         wp.editor.remove(oldId);
                         $(this).find('textarea').attr('id', newId);
@@ -644,20 +620,8 @@ function display_event_details_meta_box($post)
                     } else {
                         container.find('img').attr('src', url);
                     }
-                }
-            });
-
-            $(document).on('change', '.partner-logo-url', function () {
-                var url = $(this).val();
-                var container = $(this).closest('.partner-item').find('.partner-logo-preview');
-                var rightColumn = $(this).closest('.partner-item').find('div[style*="flex: 1 0 25%"]');
-
-                if (url) {
-                    if (container.length === 0) {
-                        $('<div class="partner-logo-preview" style="margin-bottom: 10px;"><img src="' + url + '" style="max-width: 100%; height: auto; max-height: 80px;"></div>').prependTo(rightColumn);
-                    } else {
-                        container.find('img').attr('src', url);
-                    }
+                } else {
+                    container.remove();
                 }
             });
         });
@@ -683,14 +647,19 @@ function save_event_details_meta_box_data($post_id)
         return;
     }
 
+    // Check if this is the correct post type
+    if (get_post_type($post_id) !== 'events') {
+        return;
+    }
+
     // Get form data
     if (isset($_POST['events_data'])) {
         $events_data = $_POST['events_data'];
 
         // Sanitize the data before saving
-
-        // Basic fields
         $sanitized_data = array();
+        
+        // Basic fields
         $sanitized_data['event_date'] = sanitize_text_field($events_data['event_date'] ?? '');
         $sanitized_data['event_start_time'] = sanitize_text_field($events_data['event_start_time'] ?? '');
         $sanitized_data['event_end_time'] = sanitize_text_field($events_data['event_end_time'] ?? '');
@@ -703,47 +672,72 @@ function save_event_details_meta_box_data($post_id)
 
         // Who Should Attend
         if (isset($events_data['who_should_attend']) && is_array($events_data['who_should_attend'])) {
-            $sanitized_data['who_should_attend'] = array_map('sanitize_text_field', $events_data['who_should_attend']);
+            $sanitized_data['who_should_attend'] = array_map('sanitize_text_field', array_filter($events_data['who_should_attend']));
+        } else {
+            $sanitized_data['who_should_attend'] = [];
         }
 
         // Speakers
         if (isset($events_data['speakers']) && is_array($events_data['speakers'])) {
+            $sanitized_data['speakers'] = [];
             foreach ($events_data['speakers'] as $key => $speaker) {
-                $sanitized_data['speakers'][$key]['name'] = sanitize_text_field($speaker['name'] ?? '');
-                $sanitized_data['speakers'][$key]['designation'] = sanitize_text_field($speaker['designation'] ?? '');
-                $sanitized_data['speakers'][$key]['organization'] = sanitize_text_field($speaker['organization'] ?? '');
-                $sanitized_data['speakers'][$key]['image'] = esc_url_raw($speaker['image'] ?? '');
+                if (is_array($speaker)) {
+                    $sanitized_data['speakers'][$key] = [
+                        'name' => sanitize_text_field($speaker['name'] ?? ''),
+                        'designation' => sanitize_text_field($speaker['designation'] ?? ''),
+                        'organization' => sanitize_text_field($speaker['organization'] ?? ''),
+                        'image' => esc_url_raw($speaker['image'] ?? '')
+                    ];
+                }
             }
+        } else {
+            $sanitized_data['speakers'] = [];
         }
 
         // Testimonials
         if (isset($events_data['testimonials']) && is_array($events_data['testimonials'])) {
+            $sanitized_data['testimonials'] = [];
             foreach ($events_data['testimonials'] as $key => $testimonial) {
-                $sanitized_data['testimonials'][$key]['content'] = wp_kses_post($testimonial['content'] ?? '');
-                $sanitized_data['testimonials'][$key]['author'] = sanitize_text_field($testimonial['author'] ?? '');
+                if (is_array($testimonial)) {
+                    $sanitized_data['testimonials'][$key] = [
+                        'content' => wp_kses_post($testimonial['content'] ?? ''),
+                        'author' => sanitize_text_field($testimonial['author'] ?? '')
+                    ];
+                }
             }
+        } else {
+            $sanitized_data['testimonials'] = [];
         }
 
         // Topics Covered
         if (isset($events_data['topics_covered']) && is_array($events_data['topics_covered'])) {
-            $sanitized_data['topics_covered'] = array_map('sanitize_text_field', $events_data['topics_covered']);
+            $sanitized_data['topics_covered'] = array_map('sanitize_text_field', array_filter($events_data['topics_covered']));
+        } else {
+            $sanitized_data['topics_covered'] = [];
         }
 
         // Special Events
         if (isset($events_data['special_events']) && is_array($events_data['special_events'])) {
+            $sanitized_data['special_events'] = [];
             foreach ($events_data['special_events'] as $key => $event) {
-                $sanitized_data['special_events'][$key]['title'] = sanitize_text_field($event['title'] ?? '');
-                $sanitized_data['special_events'][$key]['heading'] = sanitize_text_field($event['heading'] ?? '');
-                $sanitized_data['special_events'][$key]['video_url'] = esc_url_raw($event['video_url'] ?? '');
-                $sanitized_data['special_events'][$key]['content'] = wp_kses_post($event['content'] ?? '');
+                if (is_array($event)) {
+                    $sanitized_data['special_events'][$key] = [
+                        'title' => sanitize_text_field($event['title'] ?? ''),
+                        'heading' => sanitize_text_field($event['heading'] ?? ''),
+                        'video_url' => esc_url_raw($event['video_url'] ?? ''),
+                        'content' => wp_kses_post($event['content'] ?? '')
+                    ];
+                }
             }
+        } else {
+            $sanitized_data['special_events'] = [];
         }
 
         // Save the data
         update_post_meta($post_id, 'events_data', $sanitized_data);
 
         // IMPORTANT: Also save event_date separately for efficient querying
-        if (isset($events_data['event_date']) && !empty($events_data['event_date'])) {
+        if (!empty($sanitized_data['event_date'])) {
             update_post_meta($post_id, 'event_date', $sanitized_data['event_date']);
         }
     }
@@ -765,33 +759,42 @@ function event_meta_box_scripts($hook)
 
     // Enqueue WordPress media uploader
     wp_enqueue_media();
+    
+    // Enqueue editor scripts for dynamic editors
+    wp_enqueue_editor();
 }
 add_action('admin_enqueue_scripts', 'event_meta_box_scripts');
 
-
 // Register REST API field for events_data
-
-register_rest_field('events', 'events_data', [
-    'get_callback' => function ($object) {
-        return get_post_meta($object['id'], 'events_data', true);
-    },
-    'schema' => [
-        'type' => 'object',
-        'context' => ['view'],
-        'description' => 'Event details from the custom meta box.',
-    ]
-]);
+if (function_exists('register_rest_field')) {
+    register_rest_field('events', 'events_data', [
+        'get_callback' => function ($object) {
+            return get_post_meta($object['id'], 'events_data', true);
+        },
+        'schema' => [
+            'type' => 'object',
+            'context' => ['view'],
+            'description' => 'Event details from the custom meta box.',
+        ]
+    ]);
+}
 
 /*
  * Add custom columns to the events post type for displaying event date, start time, and end time
  */
-
 function add_event_columns($columns)
 {
-    $columns['event_date'] = 'Event Date';
-    $columns['event_start_time'] = 'Start Time';
-    $columns['event_end_time'] = 'End Time';
-    return $columns;
+    // Insert event columns after title
+    $new_columns = [];
+    foreach ($columns as $key => $value) {
+        $new_columns[$key] = $value;
+        if ($key === 'title') {
+            $new_columns['event_date'] = 'Event Date';
+            $new_columns['event_start_time'] = 'Start Time';
+            $new_columns['event_end_time'] = 'End Time';
+        }
+    }
+    return $new_columns;
 }
 add_filter('manage_events_posts_columns', 'add_event_columns');
 
@@ -799,16 +802,40 @@ function display_event_columns($column, $post_id)
 {
     $events_data = get_post_meta($post_id, 'events_data', true);
 
-    if ($column === 'event_date') {
-        echo !empty($events_data['event_date']) ? esc_html($events_data['event_date']) : 'N/A';
-    }
-
-    if ($column === 'event_start_time') {
-        echo !empty($events_data['event_start_time']) ? esc_html($events_data['event_start_time']) : 'N/A';
-    }
-
-    if ($column === 'event_end_time') {
-        echo !empty($events_data['event_end_time']) ? esc_html($events_data['event_end_time']) : 'N/A';
+    switch ($column) {
+        case 'event_date':
+            echo !empty($events_data['event_date']) ? esc_html(date('M j, Y', strtotime($events_data['event_date']))) : 'N/A';
+            break;
+        case 'event_start_time':
+            echo !empty($events_data['event_start_time']) ? esc_html(date('g:i A', strtotime($events_data['event_start_time']))) : 'N/A';
+            break;
+        case 'event_end_time':
+            echo !empty($events_data['event_end_time']) ? esc_html(date('g:i A', strtotime($events_data['event_end_time']))) : 'N/A';
+            break;
     }
 }
 add_action('manage_events_posts_custom_column', 'display_event_columns', 10, 2);
+
+// Make event columns sortable
+function make_event_columns_sortable($columns)
+{
+    $columns['event_date'] = 'event_date';
+    return $columns;
+}
+add_filter('manage_edit-events_sortable_columns', 'make_event_columns_sortable');
+
+// Handle sorting for event columns
+function handle_event_column_sorting($query)
+{
+    if (!is_admin() || !$query->is_main_query()) {
+        return;
+    }
+
+    $orderby = $query->get('orderby');
+    
+    if ($orderby === 'event_date') {
+        $query->set('meta_key', 'event_date');
+        $query->set('orderby', 'meta_value');
+    }
+}
+add_action('pre_get_posts', 'handle_event_column_sorting');
