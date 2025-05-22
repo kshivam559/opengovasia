@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Event Meta Box
+ * Event Meta Box with Quill Editor
  *
  * This file adds a meta box to the 'events' post type for entering event details.
  *
@@ -42,13 +42,17 @@ function display_event_details_meta_box($post)
     $event_description = esc_textarea($events_data['event_description'] ?? '');
     $theme_color = esc_attr($events_data['theme_color'] ?? '#0c50a8');
     $who_should_attend = $events_data['who_should_attend'] ?? [];
-    $attendees = $events_data['attendees'] ?? [];
     $speakers = $events_data['speakers'] ?? [];
     $speakers_heading = esc_attr($events_data['speakers_heading'] ?? '');
     $testimonials = $events_data['testimonials'] ?? [];
     $topics_covered = $events_data['topics_covered'] ?? [];
     $special_events = $events_data['special_events'] ?? [];
     ?>
+    
+    <!-- Include Quill CSS and JS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.snow.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.min.js"></script>
+    
     <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 15px;">
         <h3>Event Details</h3>
         <table style="width:100%; border-spacing: 0 10px;">
@@ -151,7 +155,6 @@ function display_event_details_meta_box($post)
         </table>
     </div>
 
-
     <!-- Meet Our Distinguished Speakers -->
     <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 15px;">
         <h3>Speakers</h3>
@@ -201,7 +204,6 @@ function display_event_details_meta_box($post)
         <button type="button" class="add-speaker button button-primary" style="margin-top:10px;">+ Add Speaker</button>
     </div>
 
-
     <!-- Who Should Attend -->
     <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 15px;">
         <h3>Who Should Attend</h3>
@@ -221,17 +223,20 @@ function display_event_details_meta_box($post)
             Item</button>
     </div>
 
-
-    <!-- Testimonials -->
+    <!-- Testimonials with Quill Editor -->
     <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 15px;">
         <h3>Testimonials</h3>
         <div id="testimonials-list">
             <?php if (!empty($testimonials)): ?>
                 <?php foreach ($testimonials as $index => $testimonial): ?>
                     <div class="testimonial-item" style="margin-top:10px; border: 1px solid #eee; padding: 10px;">
-                        <textarea name="events_data[testimonials][<?php echo $index; ?>][content]" rows="3"
-                            placeholder="Testimonial Content"
-                            style="width:100%; margin-bottom:10px;"><?php echo esc_textarea($testimonial['content'] ?? ''); ?></textarea>
+                        <label><strong>Testimonial Content:</strong></label>
+                        <div id="testimonial-editor-<?php echo $index; ?>" class="quill-editor" style="height: 150px; margin-bottom: 10px;">
+                            <?php echo wp_kses_post($testimonial['content'] ?? ''); ?>
+                        </div>
+                        <textarea name="events_data[testimonials][<?php echo $index; ?>][content]" 
+                                  id="testimonial-content-<?php echo $index; ?>" 
+                                  style="display: none;"><?php echo esc_textarea($testimonial['content'] ?? ''); ?></textarea>
                         <input type="text" name="events_data[testimonials][<?php echo $index; ?>][author]"
                             value="<?php echo esc_attr($testimonial['author'] ?? ''); ?>" placeholder="Author Name"
                             style="width:100%; margin-bottom:5px;">
@@ -268,7 +273,7 @@ function display_event_details_meta_box($post)
             <button type="button" class="add-topic button button-primary" style="margin-top:10px;">+ Add Topic</button>
         </div>
 
-        <!-- Multiple Content Editor Sections -->
+        <!-- Multiple Content Editor Sections with Quill -->
         <div>
             <h4>Tab Sections</h4>
             <div id="special-events-list">
@@ -285,21 +290,13 @@ function display_event_details_meta_box($post)
                                 value="<?php echo esc_url($event['video_url'] ?? ''); ?>" placeholder="Video URL"
                                 style="width:100%; margin-bottom:10px;">
 
-                            <div class="wp-editor-container" style="margin-bottom:10px;">
-                                <?php
-                                $content = $event['content'] ?? '';
-                                $editor_id = 'special_event_content_' . $index;
-                                wp_editor($content, $editor_id, array(
-                                    'textarea_name' => 'events_data[special_events][' . $index . '][content]',
-                                    'media_buttons' => true,
-                                    'tinymce' => true,
-                                    'textarea_rows' => 10,
-                                    'editor_height' => 200,
-                                    'teeny' => false,
-                                    'quicktags' => true,
-                                ));
-                                ?>
+                            <label><strong>Content:</strong></label>
+                            <div id="special-event-editor-<?php echo $index; ?>" class="quill-editor" style="height: 200px; margin-bottom: 10px;">
+                                <?php echo wp_kses_post($event['content'] ?? ''); ?>
                             </div>
+                            <textarea name="events_data[special_events][<?php echo $index; ?>][content]" 
+                                      id="special-event-content-<?php echo $index; ?>" 
+                                      style="display: none;"><?php echo esc_textarea($event['content'] ?? ''); ?></textarea>
 
                             <div style="text-align: right;">
                                 <button type="button" class="remove-special-event button button-secondary">Remove Tab</button>
@@ -313,11 +310,60 @@ function display_event_details_meta_box($post)
         </div>
     </div>
 
-    <!-- Media Library Image Upload JS -->
     <script type="text/javascript">
         jQuery(document).ready(function ($) {
             // Initialize Color Picker
             $('.color-picker').wpColorPicker();
+
+            // Quill Editor Configuration
+            var quillOptions = {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ 'color': [] }, { 'background': [] }],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        [{ 'align': [] }],
+                        ['blockquote', 'code-block'],
+                        ['link', 'image'],
+                        ['clean']
+                    ]
+                }
+            };
+
+            // Initialize existing Quill editors
+            var quillEditors = {};
+            
+            function initializeQuillEditor(editorId, textareaId) {
+                if (document.getElementById(editorId) && !quillEditors[editorId]) {
+                    var quill = new Quill('#' + editorId, quillOptions);
+                    quillEditors[editorId] = quill;
+                    
+                    // Sync content with hidden textarea
+                    quill.on('text-change', function() {
+                        var html = quill.root.innerHTML;
+                        $('#' + textareaId).val(html);
+                    });
+                    
+                    return quill;
+                }
+                return quillEditors[editorId];
+            }
+
+            // Initialize existing testimonial editors
+            $('.testimonial-item').each(function(index) {
+                var editorId = 'testimonial-editor-' + index;
+                var textareaId = 'testimonial-content-' + index;
+                initializeQuillEditor(editorId, textareaId);
+            });
+
+            // Initialize existing special event editors
+            $('.special-event-item').each(function(index) {
+                var editorId = 'special-event-editor-' + index;
+                var textareaId = 'special-event-content-' + index;
+                initializeQuillEditor(editorId, textareaId);
+            });
 
             // Media Library Image Picker for Speakers
             $(document).on('click', '.choose-image', function (e) {
@@ -338,7 +384,6 @@ function display_event_details_meta_box($post)
                     var attachment = mediaFrame.state().get('selection').first().toJSON();
                     imageField.val(attachment.url);
 
-                    // Update preview or create it if it doesn't exist
                     if (previewContainer.length === 0) {
                         $('<div class="speaker-image-preview" style="margin-bottom: 10px;"><img src="' + attachment.url + '" style="max-width: 100%; height: auto; max-height: 100px;"></div>').prependTo(rightColumn);
                     } else {
@@ -348,7 +393,6 @@ function display_event_details_meta_box($post)
 
                 mediaFrame.open();
             });
-
 
             // Add Speaker dynamically
             $('.add-speaker').on('click', function () {
@@ -373,11 +417,9 @@ function display_event_details_meta_box($post)
                 speakersList.append(newSpeaker);
             });
 
-
             // Remove Speaker
             $(document).on('click', '.remove-speaker', function () {
                 $(this).closest('.speaker-item').remove();
-                // Reindex the remaining speakers
                 $('#speakers-list .speaker-item').each(function (index) {
                     $(this).find('input').each(function () {
                         var name = $(this).attr('name');
@@ -402,36 +444,79 @@ function display_event_details_meta_box($post)
 
             $(document).on('click', '.remove-who-should-attend', function () {
                 $(this).closest('.who-should-attend-item').remove();
-                // Reindex the remaining items
                 $('#who-should-attend-list .who-should-attend-item').each(function (index) {
                     $(this).find('input').attr('name', 'events_data[who_should_attend][' + index + ']');
                 });
             });
 
-            // Testimonials functionality
+            // Testimonials functionality with Quill
             $('.add-testimonial').on('click', function () {
                 var list = $('#testimonials-list');
                 var index = list.children().length;
+                var editorId = 'testimonial-editor-' + index;
+                var textareaId = 'testimonial-content-' + index;
+                
                 var newItem = $('<div class="testimonial-item" style="margin-top:10px; border: 1px solid #eee; padding: 10px;">' +
-                    '<textarea name="events_data[testimonials][' + index + '][content]" rows="3" placeholder="Testimonial Content" style="width:100%; margin-bottom:10px;"></textarea>' +
+                    '<label><strong>Testimonial Content:</strong></label>' +
+                    '<div id="' + editorId + '" class="quill-editor" style="height: 150px; margin-bottom: 10px;"></div>' +
+                    '<textarea name="events_data[testimonials][' + index + '][content]" id="' + textareaId + '" style="display: none;"></textarea>' +
                     '<input type="text" name="events_data[testimonials][' + index + '][author]" placeholder="Author Name" style="width:100%; margin-bottom:5px;">' +
                     '<div style="text-align: right;">' +
                     '<button type="button" class="remove-testimonial button button-secondary">Remove</button>' +
                     '</div>' +
                     '</div>');
+                
                 list.append(newItem);
+                
+                setTimeout(function() {
+                    initializeQuillEditor(editorId, textareaId);
+                }, 100);
             });
 
             $(document).on('click', '.remove-testimonial', function () {
-                $(this).closest('.testimonial-item').remove();
-                // Reindex the remaining testimonials
+                var item = $(this).closest('.testimonial-item');
+                var editorId = item.find('.quill-editor').attr('id');
+                
+                // Remove Quill instance
+                if (quillEditors[editorId]) {
+                    delete quillEditors[editorId];
+                }
+                
+                item.remove();
+                
+                // Reindex remaining testimonials
                 $('#testimonials-list .testimonial-item').each(function (index) {
+                    var oldEditorId = $(this).find('.quill-editor').attr('id');
+                    var oldTextareaId = $(this).find('textarea').attr('id');
+                    var newEditorId = 'testimonial-editor-' + index;
+                    var newTextareaId = 'testimonial-content-' + index;
+                    
+                    // Update IDs and names
+                    $(this).find('.quill-editor').attr('id', newEditorId);
+                    $(this).find('textarea').attr('id', newTextareaId);
+                    
                     $(this).find('textarea, input').each(function () {
                         var name = $(this).attr('name');
                         if (name) {
                             $(this).attr('name', name.replace(/\[testimonials\]\[\d+\]/, '[testimonials][' + index + ']'));
                         }
                     });
+                    
+                    // Reinitialize Quill if ID changed
+                    if (oldEditorId !== newEditorId) {
+                        var content = '';
+                        if (quillEditors[oldEditorId]) {
+                            content = quillEditors[oldEditorId].root.innerHTML;
+                            delete quillEditors[oldEditorId];
+                        }
+                        
+                        setTimeout(function() {
+                            var quill = initializeQuillEditor(newEditorId, newTextareaId);
+                            if (content && quill) {
+                                quill.root.innerHTML = content;
+                            }
+                        }, 100);
+                    }
                 });
             });
 
@@ -448,314 +533,83 @@ function display_event_details_meta_box($post)
 
             $(document).on('click', '.remove-topic', function () {
                 $(this).closest('.topic-item').remove();
-                // Reindex the remaining topics
                 $('#topics-covered-list .topic-item').each(function (index) {
                     $(this).find('input').attr('name', 'events_data[topics_covered][' + index + ']');
                 });
             });
 
-            // Special Events Content Section functionality
-            // Replace your existing Special Events JavaScript section with this improved version:
-
-            // Global variables to track editor states
-            var editorInitQueue = [];
-            var editorCleanupQueue = [];
-
-            // Helper function to safely execute editor operations
-            function safeEditorOperation(callback, delay = 100) {
-                setTimeout(callback, delay);
-            }
-
-            // Improved editor cleanup function
-            function cleanupEditor(editorId) {
-                return new Promise((resolve) => {
-                    if (!editorId) {
-                        resolve();
-                        return;
-                    }
-
-                    try {
-                        // Clear any pending operations for this editor
-                        if (typeof tinymce !== 'undefined') {
-                            // Remove from TinyMCE
-                            var editor = tinymce.get(editorId);
-                            if (editor) {
-                                // Prevent further operations
-                                editor.readonly = true;
-
-                                // Clear selection to prevent setBaseAndExtent errors
-                                try {
-                                    editor.selection.collapse();
-                                } catch (e) {
-                                    // Ignore selection errors during cleanup
-                                }
-
-                                // Remove event listeners
-                                editor.off();
-
-                                // Destroy the editor
-                                editor.destroy();
-
-                                // Remove from tinymce collection
-                                delete tinymce.editors[editorId];
-                            }
-                        }
-
-                        // Remove from WordPress editor
-                        if (typeof wp !== 'undefined' && wp.editor) {
-                            try {
-                                wp.editor.remove(editorId);
-                            } catch (e) {
-                                console.warn('wp.editor.remove failed:', e);
-                            }
-                        }
-
-                        // Clean up DOM elements
-                        var editorWrap = document.getElementById('wp-' + editorId + '-wrap');
-                        if (editorWrap) {
-                            editorWrap.remove();
-                        }
-
-                        var iframe = document.getElementById(editorId + '_ifr');
-                        if (iframe) {
-                            iframe.remove();
-                        }
-
-                        // Clear any remaining TinyMCE DOM references
-                        var mcePanels = document.querySelectorAll('[id*="' + editorId + '"]');
-                        mcePanels.forEach(function (panel) {
-                            if (panel.id.includes('mce') || panel.id.includes('qtag')) {
-                                panel.remove();
-                            }
-                        });
-
-                    } catch (error) {
-                        console.warn('Error during editor cleanup:', error);
-                    }
-
-                    // Always resolve after cleanup attempt
-                    setTimeout(resolve, 50);
-                });
-            }
-
-            // Improved editor initialization function
-            function initializeEditor(editorId, settings = {}) {
-                return new Promise((resolve, reject) => {
-                    if (!document.getElementById(editorId)) {
-                        reject(new Error('Editor element not found: ' + editorId));
-                        return;
-                    }
-
-                    // Default settings
-                    var defaultSettings = {
-                        tinymce: {
-                            wpautop: true,
-                            plugins: 'charmap colorpicker compat3x directionality fullscreen hr image lists media paste tabfocus textcolor wordpress wpautoresize wpdialogs wpeditimage wpemoji wpgallery wplink wptextpattern wpview',
-                            toolbar1: 'formatselect bold italic bullist numlist blockquote alignleft aligncenter alignright link unlink wp_more fullscreen wp_adv',
-                            toolbar2: 'strikethrough hr forecolor backcolor pastetext removeformat charmap outdent indent undo redo wp_help',
-                            // Prevent selection errors
-                            init_instance_callback: function (editor) {
-                                // Set up error handling for selection operations
-                                editor.on('BeforeExecCommand', function (e) {
-                                    try {
-                                        // Ensure we have a valid selection before operations
-                                        if (!editor.selection.getNode()) {
-                                            return;
-                                        }
-                                    } catch (err) {
-                                        e.preventDefault();
-                                        return false;
-                                    }
-                                });
-
-                                console.log('Editor ' + editorId + ' initialized successfully');
-                                resolve(editor);
-                            },
-                            setup: function (editor) {
-                                // Add error handling for selection operations
-                                editor.on('init', function () {
-                                    // Wrap selection methods to prevent errors
-                                    var originalSelect = editor.selection.select;
-                                    editor.selection.select = function (node, content) {
-                                        try {
-                                            if (node && node.nodeType) {
-                                                return originalSelect.call(this, node, content);
-                                            }
-                                        } catch (e) {
-                                            console.warn('Selection error prevented:', e);
-                                        }
-                                    };
-
-                                    var originalCollapse = editor.selection.collapse;
-                                    editor.selection.collapse = function (forward) {
-                                        try {
-                                            return originalCollapse.call(this, forward);
-                                        } catch (e) {
-                                            console.warn('Collapse error prevented:', e);
-                                        }
-                                    };
-                                });
-                            }
-                        },
-                        quicktags: true,
-                        mediaButtons: true,
-                        editor_height: 200
-                    };
-
-                    // Merge settings
-                    var finalSettings = Object.assign({}, defaultSettings, settings);
-
-                    try {
-                        if (typeof wp !== 'undefined' && wp.editor) {
-                            wp.editor.initialize(editorId, finalSettings);
-                        } else {
-                            reject(new Error('wp.editor not available'));
-                        }
-                    } catch (error) {
-                        console.error('Error initializing editor:', error);
-                        reject(error);
-                    }
-                });
-            }
-
-            // Special Events Content Section functionality
+            // Special Events Content Section functionality with Quill
             $('.add-special-event').on('click', function () {
                 var list = $('#special-events-list');
                 var index = list.children().length;
-                var editorId = 'special_event_content_' + index;
-                var uniqueId = editorId + '_' + Date.now(); // Add timestamp for uniqueness
+                var editorId = 'special-event-editor-' + index;
+                var textareaId = 'special-event-content-' + index;
 
                 var newItem = $('<div class="special-event-item" style="margin-top:20px; border: 1px solid #eee; padding: 10px;">' +
                     '<input type="text" name="events_data[special_events][' + index + '][title]" placeholder="Tab Title" style="width:100%; margin-bottom:10px;">' +
                     '<input type="text" name="events_data[special_events][' + index + '][heading]" placeholder="Tab Heading" style="width:100%; margin-bottom:10px;">' +
                     '<input type="url" name="events_data[special_events][' + index + '][video_url]" placeholder="Video URL" style="width:100%; margin-bottom:10px;">' +
-                    '<div class="wp-editor-container" style="margin-bottom:10px;">' +
-                    '<textarea id="' + uniqueId + '" name="events_data[special_events][' + index + '][content]" rows="10" style="width:100%;"></textarea>' +
-                    '</div>' +
+                    '<label><strong>Content:</strong></label>' +
+                    '<div id="' + editorId + '" class="quill-editor" style="height: 200px; margin-bottom: 10px;"></div>' +
+                    '<textarea name="events_data[special_events][' + index + '][content]" id="' + textareaId + '" style="display: none;"></textarea>' +
                     '<div style="text-align: right;">' +
                     '<button type="button" class="remove-special-event button button-secondary">Remove Tab</button>' +
                     '</div>' +
                     '</div>');
 
                 list.append(newItem);
-
-                // Initialize editor with proper error handling
-                safeEditorOperation(async function () {
-                    try {
-                        // First cleanup any existing editor with same ID
-                        await cleanupEditor(uniqueId);
-
-                        // Wait a bit more for DOM to settle
-                        await new Promise(resolve => setTimeout(resolve, 100));
-
-                        // Initialize new editor
-                        await initializeEditor(uniqueId);
-
-                    } catch (error) {
-                        console.error('Failed to initialize editor ' + uniqueId + ':', error);
-                        // Fallback: show textarea as plain text editor
-                        $('#' + uniqueId).show().css({
-                            'border': '1px solid #ddd',
-                            'padding': '10px',
-                            'font-family': 'monospace'
-                        });
-                    }
-                }, 200);
+                
+                setTimeout(function() {
+                    initializeQuillEditor(editorId, textareaId);
+                }, 100);
             });
 
             $(document).on('click', '.remove-special-event', function () {
                 var item = $(this).closest('.special-event-item');
-                var textarea = item.find('textarea');
-                var editorId = textarea.attr('id');
+                var editorId = item.find('.quill-editor').attr('id');
+                
+                // Remove Quill instance
+                if (quillEditors[editorId]) {
+                    delete quillEditors[editorId];
+                }
+                
+                item.remove();
 
-                // Disable the remove button to prevent multiple clicks
-                $(this).prop('disabled', true);
-
-                // Cleanup and remove
-                safeEditorOperation(async function () {
-                    try {
-                        // Clean up the editor
-                        if (editorId) {
-                            await cleanupEditor(editorId);
-                        }
-
-                        // Remove the DOM element
-                        item.remove();
-
-                        // Reindex remaining items
-                        await reindexSpecialEvents();
-
-                    } catch (error) {
-                        console.error('Error removing special event:', error);
-                    }
-                }, 50);
-            });
-
-            // Separate function for reindexing to avoid code duplication
-            async function reindexSpecialEvents() {
-                var items = $('#special-events-list .special-event-item');
-
-                for (let index = 0; index < items.length; index++) {
-                    let currentItem = $(items[index]);
-                    let oldTextarea = currentItem.find('textarea');
-                    let oldId = oldTextarea.attr('id');
-                    let newId = 'special_event_content_' + index + '_' + Date.now();
-
-                    // Update name attributes for all input fields
-                    currentItem.find('input, textarea').each(function () {
+                // Reindex remaining special events
+                $('#special-events-list .special-event-item').each(function (index) {
+                    var oldEditorId = $(this).find('.quill-editor').attr('id');
+                    var oldTextareaId = $(this).find('textarea').attr('id');
+                    var newEditorId = 'special-event-editor-' + index;
+                    var newTextareaId = 'special-event-content-' + index;
+                    
+                    // Update IDs and names
+                    $(this).find('.quill-editor').attr('id', newEditorId);
+                    $(this).find('textarea').attr('id', newTextareaId);
+                    
+                    $(this).find('input, textarea').each(function () {
                         var name = $(this).attr('name');
                         if (name) {
                             $(this).attr('name', name.replace(/\[special_events\]\[\d+\]/, '[special_events][' + index + ']'));
                         }
                     });
-
-                    // Only reinitialize if ID needs to change
-                    if (oldId && oldId !== newId) {
-                        try {
-                            // Get existing content
-                            var content = '';
-                            if (typeof wp !== 'undefined' && wp.editor) {
-                                try {
-                                    content = wp.editor.getContent(oldId) || oldTextarea.val();
-                                } catch (e) {
-                                    content = oldTextarea.val();
-                                }
-                            }
-
-                            // Clean up old editor
-                            await cleanupEditor(oldId);
-
-                            // Update textarea ID
-                            oldTextarea.attr('id', newId);
-
-                            // Wait before reinitializing
-                            await new Promise(resolve => setTimeout(resolve, 100));
-
-                            // Reinitialize editor
-                            await initializeEditor(newId);
-
-                            // Set content after initialization
-                            if (content) {
-                                setTimeout(function () {
-                                    try {
-                                        if (typeof wp !== 'undefined' && wp.editor) {
-                                            wp.editor.setContent(newId, content);
-                                        }
-                                    } catch (e) {
-                                        // Fallback to textarea value
-                                        $('#' + newId).val(content);
-                                    }
-                                }, 200);
-                            }
-
-                        } catch (error) {
-                            console.error('Error reinitializing editor during reindex:', error);
-                            // Show as plain textarea on error
-                            $('#' + newId).show();
+                    
+                    // Reinitialize Quill if ID changed
+                    if (oldEditorId !== newEditorId) {
+                        var content = '';
+                        if (quillEditors[oldEditorId]) {
+                            content = quillEditors[oldEditorId].root.innerHTML;
+                            delete quillEditors[oldEditorId];
                         }
+                        
+                        setTimeout(function() {
+                            var quill = initializeQuillEditor(newEditorId, newTextareaId);
+                            if (content && quill) {
+                                quill.root.innerHTML = content;
+                            }
+                        }, 100);
                     }
-                }
-            }
+                });
+            });
 
             // Update image previews when URL is manually changed
             $(document).on('change', '.speaker-image-url', function () {
@@ -772,6 +626,16 @@ function display_event_details_meta_box($post)
                 }
             });
 
+            // Form submission handler to sync Quill content
+            $('form').on('submit', function() {
+                // Sync all Quill editors content to textareas before form submission
+                Object.keys(quillEditors).forEach(function(editorId) {
+                    var quill = quillEditors[editorId];
+                    var textareaId = editorId.replace('-editor-', '-content-');
+                    var html = quill.root.innerHTML;
+                    $('#' + textareaId).val(html);
+                });
+            });
         });
     </script>
     <?php
@@ -800,8 +664,6 @@ function save_event_details_meta_box_data($post_id)
         $events_data = $_POST['events_data'];
 
         // Sanitize the data before saving
-
-        // Basic fields
         $sanitized_data = array();
         $sanitized_data['event_date'] = sanitize_text_field($events_data['event_date'] ?? '');
         $sanitized_data['event_start_time'] = sanitize_text_field($events_data['event_start_time'] ?? '');
@@ -831,7 +693,7 @@ function save_event_details_meta_box_data($post_id)
         // Testimonials
         if (isset($events_data['testimonials']) && is_array($events_data['testimonials'])) {
             foreach ($events_data['testimonials'] as $key => $testimonial) {
-                $sanitized_data['testimonials'][$key]['content'] = sanitize_textarea_field($testimonial['content'] ?? '');
+                $sanitized_data['testimonials'][$key]['content'] = wp_kses_post($testimonial['content'] ?? '');
                 $sanitized_data['testimonials'][$key]['author'] = sanitize_text_field($testimonial['author'] ?? '');
             }
         }
@@ -854,7 +716,7 @@ function save_event_details_meta_box_data($post_id)
         // Save the data
         update_post_meta($post_id, 'events_data', $sanitized_data);
 
-        // IMPORTANT: Also save event_date separately for efficient querying
+        // Save event_date separately for efficient querying
         if (isset($events_data['event_date']) && !empty($events_data['event_date'])) {
             update_post_meta($post_id, 'event_date', $sanitized_data['event_date']);
         }
@@ -862,105 +724,7 @@ function save_event_details_meta_box_data($post_id)
 }
 add_action('save_post', 'save_event_details_meta_box_data');
 
-// Add this function to ensure proper editor script loading
-function ensure_editor_scripts_loaded()
-{
-    global $wp_scripts, $wp_styles;
-
-    // Force reload of editor scripts
-    if (isset($wp_scripts->registered['editor'])) {
-        $wp_scripts->registered['editor']->ver = time();
-    }
-
-    // Ensure TinyMCE scripts are properly loaded
-    wp_enqueue_script('common');
-    wp_enqueue_script('jquery-color');
-    wp_enqueue_script('editor');
-
-    // Add custom script to handle editor initialization and selection errors
-    wp_add_inline_script('editor', '
-        // Patch TinyMCE to handle selection errors
-        jQuery(document).ready(function($) {
-            // Wait for TinyMCE to be available
-            var patchTinyMCE = function() {
-                if (typeof tinymce === "undefined") {
-                    setTimeout(patchTinyMCE, 100);
-                    return;
-                }
-                
-                // Override TinyMCE selection methods to prevent null errors
-                var originalCreate = tinymce.Editor.prototype.create;
-                tinymce.Editor.prototype.create = function() {
-                    var result = originalCreate.apply(this, arguments);
-                    
-                    // Patch selection methods after editor creation
-                    if (this.selection) {
-                        var originalSelect = this.selection.select;
-                        this.selection.select = function(node, content) {
-                            try {
-                                if (node && node.nodeType && document.contains(node)) {
-                                    return originalSelect.call(this, node, content);
-                                }
-                            } catch (e) {
-                                console.warn("Selection error prevented:", e);
-                            }
-                        };
-                        
-                        var originalCollapse = this.selection.collapse;
-                        this.selection.collapse = function(forward) {
-                            try {
-                                if (this.dom && this.dom.doc && this.dom.doc.body) {
-                                    return originalCollapse.call(this, forward);
-                                }
-                            } catch (e) {
-                                console.warn("Collapse error prevented:", e);
-                            }
-                        };
-                    }
-                    
-                    return result;
-                };
-            };
-            
-            patchTinyMCE();
-        });
-        
-        // Global function to safely initialize editors
-        window.safeInitializeEditor = function(editorId, settings) {
-            // Clean up any existing instances
-            if (typeof tinymce !== "undefined" && tinymce.get(editorId)) {
-                var editor = tinymce.get(editorId);
-                editor.destroy();
-                delete tinymce.editors[editorId];
-            }
-            
-            // Small delay then initialize
-            setTimeout(function() {
-                if (typeof wp !== "undefined" && wp.editor && document.getElementById(editorId)) {
-                    wp.editor.initialize(editorId, settings || {
-                        tinymce: true,
-                        quicktags: true,
-                        mediaButtons: true
-                    });
-                }
-            }, 100);
-        };
-        
-        // Global cleanup function
-        window.safeRemoveEditor = function(editorId) {
-            if (typeof tinymce !== "undefined" && tinymce.get(editorId)) {
-                var editor = tinymce.get(editorId);
-                editor.destroy();
-                delete tinymce.editors[editorId];
-            }
-            if (typeof wp !== "undefined" && wp.editor) {
-                wp.editor.remove(editorId);
-            }
-        };
-    ');
-}
-
-// Update your existing event_meta_box_scripts function
+// Enqueue required scripts
 function event_meta_box_scripts($hook)
 {
     global $post;
@@ -975,25 +739,10 @@ function event_meta_box_scripts($hook)
 
     // Enqueue WordPress media uploader
     wp_enqueue_media();
-
-    // Ensure editor scripts are properly loaded
-    ensure_editor_scripts_loaded();
-
-    // Add cache-busting for editor-related scripts
-    wp_add_inline_script('jquery', '
-        jQuery(document).ready(function($) {
-            // Disable caching for editor-related AJAX requests
-            $.ajaxSetup({
-                cache: false
-            });
-        });
-    ');
 }
 add_action('admin_enqueue_scripts', 'event_meta_box_scripts');
 
-
 // Register REST API field for events_data
-
 register_rest_field('events', 'events_data', [
     'get_callback' => function ($object) {
         return get_post_meta($object['id'], 'events_data', true);
@@ -1005,10 +754,7 @@ register_rest_field('events', 'events_data', [
     ]
 ]);
 
-/*
- * Add custom columns to the events post type for displaying event date, start time, and end time
- */
-
+// Add custom columns to the events post type
 function add_event_columns($columns)
 {
     $columns['event_date'] = 'Event Date';
