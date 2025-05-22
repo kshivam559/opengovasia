@@ -438,39 +438,76 @@ function display_event_details_meta_box($post)
 
                 list.append(newItem);
 
-                // Initialize the WP Editor
-                setTimeout(function () {
-                    if (document.getElementById(editorId) && wp.editor) {
-                        wp.editor.initialize(editorId, {
-                            tinymce: {
-                                wpautop: true,
-                                plugins: 'charmap colorpicker compat3x directionality fullscreen hr image lists media paste tabfocus textcolor wordpress wpautoresize wpdialogs wpeditimage wpemoji wpgallery wplink wptextpattern wpview',
-                                toolbar1: 'formatselect bold italic bullist numlist blockquote alignleft aligncenter alignright link unlink wp_more fullscreen wp_adv',
-                                toolbar2: 'strikethrough hr forecolor backcolor pastetext removeformat charmap outdent indent undo redo wp_help'
-                            },
-                            quicktags: true,
-                            mediaButtons: false,
-                            editor_height: 150
-                        });
+                // Initialize the WP Editor with better error handling
+                var initAttempts = 0;
+                var maxAttempts = 20;
+                
+                var initEditor = function() {
+                    initAttempts++;
+                    
+                    if (document.getElementById(editorId) && wp.editor && typeof wp.editor.initialize === 'function') {
+                        try {
+                            wp.editor.initialize(editorId, {
+                                tinymce: {
+                                    wpautop: true,
+                                    plugins: 'charmap colorpicker compat3x directionality fullscreen hr image lists media paste tabfocus textcolor wordpress wpautoresize wpdialogs wpeditimage wpemoji wpgallery wplink wptextpattern wpview',
+                                    toolbar1: 'formatselect bold italic bullist numlist blockquote alignleft aligncenter alignright link unlink wp_more fullscreen wp_adv',
+                                    toolbar2: 'strikethrough hr forecolor backcolor pastetext removeformat charmap outdent indent undo redo wp_help',
+                                    setup: function(editor) {
+                                        editor.on('init', function() {
+                                            console.log('TinyMCE editor initialized for: ' + editorId);
+                                        });
+                                        editor.on('change', function() {
+                                            editor.save();
+                                        });
+                                    }
+                                },
+                                quicktags: true,
+                                mediaButtons: false,
+                                editor_height: 150
+                            });
+                            console.log('Editor initialized successfully for: ' + editorId);
+                        } catch (error) {
+                            console.error('Error initializing editor:', error);
+                        }
+                    } else if (initAttempts < maxAttempts) {
+                        setTimeout(initEditor, 100);
+                    } else {
+                        console.error('Failed to initialize editor after ' + maxAttempts + ' attempts');
                     }
-                }, 100);
+                };
+                
+                setTimeout(initEditor, 100);
             });
 
             $(document).on('click', '.remove-testimonial', function () {
                 var item = $(this).closest('.testimonial-item');
                 var editorId = item.find('textarea').attr('id');
 
-                // Remove the TinyMCE instance first
+                // Save content before removing editor
+                var content = '';
                 if (editorId && wp.editor) {
-                    wp.editor.remove(editorId);
+                    try {
+                        // Try to get content from TinyMCE first, then fallback to textarea
+                        if (tinymce && tinymce.get(editorId)) {
+                            content = tinymce.get(editorId).getContent();
+                        } else {
+                            content = $('#' + editorId).val();
+                        }
+                        wp.editor.remove(editorId);
+                    } catch (error) {
+                        console.error('Error removing editor:', error);
+                        content = $('#' + editorId).val();
+                    }
                 }
 
-                // Then remove the DOM element
+                // Remove the DOM element
                 item.remove();
 
                 // Reindex the remaining testimonials and reinitialize editors
                 $('#testimonials-list .testimonial-item').each(function (index) {
-                    var oldId = $(this).find('textarea').attr('id');
+                    var oldTextarea = $(this).find('textarea');
+                    var oldId = oldTextarea.attr('id');
                     var newId = 'testimonial_content_' + index;
 
                     // Update name attributes for all input fields
@@ -483,21 +520,67 @@ function display_event_details_meta_box($post)
 
                     // If the ID needs to be updated, reinitialize the editor
                     if (oldId !== newId && wp.editor) {
-                        var content = wp.editor.getContent(oldId);
-                        wp.editor.remove(oldId);
-                        $(this).find('textarea').attr('id', newId);
-
-                        setTimeout(function () {
-                            wp.editor.initialize(newId, {
-                                tinymce: true,
-                                quicktags: true,
-                                mediaButtons: false,
-                                editor_height: 150
-                            });
-                            if (content) {
-                                wp.editor.setContent(newId, content);
+                        var existingContent = '';
+                        
+                        try {
+                            // Get existing content
+                            if (tinymce && tinymce.get(oldId)) {
+                                existingContent = tinymce.get(oldId).getContent();
+                                wp.editor.remove(oldId);
+                            } else {
+                                existingContent = oldTextarea.val();
                             }
-                        }, 100);
+                        } catch (error) {
+                            existingContent = oldTextarea.val();
+                        }
+
+                        // Update textarea ID
+                        oldTextarea.attr('id', newId);
+                        
+                        // Set content in textarea first
+                        if (existingContent) {
+                            oldTextarea.val(existingContent);
+                        }
+
+                        // Reinitialize editor
+                        var reinitAttempts = 0;
+                        var maxReinitAttempts = 10;
+                        
+                        var reinitEditor = function() {
+                            reinitAttempts++;
+                            
+                            if (document.getElementById(newId) && wp.editor) {
+                                try {
+                                    wp.editor.initialize(newId, {
+                                        tinymce: {
+                                            wpautop: true,
+                                            plugins: 'charmap colorpicker compat3x directionality fullscreen hr image lists media paste tabfocus textcolor wordpress wpautoresize wpdialogs wpeditimage wpemoji wpgallery wplink wptextpattern wpview',
+                                            toolbar1: 'formatselect bold italic bullist numlist blockquote alignleft aligncenter alignright link unlink wp_more fullscreen wp_adv',
+                                            toolbar2: 'strikethrough hr forecolor backcolor pastetext removeformat charmap outdent indent undo redo wp_help',
+                                            setup: function(editor) {
+                                                editor.on('init', function() {
+                                                    if (existingContent) {
+                                                        editor.setContent(existingContent);
+                                                    }
+                                                });
+                                                editor.on('change', function() {
+                                                    editor.save();
+                                                });
+                                            }
+                                        },
+                                        quicktags: true,
+                                        mediaButtons: false,
+                                        editor_height: 150
+                                    });
+                                } catch (error) {
+                                    console.error('Error reinitializing editor:', error);
+                                }
+                            } else if (reinitAttempts < maxReinitAttempts) {
+                                setTimeout(reinitEditor, 150);
+                            }
+                        };
+                        
+                        setTimeout(reinitEditor, 200);
                     }
                 });
             });
@@ -541,42 +624,76 @@ function display_event_details_meta_box($post)
 
                 list.append(newItem);
 
-                // Initialize the WP Editor - need to use setTimeout to make sure the element is added to DOM first
+                // Initialize the WP Editor with better error handling
+                var initAttempts = 0;
+                var maxAttempts = 20;
+                
                 var initEditor = function () {
-                    if (document.getElementById(editorId) && wp.editor) {
-                        wp.editor.initialize(editorId, {
-                            tinymce: {
-                                wpautop: true,
-                                plugins: 'charmap colorpicker compat3x directionality fullscreen hr image lists media paste tabfocus textcolor wordpress wpautoresize wpdialogs wpeditimage wpemoji wpgallery wplink wptextpattern wpview',
-                                toolbar1: 'formatselect bold italic bullist numlist blockquote alignleft aligncenter alignright link unlink wp_more fullscreen wp_adv',
-                                toolbar2: 'strikethrough hr forecolor backcolor pastetext removeformat charmap outdent indent undo redo wp_help'
-                            },
-                            quicktags: true,
-                            mediaButtons: false,
-                            editor_height: 200
-                        });
+                    initAttempts++;
+                    
+                    if (document.getElementById(editorId) && wp.editor && typeof wp.editor.initialize === 'function') {
+                        try {
+                            wp.editor.initialize(editorId, {
+                                tinymce: {
+                                    wpautop: true,
+                                    plugins: 'charmap colorpicker compat3x directionality fullscreen hr image lists media paste tabfocus textcolor wordpress wpautoresize wpdialogs wpeditimage wpemoji wpgallery wplink wptextpattern wpview',
+                                    toolbar1: 'formatselect bold italic bullist numlist blockquote alignleft aligncenter alignright link unlink wp_more fullscreen wp_adv',
+                                    toolbar2: 'strikethrough hr forecolor backcolor pastetext removeformat charmap outdent indent undo redo wp_help',
+                                    setup: function(editor) {
+                                        editor.on('init', function() {
+                                            console.log('TinyMCE editor initialized for: ' + editorId);
+                                        });
+                                        editor.on('change', function() {
+                                            editor.save();
+                                        });
+                                    }
+                                },
+                                quicktags: true,
+                                mediaButtons: false,
+                                editor_height: 200
+                            });
+                            console.log('Editor initialized successfully for: ' + editorId);
+                        } catch (error) {
+                            console.error('Error initializing special event editor:', error);
+                        }
+                    } else if (initAttempts < maxAttempts) {
+                        setTimeout(initEditor, 100);
                     } else {
-                        setTimeout(initEditor, 50); // Try again in 50ms
+                        console.error('Failed to initialize special event editor after ' + maxAttempts + ' attempts');
                     }
                 };
-                initEditor();
+                
+                setTimeout(initEditor, 100);
             });
 
             $(document).on('click', '.remove-special-event', function () {
                 var item = $(this).closest('.special-event-item');
                 var editorId = item.find('textarea').attr('id');
 
-                // Remove the TinyMCE instance first
+                // Save content before removing editor
+                var content = '';
                 if (editorId && wp.editor) {
-                    wp.editor.remove(editorId);
+                    try {
+                        // Try to get content from TinyMCE first, then fallback to textarea
+                        if (tinymce && tinymce.get(editorId)) {
+                            content = tinymce.get(editorId).getContent();
+                        } else {
+                            content = $('#' + editorId).val();
+                        }
+                        wp.editor.remove(editorId);
+                    } catch (error) {
+                        console.error('Error removing special event editor:', error);
+                        content = $('#' + editorId).val();
+                    }
                 }
 
-                // Then remove the DOM element
+                // Remove the DOM element
                 item.remove();
 
                 // Reindex the remaining items and reinitialize editors
                 $('#special-events-list .special-event-item').each(function (index) {
-                    var oldId = $(this).find('textarea').attr('id');
+                    var oldTextarea = $(this).find('textarea');
+                    var oldId = oldTextarea.attr('id');
                     var newId = 'special_event_content_' + index;
 
                     // Update name attributes for all input fields
@@ -589,21 +706,67 @@ function display_event_details_meta_box($post)
 
                     // If the ID needs to be updated, reinitialize the editor
                     if (oldId !== newId && wp.editor) {
-                        var content = wp.editor.getContent(oldId);
-                        wp.editor.remove(oldId);
-                        $(this).find('textarea').attr('id', newId);
-
-                        setTimeout(function () {
-                            wp.editor.initialize(newId, {
-                                tinymce: true,
-                                quicktags: true,
-                                mediaButtons: false,
-                                editor_height: 200
-                            });
-                            if (content) {
-                                wp.editor.setContent(newId, content);
+                        var existingContent = '';
+                        
+                        try {
+                            // Get existing content
+                            if (tinymce && tinymce.get(oldId)) {
+                                existingContent = tinymce.get(oldId).getContent();
+                                wp.editor.remove(oldId);
+                            } else {
+                                existingContent = oldTextarea.val();
                             }
-                        }, 100);
+                        } catch (error) {
+                            existingContent = oldTextarea.val();
+                        }
+
+                        // Update textarea ID
+                        oldTextarea.attr('id', newId);
+                        
+                        // Set content in textarea first
+                        if (existingContent) {
+                            oldTextarea.val(existingContent);
+                        }
+
+                        // Reinitialize editor
+                        var reinitAttempts = 0;
+                        var maxReinitAttempts = 10;
+                        
+                        var reinitEditor = function() {
+                            reinitAttempts++;
+                            
+                            if (document.getElementById(newId) && wp.editor) {
+                                try {
+                                    wp.editor.initialize(newId, {
+                                        tinymce: {
+                                            wpautop: true,
+                                            plugins: 'charmap colorpicker compat3x directionality fullscreen hr image lists media paste tabfocus textcolor wordpress wpautoresize wpdialogs wpeditimage wpemoji wpgallery wplink wptextpattern wpview',
+                                            toolbar1: 'formatselect bold italic bullist numlist blockquote alignleft aligncenter alignright link unlink wp_more fullscreen wp_adv',
+                                            toolbar2: 'strikethrough hr forecolor backcolor pastetext removeformat charmap outdent indent undo redo wp_help',
+                                            setup: function(editor) {
+                                                editor.on('init', function() {
+                                                    if (existingContent) {
+                                                        editor.setContent(existingContent);
+                                                    }
+                                                });
+                                                editor.on('change', function() {
+                                                    editor.save();
+                                                });
+                                            }
+                                        },
+                                        quicktags: true,
+                                        mediaButtons: false,
+                                        editor_height: 200
+                                    });
+                                } catch (error) {
+                                    console.error('Error reinitializing special event editor:', error);
+                                }
+                            } else if (reinitAttempts < maxReinitAttempts) {
+                                setTimeout(reinitEditor, 150);
+                            }
+                        };
+                        
+                        setTimeout(reinitEditor, 200);
                     }
                 });
             });
