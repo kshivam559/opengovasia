@@ -230,7 +230,7 @@ function display_event_details_meta_box($post)
                             <?php
                             $content = isset($testimonial['content']) ? $testimonial['content'] : '';
                             $editor_id = 'testimonial_content_' . $index;
-                            wp_editor_fix($content, $editor_id, array(
+                            safe_wp_editor($content, $editor_id, array(
                                 'textarea_name' => 'events_data[testimonials][' . $index . '][content]',
                                 'media_buttons' => false,
                                 'tinymce' => true,
@@ -298,7 +298,7 @@ function display_event_details_meta_box($post)
                                 <?php
                                 $content = isset($event['content']) ? $event['content'] : '';
                                 $editor_id = 'special_event_content_' . $index;
-                                wp_editor_fix($content, $editor_id, array(
+                                safe_wp_editor($content, $editor_id, array(
                                     'textarea_name' => 'events_data[special_events][' . $index . '][content]',
                                     'media_buttons' => true,
                                     'tinymce' => true,
@@ -1006,8 +1006,7 @@ function handle_event_column_sorting($query)
 add_action('pre_get_posts', 'handle_event_column_sorting');
 
 // Custom editor fix function
-function wp_editor_fix($content, $editor_id, $settings = array())
-{
+function wp_editor_fix($content, $editor_id, $settings = array()) {
     ob_start();
     wp_editor($content, $editor_id, $settings);
     $editor_html = ob_get_clean();
@@ -1016,15 +1015,65 @@ function wp_editor_fix($content, $editor_id, $settings = array())
     echo $editor_html;
     echo '</div>';
 
-    // JavaScript initialization fix
-    echo '<script>
+    // Initialize TinyMCE after a slight delay to ensure DOM is ready
+    echo "<script>
     jQuery(document).ready(function($) {
         setTimeout(function() {
-            if(typeof tinyMCE !== "undefined") {
-                tinyMCE.execCommand("mceAddEditor", false, "' . esc_js($editor_id) . '");
-                $("#" + "' . esc_js($editor_id) . '" + "-tmce").trigger("click");
+            if (typeof tinyMCE !== 'undefined') {
+                // Destroy existing instance if any
+                if (tinyMCE.get('" . esc_js($editor_id) . "')) {
+                    tinyMCE.get('" . esc_js($editor_id) . "').remove();
+                }
+                // Re-initialize
+                wp.editor.initialize('" . esc_js($editor_id) . "', {
+                    tinymce: true,
+                    quicktags: true
+                });
             }
         }, 300);
     });
-    </script>';
+    </script>";
 }
+
+add_filter('tiny_mce_before_init', function($init) {
+    $init['init_instance_callback'] = 'function(editor) {
+        editor.on("focus", function() {
+            if (!window.mceFixActive) {
+                window.mceFixActive = true;
+                jQuery(document).trigger("wp-before-tinymce-init", editor);
+            }
+        });
+    }';
+    return $init;
+});
+
+function safe_wp_editor($content, $editor_id, $settings = array()) {
+    static $editor_initialized = false;
+    
+    // First call: Output editor container
+    if (!$editor_initialized) {
+        add_action('admin_footer', function() use ($content, $editor_id, $settings) {
+            echo '<script>
+            jQuery(document).ready(function($) {
+                if (typeof tinyMCE !== "undefined") {
+                    tinyMCE.init('.wp_json_encode(wp_parse_args($settings, [
+                        'selector' => "#$editor_id",
+                        'setup' => 'function(editor) {
+                            editor.on("init", function() {
+                                editor.setContent('.wp_json_encode($content).');
+                            });
+                        }'
+                    ])).');
+                }
+            });
+            </script>';
+        });
+        $editor_initialized = true;
+    }
+    
+    // Output textarea with wrapper
+    echo '<div id="'.$editor_id.'-wrapper" class="mce-wrapper">';
+    wp_editor($content, $editor_id, $settings);
+    echo '</div>';
+}
+
