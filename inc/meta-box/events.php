@@ -32,8 +32,10 @@ add_action('add_meta_boxes', 'add_event_details_meta_box');
 function display_event_details_meta_box($post)
 {
     wp_nonce_field('save_event_details', 'event_details_nonce');
-    $events_data = get_post_meta($post->ID, 'events_data', true);
-    
+    global $post;
+    $post_id = $post->ID ?? 0;
+    $events_data = get_post_meta($post_id, 'events_data', true);
+
     // Safely get values with proper defaults
     $event_date = isset($events_data['event_date']) ? esc_attr($events_data['event_date']) : '';
     $event_start_time = isset($events_data['event_start_time']) ? esc_attr($events_data['event_start_time']) : '';
@@ -163,17 +165,17 @@ function display_event_details_meta_box($post)
                         <div style="display: flex; flex-wrap: wrap;">
                             <div style="flex: 1 0 70%;">
                                 <input type="text" name="events_data[speakers][<?php echo $index; ?>][name]"
-                                    value="<?php echo isset($speaker['name']) ? esc_attr($speaker['name']) : ''; ?>" placeholder="Name"
-                                    style="width:100%; margin-bottom:5px;">
+                                    value="<?php echo isset($speaker['name']) ? esc_attr($speaker['name']) : ''; ?>"
+                                    placeholder="Name" style="width:100%; margin-bottom:5px;">
                                 <input type="text" name="events_data[speakers][<?php echo $index; ?>][designation]"
-                                    value="<?php echo isset($speaker['designation']) ? esc_attr($speaker['designation']) : ''; ?>" placeholder="Designation"
-                                    style="width:100%; margin-bottom:5px;">
+                                    value="<?php echo isset($speaker['designation']) ? esc_attr($speaker['designation']) : ''; ?>"
+                                    placeholder="Designation" style="width:100%; margin-bottom:5px;">
                                 <input type="text" name="events_data[speakers][<?php echo $index; ?>][organization]"
-                                    value="<?php echo isset($speaker['organization']) ? esc_attr($speaker['organization']) : ''; ?>" placeholder="Organization"
-                                    style="width:100%; margin-bottom:5px;">
+                                    value="<?php echo isset($speaker['organization']) ? esc_attr($speaker['organization']) : ''; ?>"
+                                    placeholder="Organization" style="width:100%; margin-bottom:5px;">
                                 <input type="url" name="events_data[speakers][<?php echo $index; ?>][image]"
-                                    value="<?php echo isset($speaker['image']) ? esc_url($speaker['image']) : ''; ?>" placeholder="Image URL"
-                                    style="width:100%; margin-bottom:5px;" class="speaker-image-url">
+                                    value="<?php echo isset($speaker['image']) ? esc_url($speaker['image']) : ''; ?>"
+                                    placeholder="Image URL" style="width:100%; margin-bottom:5px;" class="speaker-image-url">
                                 <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                                     <button type="button" class="choose-image button button-secondary"
                                         data-index="<?php echo $index; ?>">Choose Image</button>
@@ -228,9 +230,9 @@ function display_event_details_meta_box($post)
                             <?php
                             $content = isset($testimonial['content']) ? $testimonial['content'] : '';
                             $editor_id = 'testimonial_content_' . $index;
-                            wp_editor($content, $editor_id, array(
+                            wp_editor_fix($content, $editor_id, array(
                                 'textarea_name' => 'events_data[testimonials][' . $index . '][content]',
-                                'media_buttons' => true,
+                                'media_buttons' => false,
                                 'tinymce' => true,
                                 'textarea_rows' => 6,
                                 'editor_height' => 150,
@@ -240,8 +242,8 @@ function display_event_details_meta_box($post)
                             ?>
                         </div>
                         <input type="text" name="events_data[testimonials][<?php echo $index; ?>][author]"
-                            value="<?php echo isset($testimonial['author']) ? esc_attr($testimonial['author']) : ''; ?>" placeholder="Author Name"
-                            style="width:100%; margin-bottom:5px;">
+                            value="<?php echo isset($testimonial['author']) ? esc_attr($testimonial['author']) : ''; ?>"
+                            placeholder="Author Name" style="width:100%; margin-bottom:5px;">
                         <div style="text-align: right;">
                             <button type="button" class="remove-testimonial button button-secondary">Remove</button>
                         </div>
@@ -283,20 +285,20 @@ function display_event_details_meta_box($post)
                     <?php foreach ($special_events as $index => $event): ?>
                         <div class="special-event-item" style="margin-top:20px; border: 1px solid #eee; padding: 10px;">
                             <input type="text" name="events_data[special_events][<?php echo $index; ?>][title]"
-                                value="<?php echo isset($event['title']) ? esc_attr($event['title']) : ''; ?>" placeholder="Tab Title"
-                                style="width:100%; margin-bottom:10px;">
+                                value="<?php echo isset($event['title']) ? esc_attr($event['title']) : ''; ?>"
+                                placeholder="Tab Title" style="width:100%; margin-bottom:10px;">
                             <input type="text" name="events_data[special_events][<?php echo $index; ?>][heading]"
-                                value="<?php echo isset($event['heading']) ? esc_attr($event['heading']) : ''; ?>" placeholder="Tab Heading"
-                                style="width:100%; margin-bottom:10px;">
+                                value="<?php echo isset($event['heading']) ? esc_attr($event['heading']) : ''; ?>"
+                                placeholder="Tab Heading" style="width:100%; margin-bottom:10px;">
                             <input type="url" name="events_data[special_events][<?php echo $index; ?>][video_url]"
-                                value="<?php echo isset($event['video_url']) ? esc_url($event['video_url']) : ''; ?>" placeholder="Video URL"
-                                style="width:100%; margin-bottom:10px;">
+                                value="<?php echo isset($event['video_url']) ? esc_url($event['video_url']) : ''; ?>"
+                                placeholder="Video URL" style="width:100%; margin-bottom:10px;">
 
                             <div class="wp-editor-container" style="margin-bottom:10px;">
                                 <?php
                                 $content = isset($event['content']) ? $event['content'] : '';
                                 $editor_id = 'special_event_content_' . $index;
-                                wp_editor($content, $editor_id, array(
+                                wp_editor_fix($content, $editor_id, array(
                                     'textarea_name' => 'events_data[special_events][' . $index . '][content]',
                                     'media_buttons' => true,
                                     'tinymce' => true,
@@ -441,10 +443,10 @@ function display_event_details_meta_box($post)
                 // Initialize the WP Editor with better error handling
                 var initAttempts = 0;
                 var maxAttempts = 20;
-                
-                var initEditor = function() {
+
+                var initEditor = function () {
                     initAttempts++;
-                    
+
                     if (document.getElementById(editorId) && wp.editor && typeof wp.editor.initialize === 'function') {
                         try {
                             wp.editor.initialize(editorId, {
@@ -453,17 +455,17 @@ function display_event_details_meta_box($post)
                                     plugins: 'charmap colorpicker compat3x directionality fullscreen hr image lists media paste tabfocus textcolor wordpress wpautoresize wpdialogs wpeditimage wpemoji wpgallery wplink wptextpattern wpview',
                                     toolbar1: 'formatselect bold italic bullist numlist blockquote alignleft aligncenter alignright link unlink wp_more fullscreen wp_adv',
                                     toolbar2: 'strikethrough hr forecolor backcolor pastetext removeformat charmap outdent indent undo redo wp_help',
-                                    setup: function(editor) {
-                                        editor.on('init', function() {
+                                    setup: function (editor) {
+                                        editor.on('init', function () {
                                             console.log('TinyMCE editor initialized for: ' + editorId);
                                         });
-                                        editor.on('change', function() {
+                                        editor.on('change', function () {
                                             editor.save();
                                         });
                                     }
                                 },
                                 quicktags: true,
-                                mediaButtons: true,
+                                mediaButtons: false,
                                 editor_height: 150
                             });
                             console.log('Editor initialized successfully for: ' + editorId);
@@ -476,7 +478,7 @@ function display_event_details_meta_box($post)
                         console.error('Failed to initialize editor after ' + maxAttempts + ' attempts');
                     }
                 };
-                
+
                 setTimeout(initEditor, 100);
             });
 
@@ -521,7 +523,7 @@ function display_event_details_meta_box($post)
                     // If the ID needs to be updated, reinitialize the editor
                     if (oldId !== newId && wp.editor) {
                         var existingContent = '';
-                        
+
                         try {
                             // Get existing content
                             if (tinymce && tinymce.get(oldId)) {
@@ -536,7 +538,7 @@ function display_event_details_meta_box($post)
 
                         // Update textarea ID
                         oldTextarea.attr('id', newId);
-                        
+
                         // Set content in textarea first
                         if (existingContent) {
                             oldTextarea.val(existingContent);
@@ -545,10 +547,10 @@ function display_event_details_meta_box($post)
                         // Reinitialize editor
                         var reinitAttempts = 0;
                         var maxReinitAttempts = 10;
-                        
-                        var reinitEditor = function() {
+
+                        var reinitEditor = function () {
                             reinitAttempts++;
-                            
+
                             if (document.getElementById(newId) && wp.editor) {
                                 try {
                                     wp.editor.initialize(newId, {
@@ -557,19 +559,19 @@ function display_event_details_meta_box($post)
                                             plugins: 'charmap colorpicker compat3x directionality fullscreen hr image lists media paste tabfocus textcolor wordpress wpautoresize wpdialogs wpeditimage wpemoji wpgallery wplink wptextpattern wpview',
                                             toolbar1: 'formatselect bold italic bullist numlist blockquote alignleft aligncenter alignright link unlink wp_more fullscreen wp_adv',
                                             toolbar2: 'strikethrough hr forecolor backcolor pastetext removeformat charmap outdent indent undo redo wp_help',
-                                            setup: function(editor) {
-                                                editor.on('init', function() {
+                                            setup: function (editor) {
+                                                editor.on('init', function () {
                                                     if (existingContent) {
                                                         editor.setContent(existingContent);
                                                     }
                                                 });
-                                                editor.on('change', function() {
+                                                editor.on('change', function () {
                                                     editor.save();
                                                 });
                                             }
                                         },
                                         quicktags: true,
-                                        mediaButtons: true,
+                                        mediaButtons: false,
                                         editor_height: 150
                                     });
                                 } catch (error) {
@@ -579,7 +581,7 @@ function display_event_details_meta_box($post)
                                 setTimeout(reinitEditor, 150);
                             }
                         };
-                        
+
                         setTimeout(reinitEditor, 200);
                     }
                 });
@@ -627,10 +629,10 @@ function display_event_details_meta_box($post)
                 // Initialize the WP Editor with better error handling
                 var initAttempts = 0;
                 var maxAttempts = 20;
-                
+
                 var initEditor = function () {
                     initAttempts++;
-                    
+
                     if (document.getElementById(editorId) && wp.editor && typeof wp.editor.initialize === 'function') {
                         try {
                             wp.editor.initialize(editorId, {
@@ -639,11 +641,11 @@ function display_event_details_meta_box($post)
                                     plugins: 'charmap colorpicker compat3x directionality fullscreen hr image lists media paste tabfocus textcolor wordpress wpautoresize wpdialogs wpeditimage wpemoji wpgallery wplink wptextpattern wpview',
                                     toolbar1: 'formatselect bold italic bullist numlist blockquote alignleft aligncenter alignright link unlink wp_more fullscreen wp_adv',
                                     toolbar2: 'strikethrough hr forecolor backcolor pastetext removeformat charmap outdent indent undo redo wp_help',
-                                    setup: function(editor) {
-                                        editor.on('init', function() {
+                                    setup: function (editor) {
+                                        editor.on('init', function () {
                                             console.log('TinyMCE editor initialized for: ' + editorId);
                                         });
-                                        editor.on('change', function() {
+                                        editor.on('change', function () {
                                             editor.save();
                                         });
                                     }
@@ -662,7 +664,7 @@ function display_event_details_meta_box($post)
                         console.error('Failed to initialize special event editor after ' + maxAttempts + ' attempts');
                     }
                 };
-                
+
                 setTimeout(initEditor, 100);
             });
 
@@ -707,7 +709,7 @@ function display_event_details_meta_box($post)
                     // If the ID needs to be updated, reinitialize the editor
                     if (oldId !== newId && wp.editor) {
                         var existingContent = '';
-                        
+
                         try {
                             // Get existing content
                             if (tinymce && tinymce.get(oldId)) {
@@ -722,7 +724,7 @@ function display_event_details_meta_box($post)
 
                         // Update textarea ID
                         oldTextarea.attr('id', newId);
-                        
+
                         // Set content in textarea first
                         if (existingContent) {
                             oldTextarea.val(existingContent);
@@ -731,10 +733,10 @@ function display_event_details_meta_box($post)
                         // Reinitialize editor
                         var reinitAttempts = 0;
                         var maxReinitAttempts = 10;
-                        
-                        var reinitEditor = function() {
+
+                        var reinitEditor = function () {
                             reinitAttempts++;
-                            
+
                             if (document.getElementById(newId) && wp.editor) {
                                 try {
                                     wp.editor.initialize(newId, {
@@ -743,13 +745,13 @@ function display_event_details_meta_box($post)
                                             plugins: 'charmap colorpicker compat3x directionality fullscreen hr image lists media paste tabfocus textcolor wordpress wpautoresize wpdialogs wpeditimage wpemoji wpgallery wplink wptextpattern wpview',
                                             toolbar1: 'formatselect bold italic bullist numlist blockquote alignleft aligncenter alignright link unlink wp_more fullscreen wp_adv',
                                             toolbar2: 'strikethrough hr forecolor backcolor pastetext removeformat charmap outdent indent undo redo wp_help',
-                                            setup: function(editor) {
-                                                editor.on('init', function() {
+                                            setup: function (editor) {
+                                                editor.on('init', function () {
                                                     if (existingContent) {
                                                         editor.setContent(existingContent);
                                                     }
                                                 });
-                                                editor.on('change', function() {
+                                                editor.on('change', function () {
                                                     editor.save();
                                                 });
                                             }
@@ -765,7 +767,7 @@ function display_event_details_meta_box($post)
                                 setTimeout(reinitEditor, 150);
                             }
                         };
-                        
+
                         setTimeout(reinitEditor, 200);
                     }
                 });
@@ -821,7 +823,7 @@ function save_event_details_meta_box_data($post_id)
 
         // Sanitize the data before saving
         $sanitized_data = array();
-        
+
         // Basic fields
         $sanitized_data['event_date'] = sanitize_text_field($events_data['event_date'] ?? '');
         $sanitized_data['event_start_time'] = sanitize_text_field($events_data['event_start_time'] ?? '');
@@ -922,7 +924,7 @@ function event_meta_box_scripts($hook)
 
     // Enqueue WordPress media uploader
     wp_enqueue_media();
-    
+
     // Enqueue editor scripts for dynamic editors
     wp_enqueue_editor();
 }
@@ -995,10 +997,34 @@ function handle_event_column_sorting($query)
     }
 
     $orderby = $query->get('orderby');
-    
+
     if ($orderby === 'event_date') {
         $query->set('meta_key', 'event_date');
         $query->set('orderby', 'meta_value');
     }
 }
 add_action('pre_get_posts', 'handle_event_column_sorting');
+
+// Custom editor fix function
+function wp_editor_fix($content, $editor_id, $settings = array())
+{
+    ob_start();
+    wp_editor($content, $editor_id, $settings);
+    $editor_html = ob_get_clean();
+
+    echo '<div id="' . esc_attr($editor_id) . '-container">';
+    echo $editor_html;
+    echo '</div>';
+
+    // JavaScript initialization fix
+    echo '<script>
+    jQuery(document).ready(function($) {
+        setTimeout(function() {
+            if(typeof tinyMCE !== "undefined") {
+                tinyMCE.execCommand("mceAddEditor", false, "' . esc_js($editor_id) . '");
+                $("#" + "' . esc_js($editor_id) . '" + "-tmce").trigger("click");
+            }
+        }, 300);
+    });
+    </script>';
+}
