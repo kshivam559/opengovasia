@@ -454,46 +454,7 @@ function display_event_details_meta_box($post)
                 });
             });
 
-            // Special Events Content Section functionality
-            $('.add-special-event').on('click', function () {
-                var list = $('#special-events-list');
-                var index = list.children().length;
-                var editorId = 'special_event_content_' + index;
 
-                var newItem = $('<div class="special-event-item" style="margin-top:20px; border: 1px solid #eee; padding: 10px;">' +
-                    '<input type="text" name="events_data[special_events][' + index + '][title]" placeholder="Tab Title" style="width:100%; margin-bottom:10px;">' +
-                    '<input type="text" name="events_data[special_events][' + index + '][heading]" placeholder="Tab Heading" style="width:100%; margin-bottom:10px;">' +
-                    '<input type="url" name="events_data[special_events][' + index + '][video_url]" placeholder="Video URL" style="width:100%; margin-bottom:10px;">' +
-                    '<div class="wp-editor-container" style="margin-bottom:10px;">' +
-                    '<textarea id="' + editorId + '" name="events_data[special_events][' + index + '][content]" rows="10" style="width:100%;"></textarea>' +
-                    '</div>' +
-                    '<div style="text-align: right;">' +
-                    '<button type="button" class="remove-special-event button button-secondary">Remove Tab</button>' +
-                    '</div>' +
-                    '</div>');
-
-                list.append(newItem);
-
-                // Initialize the WP Editor - need to use setTimeout to make sure the element is added to DOM first
-                var initEditor = function () {
-                    if (document.getElementById(editorId)) {
-                        wp.editor.initialize(editorId, {
-                            tinymce: {
-                                wpautop: true,
-                                plugins: 'charmap colorpicker compat3x directionality fullscreen hr image lists media paste tabfocus textcolor wordpress wpautoresize wpdialogs wpeditimage wpemoji wpgallery wplink wptextpattern wpview',
-                                toolbar1: 'formatselect bold italic bullist numlist blockquote alignleft aligncenter alignright link unlink wp_more fullscreen wp_adv',
-                                toolbar2: 'strikethrough hr forecolor backcolor pastetext removeformat charmap outdent indent undo redo wp_help'
-                            },
-                            quicktags: true,
-                            mediaButtons: true,
-                            editor_height: 200
-                        });
-                    } else {
-                        setTimeout(initEditor, 3000); // Try again in 50ms
-                    }
-                };
-                initEditor();
-            });
 
             $(document).on('click', '.remove-special-event', function () {
                 var item = $(this).closest('.special-event-item');
@@ -557,6 +518,50 @@ function display_event_details_meta_box($post)
             });
 
         });
+
+        // Special Events Content Section functionality
+        $('.add-special-event').on('click', function () {
+            var list = $('#special-events-list');
+            var index = list.children().length;
+            var editorId = 'special_event_content_' + index;
+
+            var newItem = $('<div class="special-event-item" style="margin-top:20px; border: 1px solid #eee; padding: 10px;">' +
+                '<input type="text" name="events_data[special_events][' + index + '][title]" placeholder="Tab Title" style="width:100%; margin-bottom:10px;">' +
+                '<input type="text" name="events_data[special_events][' + index + '][heading]" placeholder="Tab Heading" style="width:100%; margin-bottom:10px;">' +
+                '<input type="url" name="events_data[special_events][' + index + '][video_url]" placeholder="Video URL" style="width:100%; margin-bottom:10px;">' +
+                '<div class="wp-editor-container" style="margin-bottom:10px;">' +
+                '<textarea id="' + editorId + '" name="events_data[special_events][' + index + '][content]" rows="10" style="width:100%;"></textarea>' +
+                '</div>' +
+                '<div style="text-align: right;">' +
+                '<button type="button" class="remove-special-event button button-secondary">Remove Tab</button>' +
+                '</div>' +
+                '</div>');
+
+            list.append(newItem);
+
+            // Initialize the WP Editor - need to use setTimeout to make sure the element is added to DOM first
+            var initEditor = function () {
+                if (document.getElementById(editorId)) {
+                    wp.editor.initialize(editorId, {
+                        tinymce: {
+                            wpautop: true,
+                            plugins: 'charmap colorpicker compat3x directionality fullscreen hr image lists media paste tabfocus textcolor wordpress wpautoresize wpdialogs wpeditimage wpemoji wpgallery wplink wptextpattern wpview',
+                            toolbar1: 'formatselect bold italic bullist numlist blockquote alignleft aligncenter alignright link unlink wp_more fullscreen wp_adv',
+                            toolbar2: 'strikethrough hr forecolor backcolor pastetext removeformat charmap outdent indent undo redo wp_help'
+                        },
+                        quicktags: true,
+                        mediaButtons: true,
+                        editor_height: 200
+                    });
+                } else {
+                    setTimeout(initEditor, 50); // Try again in 50ms
+                }
+            };
+
+            // Start the initialization process
+            setTimeout(initEditor, 100);
+        });
+
     </script>
     <?php
 }
