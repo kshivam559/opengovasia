@@ -459,13 +459,14 @@ function display_event_details_meta_box($post)
                 var list = $('#special-events-list');
                 var index = list.children().length;
                 var editorId = 'special_event_content_' + index;
+                var uniqueId = editorId + '_' + Date.now(); // Add timestamp for uniqueness
 
                 var newItem = $('<div class="special-event-item" style="margin-top:20px; border: 1px solid #eee; padding: 10px;">' +
                     '<input type="text" name="events_data[special_events][' + index + '][title]" placeholder="Tab Title" style="width:100%; margin-bottom:10px;">' +
                     '<input type="text" name="events_data[special_events][' + index + '][heading]" placeholder="Tab Heading" style="width:100%; margin-bottom:10px;">' +
                     '<input type="url" name="events_data[special_events][' + index + '][video_url]" placeholder="Video URL" style="width:100%; margin-bottom:10px;">' +
                     '<div class="wp-editor-container" style="margin-bottom:10px;">' +
-                    '<textarea id="' + editorId + '" name="events_data[special_events][' + index + '][content]" rows="10" style="width:100%;"></textarea>' +
+                    '<textarea id="' + uniqueId + '" name="events_data[special_events][' + index + '][content]" rows="10" style="width:100%;"></textarea>' +
                     '</div>' +
                     '<div style="text-align: right;">' +
                     '<button type="button" class="remove-special-event button button-secondary">Remove Tab</button>' +
@@ -474,71 +475,182 @@ function display_event_details_meta_box($post)
 
                 list.append(newItem);
 
-                // Initialize the WP Editor - need to use setTimeout to make sure the element is added to DOM first
+                // Initialize the WP Editor with proper cleanup and error handling
                 var initEditor = function () {
-                    if (document.getElementById(editorId)) {
-                        wp.editor.initialize(editorId, {
-                            tinymce: {
-                                wpautop: true,
-                                plugins: 'charmap colorpicker compat3x directionality fullscreen hr image lists media paste tabfocus textcolor wordpress wpautoresize wpdialogs wpeditimage wpemoji wpgallery wplink wptextpattern wpview',
-                                toolbar1: 'formatselect bold italic bullist numlist blockquote alignleft aligncenter alignright link unlink wp_more fullscreen wp_adv',
-                                toolbar2: 'strikethrough hr forecolor backcolor pastetext removeformat charmap outdent indent undo redo wp_help'
-                            },
-                            quicktags: true,
-                            mediaButtons: true,
-                            editor_height: 200
-                        });
-                    } else {
-                        setTimeout(initEditor, 50); // Try again in 50ms
+                    // Check if element exists in DOM
+                    if (!document.getElementById(uniqueId)) {
+                        setTimeout(initEditor, 50);
+                        return;
                     }
+
+                    // Remove any existing instance with same ID (cleanup)
+                    if (typeof tinymce !== 'undefined' && tinymce.get(uniqueId)) {
+                        tinymce.get(uniqueId).remove();
+                    }
+
+                    // Remove from wp.editor instances if exists
+                    if (typeof wp !== 'undefined' && wp.editor) {
+                        try {
+                            wp.editor.remove(uniqueId);
+                        } catch (e) {
+                            // Ignore errors if editor doesn't exist
+                        }
+                    }
+
+                    // Small delay to ensure cleanup is complete
+                    setTimeout(function () {
+                        try {
+                            // Initialize new editor
+                            if (typeof wp !== 'undefined' && wp.editor) {
+                                wp.editor.initialize(uniqueId, {
+                                    tinymce: {
+                                        wpautop: true,
+                                        plugins: 'charmap colorpicker compat3x directionality fullscreen hr image lists media paste tabfocus textcolor wordpress wpautoresize wpdialogs wpeditimage wpemoji wpgallery wplink wptextpattern wpview',
+                                        toolbar1: 'formatselect bold italic bullist numlist blockquote alignleft aligncenter alignright link unlink wp_more fullscreen wp_adv',
+                                        toolbar2: 'strikethrough hr forecolor backcolor pastetext removeformat charmap outdent indent undo redo wp_help',
+                                        setup: function (editor) {
+                                            // Ensure editor is properly initialized
+                                            editor.on('init', function () {
+                                                console.log('Editor ' + uniqueId + ' initialized successfully');
+                                            });
+                                        }
+                                    },
+                                    quicktags: true,
+                                    mediaButtons: true,
+                                    editor_height: 200
+                                });
+                            }
+                        } catch (error) {
+                            console.error('Error initializing editor ' + uniqueId + ':', error);
+                            // Fallback to plain textarea if editor fails
+                            $('#' + uniqueId).show();
+                        }
+                    }, 100);
                 };
+
+                // Start initialization
                 initEditor();
             });
 
             $(document).on('click', '.remove-special-event', function () {
                 var item = $(this).closest('.special-event-item');
-                var editorId = item.find('textarea').attr('id');
+                var textarea = item.find('textarea');
+                var editorId = textarea.attr('id');
 
-                // Remove the TinyMCE instance first
-                if (editorId && wp.editor) {
-                    wp.editor.remove(editorId);
+                // Comprehensive cleanup before removal
+                if (editorId) {
+                    // Remove TinyMCE instance
+                    if (typeof tinymce !== 'undefined' && tinymce.get(editorId)) {
+                        try {
+                            tinymce.get(editorId).remove();
+                        } catch (e) {
+                            console.warn('Error removing TinyMCE instance:', e);
+                        }
+                    }
+
+                    // Remove wp.editor instance
+                    if (typeof wp !== 'undefined' && wp.editor) {
+                        try {
+                            wp.editor.remove(editorId);
+                        } catch (e) {
+                            console.warn('Error removing wp.editor instance:', e);
+                        }
+                    }
+
+                    // Remove any remaining editor DOM elements
+                    $('#wp-' + editorId + '-wrap').remove();
+                    $('#' + editorId + '_ifr').remove();
                 }
 
-                // Then remove the DOM element
+                // Remove the DOM element
                 item.remove();
 
-                // Reindex the remaining items and reinitialize editors
-                $('#special-events-list .special-event-item').each(function (index) {
-                    var oldId = $(this).find('textarea').attr('id');
-                    var newId = 'special_event_content_' + index;
+                // Reindex remaining items with proper editor reinitialization
+                setTimeout(function () {
+                    $('#special-events-list .special-event-item').each(function (index) {
+                        var currentItem = $(this);
+                        var oldTextarea = currentItem.find('textarea');
+                        var oldId = oldTextarea.attr('id');
+                        var newId = 'special_event_content_' + index + '_' + Date.now();
 
-                    // Update name attributes for all input fields
-                    $(this).find('input, textarea').each(function () {
-                        var name = $(this).attr('name');
-                        if (name) {
-                            $(this).attr('name', name.replace(/\[special_events\]\[\d+\]/, '[special_events][' + index + ']'));
+                        // Update name attributes for all input fields
+                        currentItem.find('input, textarea').each(function () {
+                            var name = $(this).attr('name');
+                            if (name) {
+                                $(this).attr('name', name.replace(/\[special_events\]\[\d+\]/, '[special_events][' + index + ']'));
+                            }
+                        });
+
+                        // Only reinitialize if ID changed
+                        if (oldId && oldId !== newId) {
+                            var content = '';
+
+                            // Get existing content
+                            if (typeof wp !== 'undefined' && wp.editor) {
+                                try {
+                                    content = wp.editor.getContent(oldId) || oldTextarea.val();
+                                } catch (e) {
+                                    content = oldTextarea.val();
+                                }
+                            }
+
+                            // Remove old editor instance
+                            if (typeof tinymce !== 'undefined' && tinymce.get(oldId)) {
+                                try {
+                                    tinymce.get(oldId).remove();
+                                } catch (e) {
+                                    console.warn('Error removing old editor during reindex:', e);
+                                }
+                            }
+
+                            if (typeof wp !== 'undefined' && wp.editor) {
+                                try {
+                                    wp.editor.remove(oldId);
+                                } catch (e) {
+                                    // Ignore if doesn't exist
+                                }
+                            }
+
+                            // Update textarea ID
+                            oldTextarea.attr('id', newId);
+
+                            // Reinitialize editor with delay
+                            setTimeout(function () {
+                                try {
+                                    if (typeof wp !== 'undefined' && wp.editor) {
+                                        wp.editor.initialize(newId, {
+                                            tinymce: {
+                                                wpautop: true,
+                                                plugins: 'charmap colorpicker compat3x directionality fullscreen hr image lists media paste tabfocus textcolor wordpress wpautoresize wpdialogs wpeditimage wpemoji wpgallery wplink wptextpattern wpview',
+                                                toolbar1: 'formatselect bold italic bullist numlist blockquote alignleft aligncenter alignright link unlink wp_more fullscreen wp_adv',
+                                                toolbar2: 'strikethrough hr forecolor backcolor pastetext removeformat charmap outdent indent undo redo wp_help'
+                                            },
+                                            quicktags: true,
+                                            mediaButtons: true,
+                                            editor_height: 200
+                                        });
+
+                                        // Set content after initialization
+                                        if (content) {
+                                            setTimeout(function () {
+                                                if (typeof wp !== 'undefined' && wp.editor) {
+                                                    try {
+                                                        wp.editor.setContent(newId, content);
+                                                    } catch (e) {
+                                                        // Fallback to textarea value
+                                                        $('#' + newId).val(content);
+                                                    }
+                                                }
+                                            }, 200);
+                                        }
+                                    }
+                                } catch (error) {
+                                    console.error('Error reinitializing editor during reindex:', error);
+                                }
+                            }, 150 * (index + 1)); // Staggered initialization to avoid conflicts
                         }
                     });
-
-                    // If the ID needs to be updated, reinitialize the editor
-                    if (oldId !== newId) {
-                        var content = wp.editor.getContent(oldId);
-                        wp.editor.remove(oldId);
-                        $(this).find('textarea').attr('id', newId);
-
-                        setTimeout(function () {
-                            wp.editor.initialize(newId, {
-                                tinymce: true,
-                                quicktags: true,
-                                mediaButtons: true,
-                                editor_height: 200
-                            });
-                            if (content) {
-                                wp.editor.setContent(newId, content);
-                            }
-                        }, 100);
-                    }
-                });
+                }, 100);
             });
 
             // Update image previews when URL is manually changed
@@ -646,7 +758,55 @@ function save_event_details_meta_box_data($post_id)
 }
 add_action('save_post', 'save_event_details_meta_box_data');
 
+// Add this function to ensure proper editor script loading
+function ensure_editor_scripts_loaded() {
+    global $wp_scripts, $wp_styles;
+    
+    // Force reload of editor scripts
+    if (isset($wp_scripts->registered['editor'])) {
+        $wp_scripts->registered['editor']->ver = time();
+    }
+    
+    // Ensure TinyMCE scripts are properly loaded
+    wp_enqueue_script('common');
+    wp_enqueue_script('jquery-color');
+    wp_enqueue_script('editor');
+    
+    // Add custom script to handle editor initialization issues
+    wp_add_inline_script('editor', '
+        // Global function to safely initialize editors
+        window.safeInitializeEditor = function(editorId, settings) {
+            // Clean up any existing instances
+            if (typeof tinymce !== "undefined" && tinymce.get(editorId)) {
+                tinymce.get(editorId).remove();
+            }
+            
+            // Small delay then initialize
+            setTimeout(function() {
+                if (typeof wp !== "undefined" && wp.editor && document.getElementById(editorId)) {
+                    wp.editor.initialize(editorId, settings || {
+                        tinymce: true,
+                        quicktags: true,
+                        mediaButtons: true
+                    });
+                }
+            }, 100);
+        };
+        
+        // Global cleanup function
+        window.safeRemoveEditor = function(editorId) {
+            if (typeof tinymce !== "undefined" && tinymce.get(editorId)) {
+                tinymce.get(editorId).remove();
+            }
+            if (typeof wp !== "undefined" && wp.editor) {
+                wp.editor.remove(editorId);
+            }
+        };
+    ');
+}
+
 // Enqueue required scripts
+// Update your existing event_meta_box_scripts function
 function event_meta_box_scripts($hook)
 {
     global $post;
@@ -661,6 +821,19 @@ function event_meta_box_scripts($hook)
 
     // Enqueue WordPress media uploader
     wp_enqueue_media();
+    
+    // Ensure editor scripts are properly loaded
+    ensure_editor_scripts_loaded();
+    
+    // Add cache-busting for editor-related scripts
+    wp_add_inline_script('jquery', '
+        jQuery(document).ready(function($) {
+            // Disable caching for editor-related AJAX requests
+            $.ajaxSetup({
+                cache: false
+            });
+        });
+    ');
 }
 add_action('admin_enqueue_scripts', 'event_meta_box_scripts');
 
