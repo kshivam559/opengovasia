@@ -48,11 +48,11 @@ function display_event_details_meta_box($post)
     $topics_covered = $events_data['topics_covered'] ?? [];
     $special_events = $events_data['special_events'] ?? [];
     ?>
-    
+
     <!-- Include Quill CSS and JS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.snow.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.min.js"></script>
-    
+
     <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 15px;">
         <h3>Event Details</h3>
         <table style="width:100%; border-spacing: 0 10px;">
@@ -231,12 +231,13 @@ function display_event_details_meta_box($post)
                 <?php foreach ($testimonials as $index => $testimonial): ?>
                     <div class="testimonial-item" style="margin-top:10px; border: 1px solid #eee; padding: 10px;">
                         <label><strong>Testimonial Content:</strong></label>
-                        <div id="testimonial-editor-<?php echo $index; ?>" class="quill-editor" style="height: 150px; margin-bottom: 10px;">
+                        <div id="testimonial-editor-<?php echo $index; ?>" class="quill-editor"
+                            style="height: 150px; margin-bottom: 10px;">
                             <?php echo wp_kses_post($testimonial['content'] ?? ''); ?>
                         </div>
-                        <textarea name="events_data[testimonials][<?php echo $index; ?>][content]" 
-                                  id="testimonial-content-<?php echo $index; ?>" 
-                                  style="display: none;"><?php echo esc_textarea($testimonial['content'] ?? ''); ?></textarea>
+                        <textarea name="events_data[testimonials][<?php echo $index; ?>][content]"
+                            id="testimonial-content-<?php echo $index; ?>"
+                            style="display: none;"><?php echo esc_textarea($testimonial['content'] ?? ''); ?></textarea>
                         <input type="text" name="events_data[testimonials][<?php echo $index; ?>][author]"
                             value="<?php echo esc_attr($testimonial['author'] ?? ''); ?>" placeholder="Author Name"
                             style="width:100%; margin-bottom:5px;">
@@ -291,12 +292,13 @@ function display_event_details_meta_box($post)
                                 style="width:100%; margin-bottom:10px;">
 
                             <label><strong>Content:</strong></label>
-                            <div id="special-event-editor-<?php echo $index; ?>" class="quill-editor" style="height: 200px; margin-bottom: 10px;">
+                            <div id="special-event-editor-<?php echo $index; ?>" class="quill-editor"
+                                style="height: 200px; margin-bottom: 10px;">
                                 <?php echo wp_kses_post($event['content'] ?? ''); ?>
                             </div>
-                            <textarea name="events_data[special_events][<?php echo $index; ?>][content]" 
-                                      id="special-event-content-<?php echo $index; ?>" 
-                                      style="display: none;"><?php echo esc_textarea($event['content'] ?? ''); ?></textarea>
+                            <textarea name="events_data[special_events][<?php echo $index; ?>][content]"
+                                id="special-event-content-<?php echo $index; ?>"
+                                style="display: none;"><?php echo esc_textarea($event['content'] ?? ''); ?></textarea>
 
                             <div style="text-align: right;">
                                 <button type="button" class="remove-special-event button button-secondary">Remove Tab</button>
@@ -324,15 +326,17 @@ function display_event_details_meta_box($post)
                             [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
                             ['bold', 'italic', 'underline', 'strike'],
                             [{ 'color': [] }, { 'background': [] }],
-                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
                             [{ 'align': [] }],
                             ['blockquote', 'code-block'],
                             ['link', 'image'],
                             ['clean']
                         ],
                         handlers: {
-                            'image': function() {
-                                selectLocalImage(this);
+                            'image': function () {
+                                // 'this' refers to the toolbar, we need to get the quill instance
+                                var quill = this.quill;
+                                selectLocalImage(quill);
                             }
                         }
                     }
@@ -349,17 +353,30 @@ function display_event_details_meta_box($post)
                         library: { type: 'image' }
                     });
 
-                    mediaFrame.on('select', function() {
+                    mediaFrame.on('select', function () {
                         var attachment = mediaFrame.state().get('selection').first().toJSON();
                         var range = quill.getSelection();
                         var index = range ? range.index : quill.getLength();
-                        
+
                         // Insert image at cursor position
                         quill.insertEmbed(index, 'image', attachment.url);
+
+                        // Move cursor after the image
                         quill.setSelection(index + 1);
-                        
-                        // Trigger text change to sync with textarea
-                        quill.root.dispatchEvent(new Event('input', { bubbles: true }));
+
+                        // Get the editor container ID to find corresponding textarea
+                        var editorContainer = quill.container;
+                        var editorId = editorContainer.id;
+                        var textareaId = editorId.replace('-editor-', '-content-');
+
+                        // Sync content with hidden textarea
+                        var html = quill.root.innerHTML;
+                        document.getElementById(textareaId).value = html;
+
+                        // Also trigger using jQuery if available
+                        if (typeof $ !== 'undefined') {
+                            $('#' + textareaId).val(html).trigger('change');
+                        }
                     });
 
                     mediaFrame.open();
@@ -371,44 +388,55 @@ function display_event_details_meta_box($post)
                         var index = range ? range.index : quill.getLength();
                         quill.insertEmbed(index, 'image', url);
                         quill.setSelection(index + 1);
+
+                        // Sync with textarea
+                        var editorContainer = quill.container;
+                        var editorId = editorContainer.id;
+                        var textareaId = editorId.replace('-editor-', '-content-');
+                        var html = quill.root.innerHTML;
+                        document.getElementById(textareaId).value = html;
+
+                        if (typeof $ !== 'undefined') {
+                            $('#' + textareaId).val(html).trigger('change');
+                        }
                     }
                 }
             }
 
             // Initialize existing Quill editors
             var quillEditors = {};
-            
+
             function initializeQuillEditor(editorId, textareaId) {
                 if (document.getElementById(editorId) && !quillEditors[editorId]) {
                     var quill = new Quill('#' + editorId, quillOptions);
                     quillEditors[editorId] = quill;
-                    
+
                     // Sync content with hidden textarea on any change
-                    quill.on('text-change', function() {
+                    quill.on('text-change', function () {
                         var html = quill.root.innerHTML;
                         $('#' + textareaId).val(html);
                     });
-                    
+
                     // Also sync on selection change (for image insertions)
-                    quill.on('selection-change', function() {
+                    quill.on('selection-change', function () {
                         var html = quill.root.innerHTML;
                         $('#' + textareaId).val(html);
                     });
-                    
+
                     return quill;
                 }
                 return quillEditors[editorId];
             }
 
             // Initialize existing testimonial editors
-            $('.testimonial-item').each(function(index) {
+            $('.testimonial-item').each(function (index) {
                 var editorId = 'testimonial-editor-' + index;
                 var textareaId = 'testimonial-content-' + index;
                 initializeQuillEditor(editorId, textareaId);
             });
 
             // Initialize existing special event editors
-            $('.special-event-item').each(function(index) {
+            $('.special-event-item').each(function (index) {
                 var editorId = 'special-event-editor-' + index;
                 var textareaId = 'special-event-content-' + index;
                 initializeQuillEditor(editorId, textareaId);
@@ -504,7 +532,7 @@ function display_event_details_meta_box($post)
                 var index = list.children().length;
                 var editorId = 'testimonial-editor-' + index;
                 var textareaId = 'testimonial-content-' + index;
-                
+
                 var newItem = $('<div class="testimonial-item" style="margin-top:10px; border: 1px solid #eee; padding: 10px;">' +
                     '<label><strong>Testimonial Content:</strong></label>' +
                     '<div id="' + editorId + '" class="quill-editor" style="height: 150px; margin-bottom: 10px;"></div>' +
@@ -514,10 +542,10 @@ function display_event_details_meta_box($post)
                     '<button type="button" class="remove-testimonial button button-secondary">Remove</button>' +
                     '</div>' +
                     '</div>');
-                
+
                 list.append(newItem);
-                
-                setTimeout(function() {
+
+                setTimeout(function () {
                     initializeQuillEditor(editorId, textareaId);
                 }, 100);
             });
@@ -525,32 +553,32 @@ function display_event_details_meta_box($post)
             $(document).on('click', '.remove-testimonial', function () {
                 var item = $(this).closest('.testimonial-item');
                 var editorId = item.find('.quill-editor').attr('id');
-                
+
                 // Remove Quill instance
                 if (quillEditors[editorId]) {
                     delete quillEditors[editorId];
                 }
-                
+
                 item.remove();
-                
+
                 // Reindex remaining testimonials
                 $('#testimonials-list .testimonial-item').each(function (index) {
                     var oldEditorId = $(this).find('.quill-editor').attr('id');
                     var oldTextareaId = $(this).find('textarea').attr('id');
                     var newEditorId = 'testimonial-editor-' + index;
                     var newTextareaId = 'testimonial-content-' + index;
-                    
+
                     // Update IDs and names
                     $(this).find('.quill-editor').attr('id', newEditorId);
                     $(this).find('textarea').attr('id', newTextareaId);
-                    
+
                     $(this).find('textarea, input').each(function () {
                         var name = $(this).attr('name');
                         if (name) {
                             $(this).attr('name', name.replace(/\[testimonials\]\[\d+\]/, '[testimonials][' + index + ']'));
                         }
                     });
-                    
+
                     // Reinitialize Quill if ID changed
                     if (oldEditorId !== newEditorId) {
                         var content = '';
@@ -558,8 +586,8 @@ function display_event_details_meta_box($post)
                             content = quillEditors[oldEditorId].root.innerHTML;
                             delete quillEditors[oldEditorId];
                         }
-                        
-                        setTimeout(function() {
+
+                        setTimeout(function () {
                             var quill = initializeQuillEditor(newEditorId, newTextareaId);
                             if (content && quill) {
                                 quill.root.innerHTML = content;
@@ -607,8 +635,8 @@ function display_event_details_meta_box($post)
                     '</div>');
 
                 list.append(newItem);
-                
-                setTimeout(function() {
+
+                setTimeout(function () {
                     initializeQuillEditor(editorId, textareaId);
                 }, 100);
             });
@@ -616,12 +644,12 @@ function display_event_details_meta_box($post)
             $(document).on('click', '.remove-special-event', function () {
                 var item = $(this).closest('.special-event-item');
                 var editorId = item.find('.quill-editor').attr('id');
-                
+
                 // Remove Quill instance
                 if (quillEditors[editorId]) {
                     delete quillEditors[editorId];
                 }
-                
+
                 item.remove();
 
                 // Reindex remaining special events
@@ -630,18 +658,18 @@ function display_event_details_meta_box($post)
                     var oldTextareaId = $(this).find('textarea').attr('id');
                     var newEditorId = 'special-event-editor-' + index;
                     var newTextareaId = 'special-event-content-' + index;
-                    
+
                     // Update IDs and names
                     $(this).find('.quill-editor').attr('id', newEditorId);
                     $(this).find('textarea').attr('id', newTextareaId);
-                    
+
                     $(this).find('input, textarea').each(function () {
                         var name = $(this).attr('name');
                         if (name) {
                             $(this).attr('name', name.replace(/\[special_events\]\[\d+\]/, '[special_events][' + index + ']'));
                         }
                     });
-                    
+
                     // Reinitialize Quill if ID changed
                     if (oldEditorId !== newEditorId) {
                         var content = '';
@@ -649,8 +677,8 @@ function display_event_details_meta_box($post)
                             content = quillEditors[oldEditorId].root.innerHTML;
                             delete quillEditors[oldEditorId];
                         }
-                        
-                        setTimeout(function() {
+
+                        setTimeout(function () {
                             var quill = initializeQuillEditor(newEditorId, newTextareaId);
                             if (content && quill) {
                                 quill.root.innerHTML = content;
@@ -676,9 +704,9 @@ function display_event_details_meta_box($post)
             });
 
             // Form submission handler to sync Quill content
-            $('form').on('submit', function() {
+            $('form').on('submit', function () {
                 // Sync all Quill editors content to textareas before form submission
-                Object.keys(quillEditors).forEach(function(editorId) {
+                Object.keys(quillEditors).forEach(function (editorId) {
                     var quill = quillEditors[editorId];
                     var textareaId = editorId.replace('-editor-', '-content-');
                     var html = quill.root.innerHTML;
