@@ -10,6 +10,10 @@ if (!defined('ABSPATH'))
 
 
 $categories = get_the_category();
+$category = null;
+$term_id = 0;
+$sponsor_link_text = '';
+$sponsor_link = '';
 
 // Check if there are categories
 if (!empty($categories)):
@@ -17,14 +21,15 @@ if (!empty($categories)):
     $category = $categories[0];
     $term_id = $category->term_id;
 
-    $sponsor_link_text = get_term_meta($term_id, 'sponsor_link_text', true);
-    $sponsor_link = get_term_meta($term_id, 'sponsor_link', true);
-
-
+    if (!empty(get_term_meta($term_id, 'sponsor_link_text', true)) && !empty(get_term_meta($term_id, 'sponsor_link', true))):
+        // Retrieve the sponsor link text and link
+        $sponsor_link_text = get_term_meta($term_id, 'sponsor_link_text', true);
+        $sponsor_link = get_term_meta($term_id, 'sponsor_link', true);
+    endif;
 endif;
 
 // Retrieve the 'channel_image' meta or use fallback
-$channel_image = !empty(get_term_meta($term_id, 'channel_image', true))
+$channel_image = (!empty($categories) && !empty(get_term_meta($term_id, 'channel_image', true)))
     ? get_term_meta($term_id, 'channel_image', true)
     : get_template_directory_uri() . '/assets/images/demo-three/common/channel-banner.webp';
 
@@ -35,12 +40,19 @@ $channel_image = !empty(get_term_meta($term_id, 'channel_image', true))
 
     <div class="container max-w-xl position-absolute start-50 translate-middle z-2 text-center" style="top: 35%;">
         <h1 class="h3 lg:h1 text-white "><?php the_title(); ?></h1>
+
         <div class="my-2">
 
-            <span class="single-post cateogry-link text-white fs-6 md:fs-5">
-                <a href="<?php echo esc_url(get_category_link($category->term_id)); ?>"
-                    class="text-none text-white"><?php echo esc_html($category->name); ?></a>
-            </span>
+            <?php if (!empty($category)): ?>
+
+
+                <span class="single-post cateogry-link text-white fs-6 md:fs-5">
+                    <a href="<?php echo esc_url(get_category_link($category->term_id)); ?>"
+                        class="text-none text-white"><?php echo esc_html($category->name); ?></a>
+                </span>
+
+            <?php endif; ?>
+
             <?php if (!empty($sponsor_link_text) && !empty($sponsor_link)): ?>
                 <span class="single-post single-post-sep sep text-white fs-6 md:fs-5 opacity-60">
                     •
@@ -51,9 +63,8 @@ $channel_image = !empty(get_term_meta($term_id, 'channel_image', true))
                     <a class="text-none" href="<?php echo esc_url($sponsor_link); ?>" target="_blank"
                         rel="noopener noreferrer"><?php echo esc_html($sponsor_link_text); ?></a>
                 </span>
-
-
             <?php endif; ?>
+
             <span class="single-post single-post-sep sep text-white fs-6 md:fs-5 opacity-60">•</span>
             <span class="single-post single-post-date text-white fs-6 md:fs-5">
                 <i class="unicon-calendar"></i>

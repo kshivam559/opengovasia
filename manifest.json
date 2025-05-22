@@ -12,19 +12,19 @@
     "dir": "ltr",
     "icons": [
         {
-            "src": "https://opengovasia.com/wp-content/uploads/2025/05/og-logo.jpg",
+            "src": "https://test.opengovasia.com/wp-content/uploads/2025/05/og-logo.jpg",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any maskable"
         },
         {
-            "src": "https://opengovasia.com/wp-content/uploads/2025/05/og-logo.jpg",
+            "src": "https://test.opengovasia.com/wp-content/uploads/2025/05/og-logo.jpg",
             "sizes": "144x144",
             "type": "image/png",
             "purpose": "any maskable"
         },
         {
-            "src": "https://opengovasia.com/wp-content/uploads/2025/05/og-logo.jpg",
+            "src": "https://test.opengovasia.com/wp-content/uploads/2025/05/og-logo.jpg",
             "sizes": "96x96",
             "type": "image/png",
             "purpose": "any maskable"

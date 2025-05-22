@@ -145,7 +145,7 @@ function display_event_details_meta_box($post)
             </tr>
         </table>
     </div>
-    
+
 
     <!-- Meet Our Distinguished Speakers -->
     <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 15px;">
@@ -217,86 +217,6 @@ function display_event_details_meta_box($post)
     </div>
 
 
-    <!-- In Collaboration With Partners -->
-    <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 15px;">
-        <h3>In Collaboration With</h3>
-
-        <div id="partners-list">
-            <?php if (!empty($partners)): ?>
-                <?php foreach ($partners as $index => $partner): ?>
-                    <div class="partner-item" style="margin-top:10px; border: 1px solid #eee; padding: 10px;">
-                        <div style="display: flex; flex-wrap: wrap;">
-                            <div style="flex: 1 0 70%;">
-                                <input type="text" name="events_data[partners][<?php echo $index; ?>][name]"
-                                    value="<?php echo esc_attr($partner['name'] ?? ''); ?>" placeholder="Partner Name"
-                                    style="width:100%; margin-bottom:5px;">
-                                <textarea name="events_data[partners][<?php echo $index; ?>][info]"
-                                    placeholder="Partner Description" rows="3"
-                                    style="width:100%; margin-bottom:5px;"><?php echo esc_textarea($partner['info'] ?? ''); ?></textarea>
-                                <input type="url" name="events_data[partners][<?php echo $index; ?>][logo]"
-                                    value="<?php echo esc_url($partner['logo'] ?? ''); ?>" placeholder="Partner Logo URL"
-                                    style="width:100%; margin-bottom:5px;" class="partner-logo-url">
-                                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                                    <button type="button" class="choose-partner-logo button button-secondary"
-                                        data-index="<?php echo $index; ?>">Choose Logo</button>
-                                    <button type="button" class="remove-partner button button-secondary">Remove Partner</button>
-                                </div>
-                            </div>
-                            <div style="flex: 1 0 25%; padding-left: 10px;">
-                                <?php if (!empty($partner['logo'])): ?>
-                                    <div class="partner-logo-preview" style="margin-bottom: 10px;">
-                                        <img src="<?php echo esc_url($partner['logo']); ?>"
-                                            style="max-width: 100%; height: auto; max-height: 80px;">
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-
-                        <div class="partner-socials">
-                            <h4>Social Links</h4>
-                            <?php
-                            $socials = $partner['socials'] ?? [];
-                            if (!empty($socials)) {
-                                foreach ($socials as $social_index => $social) {
-                                    ?>
-                                    <div class="social-item" style="display: flex; margin-bottom: 10px; align-items: center;">
-                                        <select
-                                            name="events_data[partners][<?php echo $index; ?>][socials][<?php echo $social_index; ?>][platform]"
-                                            style="width: 120px; margin-right: 10px;">
-                                            <option value="">Select Platform</option>
-                                            <option value="facebook" <?php selected($social['platform'] ?? '', 'facebook'); ?>>Facebook
-                                            </option>
-                                            <option value="twitter" <?php selected($social['platform'] ?? '', 'twitter'); ?>>Twitter
-                                            </option>
-                                            <option value="linkedin" <?php selected($social['platform'] ?? '', 'linkedin'); ?>>LinkedIn
-                                            </option>
-                                            <option value="instagram" <?php selected($social['platform'] ?? '', 'instagram'); ?>>Instagram
-                                            </option>
-                                            <option value="youtube" <?php selected($social['platform'] ?? '', 'youtube'); ?>>YouTube
-                                            </option>
-                                            <option value="website" <?php selected($social['platform'] ?? '', 'website'); ?>>Website
-                                            </option>
-                                        </select>
-                                        <input type="url"
-                                            name="events_data[partners][<?php echo $index; ?>][socials][<?php echo $social_index; ?>][url]"
-                                            value="<?php echo esc_url($social['url'] ?? ''); ?>" placeholder="Social URL" style="flex: 1;">
-                                        <button type="button" class="remove-social button button-secondary"
-                                            style="margin-left:10px;">Remove</button>
-                                    </div>
-                                    <?php
-                                }
-                            }
-                            ?>
-                        </div>
-                        <button type="button" class="add-social button button-secondary"
-                            data-partner-index="<?php echo $index; ?>">+ Add Social</button>
-                    </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
-        <button type="button" class="add-partner button button-primary" style="margin-top:10px;">+ Add Partner</button>
-    </div>
-
     <!-- Testimonials -->
     <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 15px;">
         <h3>Testimonials</h3>
@@ -304,9 +224,21 @@ function display_event_details_meta_box($post)
             <?php if (!empty($testimonials)): ?>
                 <?php foreach ($testimonials as $index => $testimonial): ?>
                     <div class="testimonial-item" style="margin-top:10px; border: 1px solid #eee; padding: 10px;">
-                        <textarea name="events_data[testimonials][<?php echo $index; ?>][content]" rows="3"
-                            placeholder="Testimonial Content"
-                            style="width:100%; margin-bottom:10px;"><?php echo esc_textarea($testimonial['content'] ?? ''); ?></textarea>
+                        <div class="wp-editor-container" style="margin-bottom:10px;">
+                            <?php
+                            $content = $testimonial['content'] ?? '';
+                            $editor_id = 'testimonial_content_' . $index;
+                            wp_editor($content, $editor_id, array(
+                                'textarea_name' => 'events_data[testimonials][' . $index . '][content]',
+                                'media_buttons' => false,
+                                'tinymce' => true,
+                                'textarea_rows' => 6,
+                                'editor_height' => 150,
+                                'teeny' => false,
+                                'quicktags' => true,
+                            ));
+                            ?>
+                        </div>
                         <input type="text" name="events_data[testimonials][<?php echo $index; ?>][author]"
                             value="<?php echo esc_attr($testimonial['author'] ?? ''); ?>" placeholder="Author Name"
                             style="width:100%; margin-bottom:5px;">
@@ -512,123 +444,85 @@ function display_event_details_meta_box($post)
                 });
             });
 
-            // Add Partner dynamically
-            $('.add-partner').on('click', function () {
-                var partnersList = $('#partners-list');
-                var index = partnersList.children().length;
-                var newPartner = $('<div class="partner-item" style="margin-top:10px; border: 1px solid #eee; padding: 10px;">' +
-                    '<div style="display: flex; flex-wrap: wrap;">' +
-                    '<div style="flex: 1 0 70%;">' +
-                    '<input type="text" name="events_data[partners][' + index + '][name]" placeholder="Partner Name" style="width:100%; margin-bottom:5px;">' +
-                    '<textarea name="events_data[partners][' + index + '][info]" placeholder="Partner Description" rows="3" style="width:100%; margin-bottom:5px;"></textarea>' +
-                    '<input type="url" name="events_data[partners][' + index + '][logo]" placeholder="Partner Logo URL" style="width:100%; margin-bottom:5px;" class="partner-logo-url">' +
-                    '<div style="display: flex; gap: 10px; margin-bottom: 10px;">' +
-                    '<button type="button" class="choose-partner-logo button button-secondary" data-index="' + index + '">Choose Logo</button>' +
-                    '<button type="button" class="remove-partner button button-secondary">Remove Partner</button>' +
-                    '</div>' +
-                    '</div>' +
-                    '<div style="flex: 1 0 25%; padding-left: 10px;">' +
-                    '</div>' +
-                    '</div>' +
-                    '<div class="partner-socials">' +
-                    '<h4>Social Links</h4>' +
-                    '</div>' +
-                    '<button type="button" class="add-social button button-secondary" data-partner-index="' + index + '">+ Add Social</button>' +
-                    '</div>');
-                partnersList.append(newPartner);
-            });
-
-            // Remove Partner
-            $(document).on('click', '.remove-partner', function () {
-                $(this).closest('.partner-item').remove();
-                // Reindex the remaining partners
-                $('#partners-list .partner-item').each(function (index) {
-                    $(this).find('input').each(function () {
-                        var name = $(this).attr('name');
-                        if (name) {
-                            $(this).attr('name', name.replace(/\[partners\]\[\d+\]/, '[partners][' + index + ']'));
-                        }
-                    });
-                    $(this).find('.choose-partner-logo').attr('data-index', index);
-                    $(this).find('.add-social').attr('data-partner-index', index);
-
-                    // Update social indices
-                    $(this).find('.social-item').each(function (social_index) {
-                        $(this).find('select, input').each(function () {
-                            var name = $(this).attr('name');
-                            if (name) {
-                                $(this).attr('name', name.replace(/\[partners\]\[\d+\]\[socials\]\[\d+\]/, '[partners][' + index + '][socials][' + social_index + ']'));
-                            }
-                        });
-                    });
-                });
-            });
-
-            // Add Social Link dynamically
-            $(document).on('click', '.add-social', function () {
-                var partnerIndex = $(this).data('partner-index');
-                var socialsDiv = $(this).prev('.partner-socials');
-                var socialIndex = socialsDiv.children('.social-item').length;
-
-                var newSocial = $('<div class="social-item" style="display: flex; margin-bottom: 10px; align-items: center;">' +
-                    '<select name="events_data[partners][' + partnerIndex + '][socials][' + socialIndex + '][platform]" style="width: 120px; margin-right: 10px;">' +
-                    '<option value="">Select Platform</option>' +
-                    '<option value="facebook">Facebook</option>' +
-                    '<option value="twitter">Twitter</option>' +
-                    '<option value="linkedin">LinkedIn</option>' +
-                    '<option value="instagram">Instagram</option>' +
-                    '<option value="youtube">YouTube</option>' +
-                    '<option value="website">Website</option>' +
-                    '</select>' +
-                    '<input type="url" name="events_data[partners][' + partnerIndex + '][socials][' + socialIndex + '][url]" placeholder="Social URL" style="flex: 1;">' +
-                    '<button type="button" class="remove-social button button-secondary" style="margin-left:10px;">Remove</button>' +
-                    '</div>');
-                socialsDiv.append(newSocial);
-            });
-
-            // Remove Social Link
-            $(document).on('click', '.remove-social', function () {
-                var socialItem = $(this).closest('.social-item');
-                var partnerItem = socialItem.closest('.partner-item');
-                var partnerIndex = partnerItem.index();
-
-                socialItem.remove();
-
-                // Reindex the remaining socials
-                partnerItem.find('.social-item').each(function (socialIndex) {
-                    $(this).find('select, input').each(function () {
-                        var name = $(this).attr('name');
-                        if (name) {
-                            $(this).attr('name', name.replace(/\[partners\]\[\d+\]\[socials\]\[\d+\]/, '[partners][' + partnerIndex + '][socials][' + socialIndex + ']'));
-                        }
-                    });
-                });
-            });
-
             // Testimonials functionality
             $('.add-testimonial').on('click', function () {
                 var list = $('#testimonials-list');
                 var index = list.children().length;
+                var editorId = 'testimonial_content_' + index;
+
                 var newItem = $('<div class="testimonial-item" style="margin-top:10px; border: 1px solid #eee; padding: 10px;">' +
-                    '<textarea name="events_data[testimonials][' + index + '][content]" rows="3" placeholder="Testimonial Content" style="width:100%; margin-bottom:10px;"></textarea>' +
+                    '<div class="wp-editor-container" style="margin-bottom:10px;">' +
+                    '<textarea id="' + editorId + '" name="events_data[testimonials][' + index + '][content]" rows="6" style="width:100%;"></textarea>' +
+                    '</div>' +
                     '<input type="text" name="events_data[testimonials][' + index + '][author]" placeholder="Author Name" style="width:100%; margin-bottom:5px;">' +
                     '<div style="text-align: right;">' +
                     '<button type="button" class="remove-testimonial button button-secondary">Remove</button>' +
                     '</div>' +
                     '</div>');
+
                 list.append(newItem);
+
+                // Initialize the WP Editor
+                setTimeout(function () {
+                    if (document.getElementById(editorId)) {
+                        wp.editor.initialize(editorId, {
+                            tinymce: {
+                                wpautop: true,
+                                plugins: 'charmap colorpicker compat3x directionality fullscreen hr image lists media paste tabfocus textcolor wordpress wpautoresize wpdialogs wpeditimage wpemoji wpgallery wplink wptextpattern wpview',
+                                toolbar1: 'formatselect bold italic bullist numlist blockquote alignleft aligncenter alignright link unlink wp_more fullscreen wp_adv',
+                                toolbar2: 'strikethrough hr forecolor backcolor pastetext removeformat charmap outdent indent undo redo wp_help'
+                            },
+                            quicktags: true,
+                            mediaButtons: false,
+                            editor_height: 150
+                        });
+                    }
+                }, 100);
             });
 
             $(document).on('click', '.remove-testimonial', function () {
-                $(this).closest('.testimonial-item').remove();
-                // Reindex the remaining testimonials
+                var item = $(this).closest('.testimonial-item');
+                var editorId = item.find('textarea').attr('id');
+
+                // Remove the TinyMCE instance first
+                if (editorId && wp.editor) {
+                    wp.editor.remove(editorId);
+                }
+
+                // Then remove the DOM element
+                item.remove();
+
+                // Reindex the remaining testimonials and reinitialize editors
                 $('#testimonials-list .testimonial-item').each(function (index) {
-                    $(this).find('textarea, input').each(function () {
+                    var oldId = $(this).find('textarea').attr('id');
+                    var newId = 'testimonial_content_' + index;
+
+                    // Update name attributes for all input fields
+                    $(this).find('input, textarea').each(function () {
                         var name = $(this).attr('name');
                         if (name) {
                             $(this).attr('name', name.replace(/\[testimonials\]\[\d+\]/, '[testimonials][' + index + ']'));
                         }
                     });
+
+                    // If the ID needs to be updated, reinitialize the editor
+                    if (oldId !== newId) {
+                        var content = wp.editor.getContent(oldId);
+                        wp.editor.remove(oldId);
+                        $(this).find('textarea').attr('id', newId);
+
+                        setTimeout(function () {
+                            wp.editor.initialize(newId, {
+                                tinymce: true,
+                                quicktags: true,
+                                mediaButtons: false,
+                                editor_height: 150
+                            });
+                            if (content) {
+                                wp.editor.setContent(newId, content);
+                            }
+                        }, 100);
+                    }
                 });
             });
 
@@ -682,7 +576,7 @@ function display_event_details_meta_box($post)
                                 toolbar2: 'strikethrough hr forecolor backcolor pastetext removeformat charmap outdent indent undo redo wp_help'
                             },
                             quicktags: true,
-                            mediaButtons: true,
+                            mediaButtons: false,
                             editor_height: 200
                         });
                     } else {
@@ -727,7 +621,7 @@ function display_event_details_meta_box($post)
                             wp.editor.initialize(newId, {
                                 tinymce: true,
                                 quicktags: true,
-                                mediaButtons: true,
+                                mediaButtons: false,
                                 editor_height: 200
                             });
                             if (content) {
@@ -822,27 +716,10 @@ function save_event_details_meta_box_data($post_id)
             }
         }
 
-        // Partners
-        if (isset($events_data['partners']) && is_array($events_data['partners'])) {
-            foreach ($events_data['partners'] as $key => $partner) {
-                $sanitized_data['partners'][$key]['name'] = sanitize_text_field($partner['name'] ?? '');
-                $sanitized_data['partners'][$key]['info'] = sanitize_text_field($partner['info'] ?? '');
-                $sanitized_data['partners'][$key]['logo'] = esc_url_raw($partner['logo'] ?? '');
-
-                // Partner Social Links
-                if (isset($partner['socials']) && is_array($partner['socials'])) {
-                    foreach ($partner['socials'] as $social_key => $social) {
-                        $sanitized_data['partners'][$key]['socials'][$social_key]['platform'] = sanitize_text_field($social['platform'] ?? '');
-                        $sanitized_data['partners'][$key]['socials'][$social_key]['url'] = esc_url_raw($social['url'] ?? '');
-                    }
-                }
-            }
-        }
-
         // Testimonials
         if (isset($events_data['testimonials']) && is_array($events_data['testimonials'])) {
             foreach ($events_data['testimonials'] as $key => $testimonial) {
-                $sanitized_data['testimonials'][$key]['content'] = sanitize_textarea_field($testimonial['content'] ?? '');
+                $sanitized_data['testimonials'][$key]['content'] = wp_kses_post($testimonial['content'] ?? '');
                 $sanitized_data['testimonials'][$key]['author'] = sanitize_text_field($testimonial['author'] ?? '');
             }
         }

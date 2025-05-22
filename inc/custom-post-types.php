@@ -7,13 +7,18 @@ function register_custom_post_types()
         'awards' => ['name' => 'Awards', 'icon' => 'dashicons-awards'], // Trophy icon
         'events' => ['name' => 'Events', 'icon' => 'dashicons-calendar'], // Calendar icon
         'ogtv' => ['name' => 'OGTV', 'icon' => 'dashicons-video-alt3'], // Video icon
+        'partner' => ['name' => 'Partners', 'icon' => 'dashicons-groups'], // Network icon
+        'testimonials' => ['name' => 'Testimonials', 'icon' => 'dashicons-format-quote'], // Quote icon
     ];
 
     foreach ($post_types as $slug => $data) {
+
+        $rewrite_slug = ($slug === 'partner') ? 'company' : $slug; // Use 'company' for partners
+
         register_post_type($slug, [
             'labels' => [
-                'name' => __($data['name']),
-                'singular_name' => __($data['name']),
+                'name' => __($data['name'], 'opengovasia'),
+                'singular_name' => __($data['name'], 'opengovasia'),
                 'add_new' => 'Add New ' . $data['name'],
                 'add_new_item' => 'New ' . $data['name'],
                 'edit_item' => 'Edit ' . $data['name'],
@@ -32,7 +37,7 @@ function register_custom_post_types()
             'has_archive' => true,
             'supports' => ['title', 'editor', 'thumbnail'],
             'taxonomies' => ['country'], // Attach global country taxonomy
-            'rewrite' => ['slug' => $slug],
+            'rewrite' => ['slug' => $rewrite_slug], // Custom rewrite slug
             'menu_icon' => $data['icon'], // Assign specific Dashicon
             'menu_position' => 5,
             'show_in_rest' => true, // ($slug === 'events') ? false : true, // Enable Gutenberg editor

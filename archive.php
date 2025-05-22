@@ -18,15 +18,18 @@ get_header();
 	<?php
 
 	$taxonomy = get_queried_object();
-	$term_id = $taxonomy->term_id;
+	$term_id = 0;
+	
+	if (is_object($taxonomy) && isset($taxonomy->term_id)) {
+		$term_id = $taxonomy->term_id;
+	}
 
-	$sponsor_image = get_term_meta($term_id, 'sponsor_image', true);
-	$sponsor_link_text = get_term_meta($term_id, 'sponsor_link_text', true);
-	$sponsor_link = get_term_meta($term_id, 'sponsor_link', true);
+	$sponsor_image = $term_id ? get_term_meta($term_id, 'sponsor_image', true) : '';
+	$sponsor_link_text = $term_id ? get_term_meta($term_id, 'sponsor_link_text', true) : '';
+	$sponsor_link = $term_id ? get_term_meta($term_id, 'sponsor_link', true) : '';
 
 	if (is_category()):
 
-		// Retrieve the 'channel_image' meta or use fallback
 		$channel_image = !empty(get_term_meta($term_id, 'channel_image', true))
 			? get_term_meta($term_id, 'channel_image', true)
 			: get_template_directory_uri() . '/assets/images/demo-three/common/channel-banner.webp';

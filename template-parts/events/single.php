@@ -105,6 +105,7 @@ $channel_image = !empty(get_term_meta($term_id, 'channel_image', true))
 // Fetch Event Data
 
 $events_data = get_post_meta(get_the_ID(), 'events_data', true);
+$selected_partners = get_post_meta(get_the_ID(), 'partners', true);
 
 $event_date = $events_data['event_date'] ?? '';
 $event_start_time = $events_data['event_start_time'] ?? '';
@@ -327,7 +328,7 @@ $event_end_time = $events_data['event_end_time'] ?? '';
                             onclick="openPage('topics_covered', this)">Topics Covered</button>
                     <?php endif; ?>
 
-                    <?php if (!empty($events_data['partners'])): ?>
+                    <?php if (!empty($selected_partners) && is_array($selected_partners)): ?>
                         <button
                             class="og-event-tab text-truncate dark:bg-gray-900 dark:text-white dark:border-gray-700 w-100"
                             onclick="openPage('partners', this)">Partners</button>
@@ -375,10 +376,10 @@ $event_end_time = $events_data['event_end_time'] ?? '';
                                                 <?php endif; ?>
                                                 <?php if (!empty($testimonial['content'])): ?>
                                                     <div class="testimonial-content">
-                                                        <p class=" text-gray-900 dark:text-white">
-                                                            <i class="icon icon-1 unicon-quotes"></i>
-                                                            <?php echo $testimonial['content']; ?>
-                                                        </p>
+
+                                                        <i class="icon icon-2 unicon-quotes"></i>
+                                                        <?php echo $testimonial['content']; ?>
+
                                                     </div>
 
                                                 <?php endif; ?>
@@ -498,42 +499,51 @@ $event_end_time = $events_data['event_end_time'] ?? '';
                     <div id="partners" class="og-event-tab-content">
 
                         <!-- Partners Section -->
-                        <?php if (!empty($events_data['partners'])): ?>
+                        <?php if (!empty($selected_partners) && is_array($selected_partners)): ?>
                             <div class="partners-section panel">
-                                <h4 class="h5">In Collaboration With</h4>
+                                <h4 class="h5"><?php _e('In Collaboration With', 'opengovasia'); ?></h4>
 
                                 <div class="partners-list mt-3">
+                                    <?php foreach ($selected_partners as $partner_id):
+                                        $partner = get_post($partner_id);
 
-                                    <?php foreach ($events_data['partners'] as $partner): ?>
+                                        if ($partner && $partner->post_status === 'publish'):
+                                            $logo = get_the_post_thumbnail_url($partner_id, 'full');
+                                            $info = wp_strip_all_tags(strip_shortcodes($partner->post_content));
+                                            $socials = get_post_meta($partner_id, '_partner_socials', true);
+                                            ?>
+                                            <div
+                                                class="partner border py-2 px-2 rounded-1 shadow-xs mb-2 dark:bg-gray-900 dark:text-white vstack gap-2 sm:hstack align-items-center">
+                                                <?php if (!empty($logo)): ?>
+                                                    <div>
+                                                        <a href="<?php echo esc_url(get_permalink($partner_id)); ?>">
+                                                            <img class="max-w-100px mr-2" src="<?php echo esc_url($logo); ?>"
+                                                                alt="<?php echo esc_attr($partner->post_title); ?>">
+                                                        </a>
 
-                                        <div
-                                            class="partner border py-2 px-2 rounded-1 shadow-xs mb-2 dark:bg-gray-900 dark:text-white vstack gap-2 sm:hstack align-items-center">
+                                                    </div>
+                                                <?php endif; ?>
 
-                                            <?php if (!empty($partner['logo'])): ?>
                                                 <div>
-                                                    <img class="max-w-100px mr-2" src="<?php echo $partner['logo']; ?>"
-                                                        alt="<?php echo $partner['name']; ?>">
-                                                </div>
-                                            <?php endif; ?>
+                                                    <?php if (!empty($partner->post_title)): ?>
+                                                        <h3 class="h5 my-1 dark:text-white">
+                                                            <a href="<?php echo esc_url(get_permalink($partner_id)); ?>"
+                                                                class="text-none hover:text-primary">
+                                                                <?php echo esc_html($partner->post_title); ?>
+                                                            </a>
+                                                        </h3>
+                                                    <?php endif; ?>
 
-                                            <div>
-                                                <?php if (!empty($partner['name'])): ?>
-                                                    <h3 class="h5 my-1 dark:text-white"><?php echo $partner['name']; ?></h3>
-                                                <?php endif; ?>
+                                                    <?php if (!empty($info)): ?>
+                                                        <p class="my-1"><?php echo esc_html($info); ?></p>
+                                                    <?php endif; ?>
 
-                                                <?php if (!empty($partner['info'])): ?>
-                                                    <p class="my-1"><?php echo $partner['info']; ?></p>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($partner['socials'])): ?>
-                                                    <div class="social-links py-2">
-                                                        <?php foreach ($partner['socials'] as $social): ?>
-                                                            <?php if (!empty($social['platform']) && !empty($social['url'])): ?>
-                                                                <a href="<?php echo $social['url']; ?>"
-                                                                    class="text-none hover:text-primary mx-1" target="_blank">
-                                                                    <?php
-                                                                    $icon = '';
-                                                                    switch ($social['platform']) {
+                                                    <?php if (!empty($socials) && is_array($socials)): ?>
+                                                        <div class="social-links py-2">
+                                                            <?php foreach ($socials as $social):
+                                                                if (!empty($social['platform']) && !empty($social['url'])):
+                                                                    $platform = strtolower($social['platform']);
+                                                                    switch ($platform) {
                                                                         case 'facebook':
                                                                             $icon = '<i class="icon icon-1 unicon-logo-facebook"></i>';
                                                                             break;
@@ -555,21 +565,25 @@ $event_end_time = $events_data['event_end_time'] ?? '';
                                                                         default:
                                                                             $icon = '<i class="icon icon-1 unicon-earth-americas"></i>';
                                                                     }
-                                                                    //echo $icon . ' ' . ucfirst($social['platform']);
-                                                                    echo $icon;
                                                                     ?>
-                                                                </a>
-                                                            <?php endif; ?>
-                                                        <?php endforeach; ?>
-                                                    </div>
-                                                <?php endif; ?>
+                                                                    <a href="<?php echo esc_url($social['url']); ?>"
+                                                                        class="text-none hover:text-primary mx-1" target="_blank"
+                                                                        rel="noopener">
+                                                                        <?php echo $icon; ?>
+                                                                    </a>
+                                                                <?php endif;
+                                                            endforeach; ?>
+                                                        </div>
+                                                    <?php endif; ?>
+                                                </div>
                                             </div>
-
-                                        </div>
-                                    <?php endforeach; ?>
+                                        <?php endif;
+                                    endforeach; ?>
                                 </div>
                             </div>
                         <?php endif; ?>
+
+                        <!-- End Partners Section -->
 
                     </div>
 

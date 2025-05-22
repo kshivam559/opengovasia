@@ -194,9 +194,11 @@ remove_action('wp_print_styles', 'print_emoji_styles');
 require get_template_directory() . '/inc/template-functions.php';
 
 /**
- * Custom template tags for this theme.
+ * Custom Post Types for this theme.
  */
 require get_template_directory() . '/inc/custom-post-types.php';
+
+require get_template_directory() . '/inc/partners_cpt.php';
 
 /**
  * Custom Post type Taxonomies for this theme.
@@ -209,6 +211,8 @@ require get_template_directory() . '/inc/taxonomy/channel.php';
 require get_template_directory() . '/inc/taxonomy/years.php';
 
 require get_template_directory() . '/inc/taxonomy/playlists.php';
+
+require get_template_directory() . '/inc/taxonomy/awards-category.php';
 
 /*
  * Custom Query Filter for this theme.
