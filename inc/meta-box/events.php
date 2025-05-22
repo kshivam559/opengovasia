@@ -319,18 +319,61 @@ function display_event_details_meta_box($post)
             var quillOptions = {
                 theme: 'snow',
                 modules: {
-                    toolbar: [
-                        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-                        ['bold', 'italic', 'underline', 'strike'],
-                        [{ 'color': [] }, { 'background': [] }],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                        [{ 'align': [] }],
-                        ['blockquote', 'code-block'],
-                        ['link', 'image'],
-                        ['clean']
-                    ]
+                    toolbar: {
+                        container: [
+                            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                            ['bold', 'italic', 'underline', 'strike'],
+                            [{ 'color': [] }, { 'background': [] }],
+                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                            [{ 'align': [] }],
+                            ['blockquote', 'code-block'],
+                            ['link', 'image'],
+                            ['clean']
+                        ],
+                        handlers: {
+                            'image': function() {
+                                selectLocalImage(this);
+                            }
+                        }
+                    }
                 }
             };
+
+            // Custom image handler for WordPress Media Library
+            function selectLocalImage(quill) {
+                if (typeof wp !== 'undefined' && wp.media) {
+                    var mediaFrame = wp.media({
+                        title: 'Select Image',
+                        button: { text: 'Insert Image' },
+                        multiple: false,
+                        library: { type: 'image' }
+                    });
+
+                    mediaFrame.on('select', function() {
+                        var attachment = mediaFrame.state().get('selection').first().toJSON();
+                        var range = quill.getSelection();
+                        var index = range ? range.index : quill.getLength();
+                        
+                        // Insert image at cursor position
+                        quill.insertEmbed(index, 'image', attachment.url);
+                        quill.setSelection(index + 1);
+                        
+                        // Trigger text change to sync with textarea
+                        quill.root.dispatchEvent(new Event('input', { bubbles: true }));
+                    });
+
+                    mediaFrame.open();
+                } else {
+                    // Fallback to URL input if WordPress media is not available
+                    var url = prompt('Enter image URL:');
+                    if (url) {
+                        var range = quill.getSelection();
+                        var index = range ? range.index : quill.getLength();
+                        quill.insertEmbed(index, 'image', url);
+                        quill.setSelection(index + 1);
+                    }
+                }
+            }
 
             // Initialize existing Quill editors
             var quillEditors = {};
@@ -340,8 +383,14 @@ function display_event_details_meta_box($post)
                     var quill = new Quill('#' + editorId, quillOptions);
                     quillEditors[editorId] = quill;
                     
-                    // Sync content with hidden textarea
+                    // Sync content with hidden textarea on any change
                     quill.on('text-change', function() {
+                        var html = quill.root.innerHTML;
+                        $('#' + textareaId).val(html);
+                    });
+                    
+                    // Also sync on selection change (for image insertions)
+                    quill.on('selection-change', function() {
                         var html = quill.root.innerHTML;
                         $('#' + textareaId).val(html);
                     });
