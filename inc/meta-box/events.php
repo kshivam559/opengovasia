@@ -45,7 +45,7 @@ function display_event_details_meta_box($post)
     $attendees = $events_data['attendees'] ?? [];
     $speakers = $events_data['speakers'] ?? [];
     $speakers_heading = esc_attr($events_data['speakers_heading'] ?? '');
-    
+
     $testimonials = $events_data['testimonials'] ?? [];
     $topics_covered = $events_data['topics_covered'] ?? [];
     $special_events = $events_data['special_events'] ?? [];
@@ -220,34 +220,22 @@ function display_event_details_meta_box($post)
     <!-- Testimonials -->
     <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 15px;">
         <h3>Testimonials</h3>
-        <div id="testimonials-list">
-            <?php if (!empty($testimonials)): ?>
-                <?php foreach ($testimonials as $index => $testimonial): ?>
-                    <div class="testimonial-item" style="margin-top:10px; border: 1px solid #eee; padding: 10px;">
-                        <div class="wp-editor-container" style="margin-bottom:10px;">
-                            <?php
-                            $content = $testimonial['content'] ?? '';
-                            $editor_id = 'testimonial_content_' . $index;
-                            wp_editor($content, $editor_id, array(
-                                'textarea_name' => 'events_data[testimonials][' . $index . '][content]',
-                                'media_buttons' => false,
-                                'tinymce' => true,
-                                'textarea_rows' => 6,
-                                'editor_height' => 150,
-                                'teeny' => false,
-                                'quicktags' => true,
-                            ));
-                            ?>
-                        </div>
-                        <input type="text" name="events_data[testimonials][<?php echo $index; ?>][author]"
-                            value="<?php echo esc_attr($testimonial['author'] ?? ''); ?>" placeholder="Author Name"
-                            style="width:100%; margin-bottom:5px;">
-                        <div style="text-align: right;">
-                            <button type="button" class="remove-testimonial button button-secondary">Remove</button>
-                        </div>
+        <div id="testimonials-list" data-count="<?php echo count($testimonials); ?>">
+            <?php foreach ($testimonials as $index => $testimonial): ?>
+                <div class="testimonial-item" style="margin-top:10px; border: 1px solid #eee; padding: 10px;">
+                    <div class="wp-editor-container" style="margin-bottom:10px;">
+                        <textarea id="testimonial_content_<?php echo $index; ?>"
+                            name="events_data[testimonials][<?php echo $index; ?>][content]" rows="6"
+                            style="width:100%; height:150px;"><?php echo esc_textarea($testimonial['content'] ?? ''); ?></textarea>
                     </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
+                    <input type="text" name="events_data[testimonials][<?php echo $index; ?>][author]"
+                        value="<?php echo esc_attr($testimonial['author'] ?? ''); ?>" placeholder="Author Name"
+                        style="width:100%; margin-bottom:5px;">
+                    <div style="text-align: right;">
+                        <button type="button" class="remove-testimonial button button-secondary">Remove</button>
+                    </div>
+                </div>
+            <?php endforeach; ?>
         </div>
         <button type="button" class="add-testimonial button button-primary" style="margin-top:10px;">+ Add
             Testimonial</button>
@@ -416,85 +404,65 @@ function display_event_details_meta_box($post)
             });
 
             // Testimonials functionality
-            $('.add-testimonial').on('click', function () {
-                var list = $('#testimonials-list');
-                var index = list.children().length;
-                var editorId = 'testimonial_content_' + index;
 
-                var newItem = $('<div class="testimonial-item" style="margin-top:10px; border: 1px solid #eee; padding: 10px;">' +
-                    '<div class="wp-editor-container" style="margin-bottom:10px;">' +
-                    '<textarea id="' + editorId + '" name="events_data[testimonials][' + index + '][content]" rows="6" style="width:100%;"></textarea>' +
-                    '</div>' +
-                    '<input type="text" name="events_data[testimonials][' + index + '][author]" placeholder="Author Name" style="width:100%; margin-bottom:5px;">' +
-                    '<div style="text-align: right;">' +
-                    '<button type="button" class="remove-testimonial button button-secondary">Remove</button>' +
-                    '</div>' +
-                    '</div>');
+            function initEditor(id) {
+                if (tinymce.get(id)) {
+                    tinymce.get(id).remove();
+                }
+                tinymce.init({
+                    selector: '#' + id,
 
-                list.append(newItem);
-
-                // Initialize the WP Editor
-                setTimeout(function () {
-                    if (document.getElementById(editorId)) {
-                        wp.editor.initialize(editorId, {
-                            tinymce: {
-                                wpautop: true,
-                                plugins: 'charmap colorpicker compat3x directionality fullscreen hr image lists media paste tabfocus textcolor wordpress wpautoresize wpdialogs wpeditimage wpemoji wpgallery wplink wptextpattern wpview',
-                                toolbar1: 'formatselect bold italic bullist numlist blockquote alignleft aligncenter alignright link unlink wp_more fullscreen wp_adv',
-                                toolbar2: 'strikethrough hr forecolor backcolor pastetext removeformat charmap outdent indent undo redo wp_help'
-                            },
-                            quicktags: true,
-                            mediaButtons: false,
-                            editor_height: 150
+                    menubar: false,
+                    toolbar: 'undo redo | accordion accordionremove | ' +
+                        'importword exportword exportpdf | math | ' +
+                        'blocks fontfamily fontsize | bold italic underline strikethrough | ' +
+                        'align numlist bullist | link image | table media | ' +
+                        'lineheight outdent indent | forecolor backcolor removeformat | ' +
+                        'charmap emoticons | code fullscreen preview | save print | ' +
+                        'pagebreak anchor codesample | ltr rtl',
+                    setup: function (editor) {
+                        editor.on('init', function () {
+                            this.getDoc().body.style.fontSize = '14px';
                         });
                     }
-                }, 100);
+                });
+            }
+
+            // Init existing
+            $('#testimonials-list textarea').each(function () {
+                initEditor(this.id);
             });
 
-            $(document).on('click', '.remove-testimonial', function () {
-                var item = $(this).closest('.testimonial-item');
-                var editorId = item.find('textarea').attr('id');
+            let testimonialIndex = parseInt($('#testimonials-list').data('count')) || 0;
 
-                // Remove the TinyMCE instance first
-                if (editorId && wp.editor) {
-                    wp.editor.remove(editorId);
+            $('.add-testimonial').on('click', function (e) {
+                e.preventDefault();
+                const newId = 'testimonial_content_' + testimonialIndex;
+
+                const html = `
+                <div class="testimonial-item" style="margin-top:10px; border: 1px solid #eee; padding: 10px;">
+                    <div class="wp-editor-container" style="margin-bottom:10px;">
+                        <textarea id="${newId}" name="events_data[testimonials][${testimonialIndex}][content]" rows="6" style="width:100%; height:150px;"></textarea>
+                    </div>
+                    <input type="text" name="events_data[testimonials][${testimonialIndex}][author]" value="" placeholder="Author Name" style="width:100%; margin-bottom:5px;">
+                    <div style="text-align: right;">
+                        <button type="button" class="remove-testimonial button button-secondary">Remove</button>
+                    </div>
+                </div>
+            `;
+
+                $('#testimonials-list').append(html);
+                setTimeout(() => initEditor(newId), 100);
+                testimonialIndex++;
+            });
+
+            $('#testimonials-list').on('click', '.remove-testimonial', function () {
+                const container = $(this).closest('.testimonial-item');
+                const textarea = container.find('textarea');
+                if (textarea.length && tinymce.get(textarea.attr('id'))) {
+                    tinymce.get(textarea.attr('id')).remove();
                 }
-
-                // Then remove the DOM element
-                item.remove();
-
-                // Reindex the remaining testimonials and reinitialize editors
-                $('#testimonials-list .testimonial-item').each(function (index) {
-                    var oldId = $(this).find('textarea').attr('id');
-                    var newId = 'testimonial_content_' + index;
-
-                    // Update name attributes for all input fields
-                    $(this).find('input, textarea').each(function () {
-                        var name = $(this).attr('name');
-                        if (name) {
-                            $(this).attr('name', name.replace(/\[testimonials\]\[\d+\]/, '[testimonials][' + index + ']'));
-                        }
-                    });
-
-                    // If the ID needs to be updated, reinitialize the editor
-                    if (oldId !== newId) {
-                        var content = wp.editor.getContent(oldId);
-                        wp.editor.remove(oldId);
-                        $(this).find('textarea').attr('id', newId);
-
-                        setTimeout(function () {
-                            wp.editor.initialize(newId, {
-                                tinymce: true,
-                                quicktags: true,
-                                mediaButtons: false,
-                                editor_height: 150
-                            });
-                            if (content) {
-                                wp.editor.setContent(newId, content);
-                            }
-                        }, 100);
-                    }
-                });
+                container.remove();
             });
 
             // Topics Covered functionality
@@ -618,7 +586,7 @@ function display_event_details_meta_box($post)
                 }
             });
 
-            
+
         });
     </script>
     <?php
