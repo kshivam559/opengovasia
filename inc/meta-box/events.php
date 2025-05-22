@@ -230,7 +230,7 @@ function display_event_details_meta_box($post)
                             $editor_id = 'testimonial_content_' . $index;
                             wp_editor($content, $editor_id, array(
                                 'textarea_name' => 'events_data[testimonials][' . $index . '][content]',
-                                'media_buttons' => false,
+                                'media_buttons' => true,
                                 'tinymce' => true,
                                 'textarea_rows' => 6,
                                 'editor_height' => 150,
@@ -463,7 +463,7 @@ function display_event_details_meta_box($post)
                                     }
                                 },
                                 quicktags: true,
-                                mediaButtons: false,
+                                mediaButtons: true,
                                 editor_height: 150
                             });
                             console.log('Editor initialized successfully for: ' + editorId);
@@ -569,7 +569,7 @@ function display_event_details_meta_box($post)
                                             }
                                         },
                                         quicktags: true,
-                                        mediaButtons: false,
+                                        mediaButtons: true,
                                         editor_height: 150
                                     });
                                 } catch (error) {
@@ -649,7 +649,7 @@ function display_event_details_meta_box($post)
                                     }
                                 },
                                 quicktags: true,
-                                mediaButtons: false,
+                                mediaButtons: true,
                                 editor_height: 200
                             });
                             console.log('Editor initialized successfully for: ' + editorId);
@@ -755,7 +755,7 @@ function display_event_details_meta_box($post)
                                             }
                                         },
                                         quicktags: true,
-                                        mediaButtons: false,
+                                        mediaButtons: true,
                                         editor_height: 200
                                     });
                                 } catch (error) {
