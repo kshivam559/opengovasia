@@ -198,8 +198,6 @@ require get_template_directory() . '/inc/template-functions.php';
  */
 require get_template_directory() . '/inc/custom-post-types.php';
 
-require get_template_directory() . '/inc/partners_cpt.php';
-
 /**
  * Custom Post type Taxonomies for this theme.
  */
@@ -237,6 +235,7 @@ add_action('after_switch_theme', 'flush_rewrite_rules_once');
 require get_template_directory() . '/inc/meta-box/events.php';
 require get_template_directory() . '/inc/meta-box/awards.php';
 require get_template_directory() . '/inc/meta-box/ogtv.php';
+require get_template_directory() . '/inc/meta-box/company.php';
 
 /**
  * Custom Navigation Walker for this theme.

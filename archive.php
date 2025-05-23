@@ -19,14 +19,12 @@ get_header();
 
 	$taxonomy = get_queried_object();
 	$term_id = 0;
-	
+
 	if (is_object($taxonomy) && isset($taxonomy->term_id)) {
 		$term_id = $taxonomy->term_id;
 	}
 
-	$sponsor_image = $term_id ? get_term_meta($term_id, 'sponsor_image', true) : '';
-	$sponsor_link_text = $term_id ? get_term_meta($term_id, 'sponsor_link_text', true) : '';
-	$sponsor_link = $term_id ? get_term_meta($term_id, 'sponsor_link', true) : '';
+	$sponsored_by = get_term_meta($term_id, 'sponsored_by', true);
 
 	if (is_category()):
 
@@ -49,26 +47,31 @@ get_header();
 
 
 
-		<?php if ($sponsor_link_text || $sponsor_link): ?>
+		<?php if ($sponsored_by):
+			$company = get_post($sponsored_by);
+			if ($company && $company->post_status === 'publish') {
+
+				$sponsor_name = $company->post_title;
+				$sponsor_link = get_permalink($company->ID);
+				$sponsor_image = get_the_post_thumbnail_url($company->ID, 'full');
+			}
+			?>
 			<div
 				class="sponsor-link z-2 position-absolute top-0 end-0 m-2 fs-7 fw-bold h-24px px-1 rounded-1 shadow-xs bg-white">
 				<span>Powered by
 					<a class="text-none text-primary" href="<?php echo esc_url($sponsor_link); ?>" target="_blank"
 						rel="noopener noreferrer">
-						<?php echo esc_html($sponsor_link_text); ?>
+						<?php echo esc_html($sponsor_name); ?>
 					</a>
 				</span>
 				<?php if ($sponsor_image): ?>
 					<div class="sponsor-image m-1">
-						<?php if (!empty($sponsor_link)): ?>
-							<a href="<?php echo esc_url($sponsor_link); ?>" target="_blank" rel="noopener noreferrer">
-								<img width="90px" height="90px" src="<?php echo esc_url($sponsor_image); ?>"
-									alt="<?php echo esc_attr($taxonomy->name); ?>">
-							</a>
-						<?php else: ?>
+
+						<a href="<?php echo esc_url($sponsor_link); ?>">
 							<img width="90px" height="90px" src="<?php echo esc_url($sponsor_image); ?>"
-								alt="<?php echo esc_attr($taxonomy->name); ?>">
-						<?php endif; ?>
+								alt="<?php echo esc_attr($sponsor_name); ?>">
+						</a>
+
 					</div>
 				<?php endif; ?>
 			</div>

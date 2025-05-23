@@ -17,8 +17,7 @@ if (!empty($categories)):
     $category = $categories[0];
     $term_id = $category->term_id;
 
-    $sponsor_link_text = get_term_meta($term_id, 'sponsor_link_text', true);
-    $sponsor_link = get_term_meta($term_id, 'sponsor_link', true);
+    $sponsored_by = get_term_meta($term_id, 'sponsored_by', true);
 
 
 endif;
@@ -41,17 +40,24 @@ $channel_image = !empty(get_term_meta($term_id, 'channel_image', true))
                 <a href="<?php echo esc_url(get_category_link($category->term_id)); ?>"
                     class="text-none text-white"><?php echo esc_html($category->name); ?></a>
             </span>
-            <?php if (!empty($sponsor_link_text) && !empty($sponsor_link)): ?>
+            <?php if (!empty($sponsored_by)):
+
+                $company = get_post($sponsored_by);
+                if ($company && $company->post_status === 'publish') {
+
+                    $sponsor_name = $company->post_title;
+                    $sponsor_link = get_permalink($company->ID);
+                }
+
+                ?>
                 <span class="single-post single-post-sep sep text-white fs-6 md:fs-5 opacity-60">
                     •
                 </span>
 
                 <span class="single-post sponsor-link text-white fs-6 md:fs-5">
                     Powered by
-                    <a class="text-none" href="<?php echo esc_url($sponsor_link); ?>" target="_blank"
-                        rel="noopener noreferrer"><?php echo esc_html($sponsor_link_text); ?></a>
+                    <a class="text-none" href="<?php echo esc_url($sponsor_link); ?>"><?php echo esc_html($sponsor_name); ?></a>
                 </span>
-
 
             <?php endif; ?>
             <span class="single-post single-post-sep sep text-white fs-6 md:fs-5 opacity-60">•</span>
@@ -105,7 +111,7 @@ $channel_image = !empty(get_term_meta($term_id, 'channel_image', true))
 // Fetch Event Data
 
 $events_data = get_post_meta(get_the_ID(), 'events_data', true);
-$selected_partners = get_post_meta(get_the_ID(), 'partners', true);
+$selected_partners = get_post_meta(get_the_ID(), 'companies', true);
 
 $event_date = $events_data['event_date'] ?? '';
 $event_start_time = $events_data['event_start_time'] ?? '';
@@ -510,7 +516,7 @@ $event_end_time = $events_data['event_end_time'] ?? '';
                                         if ($partner && $partner->post_status === 'publish'):
                                             $logo = get_the_post_thumbnail_url($partner_id, 'full');
                                             $info = wp_strip_all_tags(strip_shortcodes($partner->post_content));
-                                            $socials = get_post_meta($partner_id, '_partner_socials', true);
+                                            $socials = get_post_meta($partner_id, '_company_socials', true);
                                             ?>
                                             <div
                                                 class="partner border py-2 px-2 rounded-1 shadow-xs mb-2 dark:bg-gray-900 dark:text-white vstack gap-2 sm:hstack align-items-center">
