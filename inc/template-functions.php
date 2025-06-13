@@ -324,11 +324,11 @@ function get_homepage_banner($device = '')
 	$banner_images = get_theme_mod('homepage_banner', []);
 
 	if ($device == 'desktop') {
-		$banner_images = $banner_images['desktop_banner'] ?? get_template_directory_uri() . '/assets/images/common/ad-slot.jpg';
+		$banner_images = $banner_images['desktop_banner'] ?? '';
 	} elseif ($device == 'mobile') {
-		$banner_images = $banner_images['mobile_banner'] ?? get_template_directory_uri() . '/assets/images/common/ad-slot-mobile.jpg';
+		$banner_images = $banner_images['mobile_banner'] ?? '';
 	} else {
-		$banner_images = get_template_directory_uri() . '/assets/images/demo-three/common/channel-banner.webp';
+		$banner_images = '';
 	}
 
 	return $banner_images;

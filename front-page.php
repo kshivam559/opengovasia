@@ -247,32 +247,36 @@ get_header(); ?>
 
         <!-- Section start -->
 
-        <div class="section panel overflow-hidden">
-            <div class="section-outer panel py-4">
-                <div class="container max-w-xl">
-                    <div class="section-inner">
-                        <?php
-                        $homepage_banner_desktop = get_homepage_banner('desktop');
-                        $homepage_banner_mobile = get_homepage_banner('mobile');
-                        $homepage_banner_desktop_link = get_homepage_banner_link('desktop');
-                        $homepage_banner_mobile_link = get_homepage_banner_link('mobile');
+        <?php
+        $homepage_banner_desktop = get_homepage_banner('desktop');
+        $homepage_banner_mobile = get_homepage_banner('mobile');
+        $homepage_banner_desktop_link = get_homepage_banner_link('desktop');
+        $homepage_banner_mobile_link = get_homepage_banner_link('mobile');
+        ?>
 
-                        if ($homepage_banner_desktop || $homepage_banner_desktop_link): ?>
-                            <a class="text-none" href="<?php echo esc_url($homepage_banner_desktop_link); ?>">
-                                <img class="d-none md:d-block" src="<?php echo esc_url($homepage_banner_desktop); ?>"
-                                    alt="Homepage Banner">
-                            </a>
-                        <?php endif; ?>
-                        <?php if ($homepage_banner_mobile || $homepage_banner_mobile_link): ?>
-                            <a class="text-none d-block md:d-none" href="<?php echo esc_url($homepage_banner_mobile_link); ?>">
-                                <img class="d-block md:d-none" src="<?php echo esc_url($homepage_banner_mobile); ?>"
-                                    alt="Homepage Banner Mobile">
-                            </a>
-                        <?php endif; ?>
+        <?php if (!empty($homepage_banner_desktop) || !empty($homepage_banner_mobile)): ?>
+            <div class="section panel overflow-hidden">
+                <div class="section-outer panel py-4">
+                    <div class="container max-w-xl">
+                        <div class="section-inner">
+
+                            <?php if (!empty($homepage_banner_desktop) || !empty($homepage_banner_desktop_link)): ?>
+                                <a class="text-none" href="<?php echo esc_url($homepage_banner_desktop_link); ?>">
+                                    <img class="d-none md:d-block" src="<?php echo esc_url($homepage_banner_desktop); ?>"
+                                        alt="Homepage Banner">
+                                </a>
+                            <?php endif; ?>
+                            <?php if (!empty($homepage_banner_mobile) || !empty($homepage_banner_mobile_link)): ?>
+                                <a class="text-none d-block md:d-none" href="<?php echo esc_url($homepage_banner_mobile_link); ?>">
+                                    <img class="d-block md:d-none" src="<?php echo esc_url($homepage_banner_mobile); ?>"
+                                        alt="Homepage Banner Mobile">
+                                </a>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        <?php endif; ?>
 
         <!-- Section end -->
 

@@ -243,7 +243,7 @@ $channel_image = (!empty($categories) && !empty(get_term_meta($term_id, 'channel
                 <div class="section-inner panel vstack gap-4 pb-4 my-4 border-bottom">
                     <div class="block-header panel">
                         <h2 class="h4 -ls-1 xl:-ls-2 m-0 text-inherit hstack gap-1">
-                            OG Events Partnered with <?php echo esc_html($title); ?>
+                            Events Partnered with <?php echo esc_html($title); ?>
                         </h2>
 
                     </div>

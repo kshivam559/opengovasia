@@ -272,7 +272,7 @@ $event_end_time = $events_data['event_end_time'] ?? '';
                         <?php if (!empty($events_data['event_link'])): ?>
                             <div class="mt-2">
                                 <a href="<?php echo $events_data['event_link']; ?>"
-                                    class="animate-btn gap-0 btn btn-sm btn-alt-primary bg-primary text-white border w-full"
+                                    class="animate-btn gap-0 btn btn-sm bg-primary text-white border w-full"
                                     target="_blank">
                                     <span>RESERVE A SEAT NOW!</span>
                                     <i class="icon icon-1 unicon-chevron-right"></i>
@@ -303,10 +303,6 @@ $event_end_time = $events_data['event_end_time'] ?? '';
                         border-top-left-radius: 5px;
                         border-top-right-radius: 5px;
                         transition: 0.3s;
-                    }
-
-                    .partners-list .partner .social-links a {
-                        margin: 0 5px;
                     }
                 </style>
 
