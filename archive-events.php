@@ -12,24 +12,23 @@ get_header();
 
 opengovasia_breadcrumbs();
 
+$banner_image = get_archive_banner('past_events');
+
+$get_theme_mod = get_theme_mod('text_content', []);
+$page_title = (!empty($get_theme_mod['past_events_title'])) ? $get_theme_mod['past_events_title'] : __('Past Events', 'opengovasia');
+$page_description = (!empty($get_theme_mod['past_events_description'])) ? $get_theme_mod['past_events_description'] : __('Be on a lookout for our content rich and engaging events across ASEAN and register now to get informed and empowered.', 'opengovasia');
+
 ?>
 
 <header class="page-header panel vstack text-center">
 
-    <?php
-
-    $channel_image = get_template_directory_uri() . '/assets/images/demo-three/common/events-banner.webp';
-
-    ?>
-
-    <div class="og_hero-image" style="background-image: url('<?php echo esc_url($channel_image); ?>');">
+    <div class="og_hero-image" style="background-image: url('<?php echo esc_url($banner_image); ?>');">
 
         <div class="container max-w-xl position-absolute top-50 start-50 translate-middle z-2">
-            <h1 class="h3 lg:h1 text-white">Past Events</h1>
+            <h1 class="h3 lg:h1 text-white"><?php echo $page_title; ?></h1>
 
             <div class="archive-description text-white">
-                Be on a lookout for our content rich and engaging events across ASEAN and register now to get informed
-                and empowered.
+                <?php echo $page_description; ?>
             </div>
 
         </div>

@@ -20,9 +20,9 @@ get_header();
     $term_id = $category->term_id;
 
     // Retrieve the 'channel_image' meta or use fallback
-    $channel_image = !empty(get_term_meta($term_id, 'channel_image', true))
-        ? get_term_meta($term_id, 'channel_image', true)
-        : get_template_directory_uri() . '/assets/images/demo-three/common/channel-banner.webp';
+    $channel_image = get_archive_banner('channels');
+
+
     ?>
 
     <!--<div class="og_hero-image" style="background-image: url('<?php echo esc_url($channel_image); ?>');"> -->
@@ -55,7 +55,7 @@ get_header();
 
                 $args = array(
                     'cat' => $first_category->term_id,
-                    'post_type' => array('post', 'ogtv', 'events'),
+                    'post_type' => array('post', 'ogtv', 'events', 'awards'),
                     'posts_per_page' => 6, // 7 for first category (1 hero + 6 grid)
                     'orderby' => 'date',
                     'order' => 'DESC'
@@ -75,22 +75,33 @@ get_header();
                                     <i class="icon-2 lg:icon-3 unicon-chevron-right opacity-40"></i>
                                 </h2>
 
-                                <?php $sponsor_image = get_term_meta($first_category->term_id, 'sponsor_image', true); ?>
-                                <?php $sponsor_link_text = get_term_meta($first_category->term_id, 'sponsor_link_text', true); ?>
-                                <?php $sponsor_link = get_term_meta($first_category->term_id, 'sponsor_link', true); ?>
+                                <?php
+                                $sponsored_by = get_term_meta($first_category->term_id, 'sponsored_by', true);
+                                if ($sponsored_by):
+                                    $company = get_post($sponsored_by);
+                                    if ($company && $company->post_status === 'publish'):
+                                        $sponsor_name = $company->post_title;
+                                        $sponsor_link = get_permalink($company->ID);
+                                        $sponsor_image = get_the_post_thumbnail_url($company->ID, 'full');
+                                    endif;
+                                endif;
 
-                                <?php if ($sponsor_link_text && $sponsor_link): ?>
+                                if (!empty($sponsor_name) && !empty($sponsor_link)):
+                                    ?>
                                     <div class="sponsor-link">
                                         Powered by
                                         <a class="text-none text-primary" href="<?php echo esc_url($sponsor_link); ?>"
                                             target="_blank" rel="noopener noreferrer">
-                                            <?php echo esc_html($sponsor_link_text); ?>
+                                            <?php echo esc_html($sponsor_name); ?>
                                         </a>
                                     </div>
-                                <?php endif; ?>
+                                    <?php
+                                endif;
+                                ?>
+
                             </div>
 
-                            <?php if ($sponsor_image): ?>
+                            <?php if (!empty($sponsor_image)): ?>
                                 <div class="sponsor-image m-1">
                                     <?php if (!empty($sponsor_link)): ?>
                                         <a href="<?php echo esc_url($sponsor_link); ?>" target="_blank" rel="noopener noreferrer">
@@ -103,6 +114,7 @@ get_header();
                                     <?php endif; ?>
                                 </div>
                             <?php endif; ?>
+
 
                         </div>
                         <div class="block-content">
@@ -160,7 +172,7 @@ get_header();
                                                             <?php
 
                                                             if (get_post_type() === 'events'):
-                                                                $events_data = get_post_meta(get_the_ID(), 'events_data', true);
+                                                                $events_data = get_custom_meta(get_the_ID(), 'events_data', true);
 
                                                                 $event_date = isset($events_data['event_date']) ? esc_html($events_data['event_date']) : '';
                                                                 ?>
@@ -281,7 +293,7 @@ get_header();
                                                                             <?php
 
                                                                             if (get_post_type() === 'events'):
-                                                                                $events_data = get_post_meta(get_the_ID(), 'events_data', true);
+                                                                                $events_data = get_custom_meta(get_the_ID(), 'events_data', true);
 
                                                                                 $event_date = isset($events_data['event_date']) ? esc_html($events_data['event_date']) : '';
                                                                                 ?>
@@ -344,7 +356,7 @@ get_header();
                         // Set up the query arguments
                         $args = [
                             'cat' => $category->term_id,
-                            'post_type' => ['post', 'ogtv', 'events'],
+                            'post_type' => ['post', 'ogtv', 'events', 'awards'],
                             'posts_per_page' => 6,
                             'orderby' => 'date',
                             'order' => 'DESC'
@@ -357,6 +369,7 @@ get_header();
                             <div>
                                 <div class="block-layout grid-layout vstack gap-3 lg:gap-4 panel overflow-hidden">
                                     <div class="border-top"></div>
+
                                     <div class="block-header panel vstack sm:hstack justify-between sm:items-center">
                                         <h2 class="h4 xl:h3 -ls-1 xl:-ls-2 my-1 text-inherit hstack gap-1">
 
@@ -367,19 +380,28 @@ get_header();
                                             <i class="icon-2 lg:icon-3 unicon-chevron-right opacity-40"></i>
                                         </h2>
 
-                                        <?php $sponsor_link_text = get_term_meta($category->term_id, 'sponsor_link_text', true); ?>
-                                        <?php $sponsor_link = get_term_meta($category->term_id, 'sponsor_link', true); ?>
+                                        <?php
+                                        $sponsored_by = get_term_meta($category->term_id, 'sponsored_by', true);
+                                        if ($sponsored_by):
+                                            $company = get_post($sponsored_by);
+                                            if ($company && $company->post_status === 'publish'):
+                                                $sponsor_name = $company->post_title;
+                                                $sponsor_link = get_permalink($company->ID);
 
-                                        <?php if ($sponsor_link_text && $sponsor_link): ?>
-                                            <div class="sponsor-link">
-                                                Powered by
-                                                <a class="text-none text-primary" href="<?php echo esc_url($sponsor_link); ?>"
-                                                    target="_blank" rel="noopener noreferrer">
-                                                    <?php echo esc_html($sponsor_link_text); ?>
-                                                </a>
-                                            </div>
-                                        <?php endif; ?>
-
+                                                if ($sponsor_name && $sponsor_link):
+                                                    ?>
+                                                    <div class="sponsor-link">
+                                                        Powered by
+                                                        <a class="text-none text-primary" href="<?php echo esc_url($sponsor_link); ?>"
+                                                            target="_blank" rel="noopener noreferrer">
+                                                            <?php echo esc_html($sponsor_name); ?>
+                                                        </a>
+                                                    </div>
+                                                    <?php
+                                                endif;
+                                            endif;
+                                        endif;
+                                        ?>
 
                                     </div>
                                     <div class="block-content">
@@ -415,6 +437,11 @@ get_header();
                                                                             class="cstack position-absolute top-0 end-0 fs-6 w-40px h-40px text-white">
                                                                             <i class="icon-narrow unicon-calendar"></i>
                                                                         </span>
+                                                                    <?php elseif (get_post_type() === 'awards'): ?>
+                                                                        <span
+                                                                            class="cstack position-absolute top-0 end-0 fs-6 w-40px h-40px text-white">
+                                                                            <i class="icon-narrow unicon-trophy-filled"></i>
+                                                                        </span>
                                                                     <?php else: ?>
                                                                     <?php endif; ?>
                                                                     <a href="<?php the_permalink(); ?>" class="position-cover"></a>
@@ -431,6 +458,8 @@ get_header();
                                                                                     OGTV
                                                                                 <?php elseif (get_post_type() === 'events'): ?>
                                                                                     Events
+                                                                                <?php elseif (get_post_type() === 'awards'): ?>
+                                                                                    Awards
                                                                                 <?php else: ?>
                                                                                     News
                                                                                 <?php endif; ?>
@@ -443,7 +472,7 @@ get_header();
                                                                                 <?php
 
                                                                                 if (get_post_type() === 'events'):
-                                                                                    $events_data = get_post_meta(get_the_ID(), 'events_data', true);
+                                                                                    $events_data = get_custom_meta(get_the_ID(), 'events_data', true);
 
                                                                                     $event_date = isset($events_data['event_date']) ? esc_html($events_data['event_date']) : '';
                                                                                     ?>
@@ -457,6 +486,15 @@ get_header();
                                                                                         }
                                                                                         ?>
                                                                                     </span>
+                                                                                <?php elseif (get_post_type() === 'awards'): ?>
+                                                                                    <?php
+                                                                                    $awards_year = get_the_terms(get_the_ID(), 'years');
+                                                                                    if (!empty($awards_year) && !is_wp_error($awards_year)):
+                                                                                        echo '<span>' . implode(', ', wp_list_pluck($awards_year, 'name')) . '</span>';
+                                                                                    else:
+                                                                                        echo '<span>' . esc_html(get_the_date('M j, Y')) . '</span>';
+                                                                                    endif;
+                                                                                    ?>
 
                                                                                 <?php else: ?>
 

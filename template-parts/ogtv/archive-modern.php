@@ -32,7 +32,7 @@ if (!defined('ABSPATH'))
                 <i class="icon-narrow unicon-play-filled-alt"></i>
             </span>
             <a href="<?php the_permalink(); ?>" class="position-cover" data-caption="<?php the_title(); ?>"></a>
-            <!-- <?php
+            <?php
             $categories = get_the_category();
             if (!empty($categories)):
                 echo '<div
@@ -40,7 +40,7 @@ if (!defined('ABSPATH'))
                 echo '<a class="text-none" href="' . esc_url(get_category_link($categories[0]->term_id)) . '?post_type=events">' . esc_html($categories[0]->name) . '</a>';
                 echo '</div>';
             endif;
-            ?> -->
+            ?>
         </div>
         <div class="post-header panel vstack gap-1 lg:gap-2">
             <h3 class="post-title h6 sm:h5 m-0 text-truncate-2 m-0">

@@ -47,7 +47,7 @@ function render_company_social_links($post)
 {
     wp_nonce_field('company_social_links_save', 'company_social_links_nonce');
 
-    $company_socials = get_post_meta($post->ID, '_company_socials', true);
+    $company_socials = get_custom_meta($post->ID, 'socials', true);
     if (!is_array($company_socials)) {
         $company_socials = array();
     }
@@ -159,7 +159,8 @@ function save_company_meta($post_id)
                 );
             }
         }
-        update_post_meta($post_id, '_company_socials', $socials);
+        update_custom_meta($post_id, 'socials', $socials);
+
     }
 }
 add_action('save_post_company', 'save_company_meta');
@@ -187,7 +188,7 @@ function render_company_selector($post)
 {
     wp_nonce_field('company_selector_save', 'company_selector_nonce');
 
-    $selected_companies = get_post_meta($post->ID, 'companies', true);
+    $selected_companies = get_custom_meta($post->ID, 'companies', true);
     if (!is_array($selected_companies)) {
         $selected_companies = array();
     }
@@ -355,126 +356,12 @@ function save_company_relationships($post_id)
 
     if (isset($_POST['selected_companies'])) {
         $companies = array_map('intval', $_POST['selected_companies']);
-        update_post_meta($post_id, 'companies', $companies);
+        update_custom_meta($post_id, 'companies', $companies);
     } else {
-        delete_post_meta($post_id, 'companies');
+        delete_custom_meta($post_id, 'companies');
     }
 }
 add_action('save_post', 'save_company_relationships');
-
-
-/**
- * Register Custom Admin Columns for Company CPT
- */
-function set_company_admin_columns($columns)
-{
-    $columns = array(
-        'cb' => $columns['cb'],
-        'title' => __('Company', 'opengovasia'),
-        'thumbnail' => __('Company Logo', 'opengovasia'),
-        'tagged_content' => __('Tagged Content', 'opengovasia'),
-        'sponsorships' => __('Channel Sponsorships', 'opengovasia'),
-        'date' => $columns['date']
-    );
-    return $columns;
-}
-add_filter('manage_company_posts_columns', 'set_company_admin_columns');
-
-/**
- * Handle Company Custom Admin Columns Content
- */
-function company_custom_column($column, $post_id)
-{
-    switch ($column) {
-        case 'thumbnail':
-            if (has_post_thumbnail($post_id)) {
-                echo '<img src="' . get_the_post_thumbnail_url($post_id, 'full') . '" style="max-width: 80px; height: auto; border-radius: 4px;">';
-            } else {
-                echo '<div style="width: 60px; height: 60px; background: #f0f0f0; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 20px;">🏢</div>';
-            }
-            break;
-
-        case 'tagged_content':
-            $relationships = get_company_relationships($post_id);
-            $events_count = count($relationships['tagged_events']);
-            $awards_count = count($relationships['tagged_awards']);
-            $total = $events_count + $awards_count;
-
-            if ($total > 0) {
-                echo '<div>';
-                echo '<strong style="font-size: 18px; color: #0073aa;">' . $total . '</strong>';
-                echo '<div style="font-size: 11px; color: #666; margin-top: 2px;">';
-                $parts = array();
-                if ($events_count > 0)
-                    $parts[] = $events_count . ' events';
-                if ($awards_count > 0)
-                    $parts[] = $awards_count . ' awards';
-                echo implode(' + ', $parts);
-                echo '</div>';
-                echo '</div>';
-            } else {
-                echo '<span style="color: #999;">0</span>';
-            }
-            break;
-
-        case 'sponsorships':
-            $relationships = get_company_relationships($post_id);
-            $sponsored_channels = $relationships['sponsored_channels'];
-
-            if (!empty($sponsored_channels)) {
-                echo '<div>';
-                foreach ($sponsored_channels as $index => $category) {
-                    if ($index > 0)
-                        echo '<br>';
-                    echo '<span style="background: #0c50a8; color: white; padding: 2px 6px; border-radius: 10px; font-size: 11px; display: inline-block; margin-bottom: 2px;">';
-                    echo esc_html($category->name);
-                    echo '</span>';
-                }
-                echo '</div>';
-            } else {
-                echo '<span style="color: #999;">—</span>';
-            }
-            break;
-    }
-}
-add_action('manage_company_posts_custom_column', 'company_custom_column', 10, 2);
-
-/**
- * Add Companies Data to REST API Response
- */
-function add_companies_data_to_rest_api()
-{
-    $post_types = ['events', 'awards'];
-
-    foreach ($post_types as $post_type) {
-        register_rest_field($post_type, 'partners_data', [
-            'get_callback' => function ($post_arr) {
-                $companies = get_post_meta($post_arr['id'], 'companies', true);
-
-                if (!is_array($companies) || empty($companies)) {
-                    return [];
-                }
-
-                $companies_data = [];
-                foreach ($companies as $company_id) {
-                    $company = get_post($company_id);
-                    if ($company && $company->post_status === 'publish') {
-                        $companies_data[] = [
-                            'id' => $company_id,
-                            'title' => $company->post_title,
-                            'link' => get_permalink($company_id),
-                            'logo' => get_the_post_thumbnail_url($company_id, 'full'),
-                            'socials' => get_post_meta($company_id, '_company_socials', true)
-                        ];
-                    }
-                }
-
-                return $companies_data;
-            },
-        ]);
-    }
-}
-add_action('rest_api_init', 'add_companies_data_to_rest_api');
 
 
 /**
@@ -517,92 +404,44 @@ function get_company_relationships($company_id)
         }
     }
 
-    // Get events where this company is tagged
-    $tagged_events = get_posts(array(
+    // Get events where this company is tagged - using HybridMeta query
+    $events_query = HybridMeta::query(array(
         'post_type' => 'events',
-        'meta_query' => array(
-            array(
-                'key' => 'companies',
-                'value' => '"' . $company_id . '"',
-                'compare' => 'LIKE'
-            )
-        ),
         'posts_per_page' => -1,
         'post_status' => array('publish', 'draft', 'pending', 'private')
     ));
 
-    // Alternative method if the above doesn't work
-    if (empty($tagged_events)) {
-        $all_events = get_posts(array(
-            'post_type' => 'events',
-            'posts_per_page' => -1,
-            'post_status' => array('publish', 'draft', 'pending', 'private'),
-            'meta_key' => 'companies'
-        ));
+    if ($events_query->have_posts()) {
+        while ($events_query->have_posts()) {
+            $events_query->the_post();
+            $event_id = get_the_ID();
+            $event_companies = get_custom_meta($event_id, 'companies', true);
 
-        if (is_array($all_events)) {
-            foreach ($all_events as $event) {
-                if (!is_object($event) || !isset($event->ID)) {
-                    continue;
-                }
-
-                $event_companies = get_post_meta($event->ID, 'companies', true);
-                if (is_array($event_companies) && in_array($company_id, array_map('intval', $event_companies))) {
-                    $tagged_events[] = $event;
-                }
+            if (is_array($event_companies) && in_array($company_id, array_map('intval', $event_companies))) {
+                $relationships['tagged_events'][] = get_post($event_id);
             }
         }
+        wp_reset_postdata();
     }
 
-    // Filter and validate events
-    if (is_array($tagged_events)) {
-        $relationships['tagged_events'] = array_filter($tagged_events, function ($event) {
-            return is_object($event) && isset($event->ID) && isset($event->post_title);
-        });
-    }
-
-    // Get awards where this company is tagged
-    $tagged_awards = get_posts(array(
+    // Get awards where this company is tagged - using HybridMeta query
+    $awards_query = HybridMeta::query(array(
         'post_type' => 'awards',
-        'meta_query' => array(
-            array(
-                'key' => 'companies',
-                'value' => '"' . $company_id . '"',
-                'compare' => 'LIKE'
-            )
-        ),
         'posts_per_page' => -1,
         'post_status' => array('publish', 'draft', 'pending', 'private')
     ));
 
-    // Alternative method if the above doesn't work
-    if (empty($tagged_awards)) {
-        $all_awards = get_posts(array(
-            'post_type' => 'awards',
-            'posts_per_page' => -1,
-            'post_status' => array('publish', 'draft', 'pending', 'private'),
-            'meta_key' => 'companies'
-        ));
+    if ($awards_query->have_posts()) {
+        while ($awards_query->have_posts()) {
+            $awards_query->the_post();
+            $award_id = get_the_ID();
+            $award_companies = get_custom_meta($award_id, 'companies', true);
 
-        if (is_array($all_awards)) {
-            foreach ($all_awards as $award) {
-                if (!is_object($award) || !isset($award->ID)) {
-                    continue;
-                }
-
-                $award_companies = get_post_meta($award->ID, 'companies', true);
-                if (is_array($award_companies) && in_array($company_id, array_map('intval', $award_companies))) {
-                    $tagged_awards[] = $award;
-                }
+            if (is_array($award_companies) && in_array($company_id, array_map('intval', $award_companies))) {
+                $relationships['tagged_awards'][] = get_post($award_id);
             }
         }
-    }
-
-    // Filter and validate awards
-    if (is_array($tagged_awards)) {
-        $relationships['tagged_awards'] = array_filter($tagged_awards, function ($award) {
-            return is_object($award) && isset($award->ID) && isset($award->post_title);
-        });
+        wp_reset_postdata();
     }
 
     return $relationships;
@@ -800,7 +639,7 @@ function render_attached_content($post)
             echo '<div class="item-title">' . esc_html($event->post_title) . '</div>';
 
             // Add event date if available
-            $event_date = get_post_meta($event->ID, 'event_date', true);
+            $event_date = get_custom_meta($event->ID, 'event_date', true);
             if (!empty($event_date)) {
                 echo '<div class="item-meta">' . __('Date:', 'opengovasia') . ' ' . esc_html(date('M j, Y', strtotime($event_date))) . '</div>';
             }
@@ -841,7 +680,7 @@ function render_attached_content($post)
             echo '<div class="item-title">' . esc_html($award->post_title) . '</div>';
 
             // Add award year if available
-            $award_year = get_post_meta($award->ID, 'award_year', true);
+            $award_year = get_custom_meta($award->ID, 'award_year', true);
             if (!empty($award_year)) {
                 echo '<div class="item-meta">' . __('Year:', 'opengovasia') . ' ' . esc_html($award_year) . '</div>';
             }
@@ -867,6 +706,120 @@ function render_attached_content($post)
 }
 
 /**
+ * Register Custom Admin Columns for Company CPT
+ */
+function set_company_admin_columns($columns)
+{
+    $columns = array(
+        'cb' => $columns['cb'],
+        'title' => __('Company', 'opengovasia'),
+        'thumbnail' => __('Company Logo', 'opengovasia'),
+        'tagged_content' => __('Tagged Content', 'opengovasia'),
+        'sponsorships' => __('Sponsored Channel', 'opengovasia'),
+        'date' => $columns['date']
+    );
+    return $columns;
+}
+add_filter('manage_company_posts_columns', 'set_company_admin_columns');
+
+/**
+ * Handle Company Custom Admin Columns Content
+ */
+function company_custom_column($column, $post_id)
+{
+    switch ($column) {
+        case 'thumbnail':
+            if (has_post_thumbnail($post_id)) {
+                echo '<img src="' . get_the_post_thumbnail_url($post_id, 'full') . '" style="max-width: 80px; height: auto; border-radius: 4px;">';
+            } else {
+                echo '<div style="width: 60px; height: 60px; background: #f0f0f0; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 20px;">🏢</div>';
+            }
+            break;
+
+        case 'tagged_content':
+            $relationships = get_company_relationships($post_id);
+            $events_count = count($relationships['tagged_events']);
+            $awards_count = count($relationships['tagged_awards']);
+            $total = $events_count + $awards_count;
+
+            if ($total > 0) {
+                echo '<div>';
+                echo '<strong style="font-size: 18px; color: #0073aa;">' . $total . '</strong>';
+                echo '<div style="font-size: 11px; color: #666; margin-top: 2px;">';
+                $parts = array();
+                if ($events_count > 0)
+                    $parts[] = $events_count . ' events';
+                if ($awards_count > 0)
+                    $parts[] = $awards_count . ' awards';
+                echo implode(' + ', $parts);
+                echo '</div>';
+                echo '</div>';
+            } else {
+                echo '<span style="color: #999;">0</span>';
+            }
+            break;
+
+        case 'sponsorships':
+            $relationships = get_company_relationships($post_id);
+            $sponsored_channels = $relationships['sponsored_channels'];
+
+            if (!empty($sponsored_channels)) {
+                echo '<div>';
+                foreach ($sponsored_channels as $index => $category) {
+                    if ($index > 0)
+                        echo '<br>';
+                    echo '<span style="background: #0c50a8; color: white; padding: 2px 6px; border-radius: 10px; font-size: 11px; display: inline-block; margin-bottom: 2px;">';
+                    echo esc_html($category->name);
+                    echo '</span>';
+                }
+                echo '</div>';
+            } else {
+                echo '<span style="color: #999;">—</span>';
+            }
+            break;
+    }
+}
+add_action('manage_company_posts_custom_column', 'company_custom_column', 10, 2);
+
+
+/**
+ * Add Companies Data to REST API Response for Events and Awards
+ */
+function add_companies_data_to_rest_api()
+{
+    $post_types = ['events', 'awards'];
+
+    foreach ($post_types as $post_type) {
+        register_rest_field($post_type, 'partners_data', [
+            'get_callback' => function ($post_arr) {
+                $companies = get_custom_meta($post_arr['id'], 'companies', true);
+
+                if (!is_array($companies) || empty($companies)) {
+                    return [];
+                }
+
+                $companies_data = [];
+                foreach ($companies as $company_id) {
+                    $company = get_post($company_id);
+                    if ($company && $company->post_status === 'publish') {
+                        $companies_data[] = [
+                            'id' => $company_id,
+                            'title' => $company->post_title,
+                            'link' => get_permalink($company_id),
+                            'logo' => get_the_post_thumbnail_url($company_id, 'full'),
+                            'socials' => get_custom_meta($company_id, 'socials', true)
+                        ];
+                    }
+                }
+
+                return $companies_data;
+            },
+        ]);
+    }
+}
+add_action('rest_api_init', 'add_companies_data_to_rest_api');
+
+/**
  * Add Company Data to REST API Response
  */
 function add_company_data_to_rest_api()
@@ -877,7 +830,7 @@ function add_company_data_to_rest_api()
             $company_id = $object['id'];
 
             // Get social links
-            $social_links = get_post_meta($company_id, '_company_socials', true);
+            $social_links = get_custom_meta($company_id, 'socials', true);
             if (!is_array($social_links)) {
                 $social_links = [];
             }
@@ -914,7 +867,7 @@ function add_company_data_to_rest_api()
             if (!empty($relationships['tagged_events'])) {
                 foreach ($relationships['tagged_events'] as $event) {
                     if (is_object($event) && isset($event->ID)) {
-                        $event_date = get_post_meta($event->ID, 'event_date', true);
+                        $event_date = get_custom_meta($event->ID, 'event_date', true);
                         $company_data['relationships']['tagged_events'][] = [
                             'id' => $event->ID,
                             'title' => $event->post_title,
@@ -932,7 +885,7 @@ function add_company_data_to_rest_api()
             if (!empty($relationships['tagged_awards'])) {
                 foreach ($relationships['tagged_awards'] as $award) {
                     if (is_object($award) && isset($award->ID)) {
-                        $award_year = get_post_meta($award->ID, 'award_year', true);
+                        $award_year = get_custom_meta($award->ID, 'award_year', true);
                         $company_data['relationships']['tagged_awards'][] = [
                             'id' => $award->ID,
                             'title' => $award->post_title,

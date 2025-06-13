@@ -32,7 +32,9 @@ add_action('add_meta_boxes', 'add_event_details_meta_box');
 function display_event_details_meta_box($post)
 {
     wp_nonce_field('save_event_details', 'event_details_nonce');
-    $events_data = get_post_meta($post->ID, 'events_data', true);
+
+    $events_data = get_custom_meta($post->ID) ?: [];
+
     $event_date = esc_attr($events_data['event_date'] ?? '');
     $event_start_time = esc_attr($events_data['event_start_time'] ?? '');
     $event_end_time = esc_attr($events_data['event_end_time'] ?? '');
@@ -41,12 +43,13 @@ function display_event_details_meta_box($post)
     $event_link = esc_url($events_data['event_link'] ?? '');
     $event_description = esc_textarea($events_data['event_description'] ?? '');
     $theme_color = esc_attr($events_data['theme_color'] ?? '#0c50a8');
-    $who_should_attend = $events_data['who_should_attend'] ?? [];
-    $speakers = $events_data['speakers'] ?? [];
     $speakers_heading = esc_attr($events_data['speakers_heading'] ?? '');
+    $who_should_attend = $events_data['who_should_attend'] ?? '';
+    $speakers = $events_data['speakers'] ?? [];
     $testimonials = $events_data['testimonials'] ?? [];
     $topics_covered = $events_data['topics_covered'] ?? [];
     $special_events = $events_data['special_events'] ?? [];
+
     ?>
 
     <!-- Include Quill CSS and JS -->
@@ -54,6 +57,7 @@ function display_event_details_meta_box($post)
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.min.js"></script>
 
     <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 15px;">
+
         <h3>Event Details</h3>
         <table style="width:100%; border-spacing: 0 10px;">
             <tr>
@@ -719,87 +723,143 @@ function display_event_details_meta_box($post)
 }
 
 // Save Meta Box data
-function save_event_details_meta_box_data($post_id)
+function save_event_details_meta_box($post_id)
 {
-    // Check if our nonce is set and verify it
-    if (!isset($_POST['event_details_nonce']) || !wp_verify_nonce($_POST['event_details_nonce'], 'save_event_details')) {
+    // Security checks
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE)
         return;
+
+    if (!current_user_can('edit_post', $post_id))
+        return;
+
+    if (!wp_verify_nonce($_POST['event_details_nonce'] ?? '', 'save_event_details'))
+        return;
+
+
+    $post_type = get_post_type($post_id);
+    if ($post_type !== 'events')
+        return;
+
+    // Check if events_data is posted
+    if (!isset($_POST['events_data']) || !is_array($_POST['events_data']))
+        return;
+
+    $events_data = $_POST['events_data'];
+
+    // Prepare data for saving
+    $data_to_save = [];
+
+    // Handle simple meta fields
+    $simple_fields = [
+        'event_date',
+        'event_start_time',
+        'event_end_time',
+        'event_timezone',
+        'event_address',
+        'event_link',
+        'event_description',
+        'theme_color',
+        'speakers_heading'
+    ];
+
+    foreach ($simple_fields as $field) {
+        if (isset($events_data[$field])) {
+            $data_to_save[$field] = sanitize_text_field($events_data[$field]);
+        }
     }
 
-    // Check user permissions
-    if (!current_user_can('edit_post', $post_id)) {
-        return;
+    // Handle URL field separately
+    if (isset($events_data['event_link'])) {
+        $data_to_save['event_link'] = esc_url_raw($events_data['event_link']);
     }
 
-    // Check if not an autosave
-    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
-        return;
+    // Handle textarea field separately  
+    if (isset($events_data['event_description'])) {
+        $data_to_save['event_description'] = sanitize_textarea_field($events_data['event_description']);
     }
 
-    // Get form data
-    if (isset($_POST['events_data'])) {
-        $events_data = $_POST['events_data'];
+    // Save simple meta fields first
+    update_custom_meta($post_id, $data_to_save);
 
-        // Sanitize the data before saving
-        $sanitized_data = array();
-        $sanitized_data['event_date'] = sanitize_text_field($events_data['event_date'] ?? '');
-        $sanitized_data['event_start_time'] = sanitize_text_field($events_data['event_start_time'] ?? '');
-        $sanitized_data['event_end_time'] = sanitize_text_field($events_data['event_end_time'] ?? '');
-        $sanitized_data['event_timezone'] = sanitize_text_field($events_data['event_timezone'] ?? '');
-        $sanitized_data['event_address'] = sanitize_text_field($events_data['event_address'] ?? '');
-        $sanitized_data['event_link'] = esc_url_raw($events_data['event_link'] ?? '');
-        $sanitized_data['event_description'] = sanitize_textarea_field($events_data['event_description'] ?? '');
-        $sanitized_data['theme_color'] = sanitize_hex_color($events_data['theme_color'] ?? '#0c50a8');
-        $sanitized_data['speakers_heading'] = sanitize_text_field($events_data['speakers_heading'] ?? '');
+    // Handle complex relationship fields
+    $relationship_data = [];
 
-        // Who Should Attend
-        if (isset($events_data['who_should_attend']) && is_array($events_data['who_should_attend'])) {
-            $sanitized_data['who_should_attend'] = array_map('sanitize_text_field', $events_data['who_should_attend']);
-        }
-
-        // Speakers
-        if (isset($events_data['speakers']) && is_array($events_data['speakers'])) {
-            foreach ($events_data['speakers'] as $key => $speaker) {
-                $sanitized_data['speakers'][$key]['name'] = sanitize_text_field($speaker['name'] ?? '');
-                $sanitized_data['speakers'][$key]['designation'] = sanitize_text_field($speaker['designation'] ?? '');
-                $sanitized_data['speakers'][$key]['organization'] = sanitize_text_field($speaker['organization'] ?? '');
-                $sanitized_data['speakers'][$key]['image'] = esc_url_raw($speaker['image'] ?? '');
+    // Handle speakers (complex array with multiple fields)
+    if (isset($events_data['speakers']) && is_array($events_data['speakers'])) {
+        $speakers = [];
+        foreach ($events_data['speakers'] as $speaker_data) {
+            if (is_array($speaker_data) && !empty(array_filter($speaker_data))) {
+                $speakers[] = [
+                    'name' => sanitize_text_field($speaker_data['name'] ?? ''),
+                    'designation' => sanitize_text_field($speaker_data['designation'] ?? ''),
+                    'organization' => sanitize_text_field($speaker_data['organization'] ?? ''),
+                    'image' => esc_url_raw($speaker_data['image'] ?? '')
+                ];
             }
         }
+        $relationship_data['speakers'] = $speakers;
+    }
 
-        // Testimonials
-        if (isset($events_data['testimonials']) && is_array($events_data['testimonials'])) {
-            foreach ($events_data['testimonials'] as $key => $testimonial) {
-                $sanitized_data['testimonials'][$key]['content'] = wp_kses_post($testimonial['content'] ?? '');
-                $sanitized_data['testimonials'][$key]['author'] = sanitize_text_field($testimonial['author'] ?? '');
+    // Handle who_should_attend (simple array)
+    if (isset($events_data['who_should_attend']) && is_array($events_data['who_should_attend'])) {
+        $who_should_attend = [];
+        foreach ($events_data['who_should_attend'] as $item) {
+            if (!empty(trim($item))) {
+                $who_should_attend[] = sanitize_text_field($item);
             }
         }
+        $relationship_data['who_should_attend'] = $who_should_attend;
+    }
 
-        // Topics Covered
-        if (isset($events_data['topics_covered']) && is_array($events_data['topics_covered'])) {
-            $sanitized_data['topics_covered'] = array_map('sanitize_text_field', $events_data['topics_covered']);
-        }
-
-        // Special Events
-        if (isset($events_data['special_events']) && is_array($events_data['special_events'])) {
-            foreach ($events_data['special_events'] as $key => $event) {
-                $sanitized_data['special_events'][$key]['title'] = sanitize_text_field($event['title'] ?? '');
-                $sanitized_data['special_events'][$key]['heading'] = sanitize_text_field($event['heading'] ?? '');
-                $sanitized_data['special_events'][$key]['video_url'] = esc_url_raw($event['video_url'] ?? '');
-                $sanitized_data['special_events'][$key]['content'] = wp_kses_post($event['content'] ?? '');
+    // Handle testimonials (complex array with content and author)
+    if (isset($events_data['testimonials']) && is_array($events_data['testimonials'])) {
+        $testimonials = [];
+        foreach ($events_data['testimonials'] as $testimonial_data) {
+            if (is_array($testimonial_data) && !empty(array_filter($testimonial_data))) {
+                $testimonials[] = [
+                    'content' => wp_kses_post($testimonial_data['content'] ?? ''),
+                    'author' => sanitize_text_field($testimonial_data['author'] ?? '')
+                ];
             }
         }
+        $relationship_data['testimonials'] = $testimonials;
+    }
 
-        // Save the data
-        update_post_meta($post_id, 'events_data', $sanitized_data);
-
-        // Save event_date separately for efficient querying
-        if (isset($events_data['event_date']) && !empty($events_data['event_date'])) {
-            update_post_meta($post_id, 'event_date', $sanitized_data['event_date']);
+    // Handle topics_covered (simple array)
+    if (isset($events_data['topics_covered']) && is_array($events_data['topics_covered'])) {
+        $topics_covered = [];
+        foreach ($events_data['topics_covered'] as $topic) {
+            if (!empty(trim($topic))) {
+                $topics_covered[] = sanitize_text_field($topic);
+            }
         }
+        $relationship_data['topics_covered'] = $topics_covered;
+    }
+
+    // Handle special_events (complex array with multiple fields)
+    if (isset($events_data['special_events']) && is_array($events_data['special_events'])) {
+        $special_events = [];
+        foreach ($events_data['special_events'] as $special_event_data) {
+            if (is_array($special_event_data) && !empty(array_filter($special_event_data))) {
+                $special_events[] = [
+                    'title' => sanitize_text_field($special_event_data['title'] ?? ''),
+                    'heading' => sanitize_text_field($special_event_data['heading'] ?? ''),
+                    'video_url' => esc_url_raw($special_event_data['video_url'] ?? ''),
+                    'content' => wp_kses_post($special_event_data['content'] ?? '')
+                ];
+            }
+        }
+        $relationship_data['special_events'] = $special_events;
+    }
+
+    // Save relationship data
+    foreach ($relationship_data as $key => $value) {
+        update_custom_meta($post_id, $key, $value);
     }
 }
-add_action('save_post', 'save_event_details_meta_box_data');
+
+// Hook the function to save_post
+add_action('save_post', 'save_event_details_meta_box', 10, 1);
 
 // Enqueue required scripts
 function event_meta_box_scripts($hook)
@@ -822,7 +882,7 @@ add_action('admin_enqueue_scripts', 'event_meta_box_scripts');
 // Register REST API field for events_data
 register_rest_field('events', 'events_data', [
     'get_callback' => function ($object) {
-        return get_post_meta($object['id'], 'events_data', true);
+        return get_custom_meta($object['id'], 'events_data', true);
     },
     'schema' => [
         'type' => 'object',
@@ -843,7 +903,7 @@ add_filter('manage_events_posts_columns', 'add_event_columns');
 
 function display_event_columns($column, $post_id)
 {
-    $events_data = get_post_meta($post_id, 'events_data', true);
+    $events_data = get_custom_meta($post_id);
 
     if ($column === 'event_date') {
         echo !empty($events_data['event_date']) ? esc_html($events_data['event_date']) : 'N/A';

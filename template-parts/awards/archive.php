@@ -7,6 +7,8 @@
 
 if (!defined('ABSPATH'))
     exit;
+
+$awards_year = get_the_terms(get_the_ID(), 'years');
 ?>
 
 <div>
@@ -32,7 +34,7 @@ if (!defined('ABSPATH'))
                 <i class="icon-narrow unicon-trophy-filled"></i>
             </span>
             <a href="<?php the_permalink(); ?>" class="position-cover" data-caption="<?php the_title(); ?>"></a>
-            <!-- <?php
+            <?php
             $categories = get_the_category();
             if (!empty($categories)):
                 echo '<div
@@ -40,7 +42,7 @@ if (!defined('ABSPATH'))
                 echo '<a class="text-none" href="' . esc_url(get_category_link($categories[0]->term_id)) . '?post_type=events">' . esc_html($categories[0]->name) . '</a>';
                 echo '</div>';
             endif;
-            ?> -->
+            ?>
         </div>
         <div class="post-header panel vstack gap-1 lg:gap-2">
             <h3 class="post-title h6 sm:h5 m-0 text-truncate-2 m-0">
@@ -51,17 +53,22 @@ if (!defined('ABSPATH'))
                     class="post-meta panel hstack justify-center fs-7 fw-medium text-gray-900 dark:text-white text-opacity-60">
                     <div class="meta">
                         <div class="hstack gap-2">
-                            <!-- <div class="post-author hstack gap-1">
-                                <a href="<?php echo get_author_posts_url(get_the_author_meta('ID')); ?>"
-                                    data-uc-tooltip="<?php the_author(); ?>">
-                                    <?php echo get_avatar(get_the_author_meta('ID'), 24); ?>
-                                </a>
-                                <a href="<?php echo get_author_posts_url(get_the_author_meta('ID')); ?>"
-                                    class="text-black dark:text-white text-none fw-bold"><?php the_author(); ?></a>
-                            </div> -->
+
                             <div class="post-date hstack gap-narrow">
                                 <i class="icon-narrow unicon-calendar"></i>
-                                <span><?php echo get_the_date('M j, Y'); ?></span>
+                                <span class="text-none">
+                                    <?php
+
+                                    if (!empty($awards_year) && !is_wp_error($awards_year)):
+
+                                        echo implode(', ', wp_list_pluck($awards_year, 'name'));
+
+                                    else:
+                                        echo esc_html(get_the_date('M j, Y'));
+                                    endif;
+
+                                    ?>
+                                </span>
                             </div>
                             <!-- <div>
                                 <a href="<?php the_permalink(); ?>#comments"

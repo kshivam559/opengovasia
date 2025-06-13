@@ -23,7 +23,6 @@ $post_url = !empty(isset($args['playlist_slug'])) ? get_permalink($post_id) . '?
 
 ?>
 
-
 <div>
     <article class="post type-post panel vstack gap-1 lg:gap-2">
         <div class="post-media panel overflow-hidden">

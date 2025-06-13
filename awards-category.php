@@ -8,34 +8,36 @@
 
 get_header();
 
+opengovasia_breadcrumbs();
+
+// $category = get_queried_object();
+// $term_id = $category->term_id;
+
+$banner_image = get_archive_banner('awards_category');
+
+$get_theme_mod = get_theme_mod('text_content', []);
+$page_title = (!empty($get_theme_mod['awards_category_title'])) ? $get_theme_mod['awards_category_title'] : __('Awards Category', 'opengovasia');
+$page_description = (!empty($get_theme_mod['awards_category_description'])) ? $get_theme_mod['awards_category_description'] : __('Explore our Awards Category for the latest winners and updates.', 'opengovasia');
+
+
+
 ?>
 
-<?php opengovasia_breadcrumbs(); ?>
-
 <header class="page-header panel vstack text-center">
+    <div class="og_hero-image" style="background-image: url('<?php echo esc_url($banner_image); ?>');">
 
-    <?php
-
-    $category = get_queried_object();
-    $term_id = $category->term_id;
-
-    // Retrieve the 'channel_image' meta or use fallback
-    $channel_image = !empty(get_term_meta($term_id, 'channel_image', true))
-        ? get_term_meta($term_id, 'channel_image', true)
-        : get_template_directory_uri() . '/assets/images/demo-three/common/channel-banner.webp';
-    ?>
-
-    <!--<div class="og_hero-image" style="background-image: url('<?php echo esc_url($channel_image); ?>');"> -->
-    <div class="og_hero-image" style="background: linear-gradient( cyan, transparent), linear-gradient( -45deg, magenta, transparent), linear-gradient( 45deg, yellow, transparent), url(<?php echo esc_url($channel_image); ?>) center center / cover no-repeat;
-    background-blend-mode: overlay;">
-
+        <!-- <div class="og_hero-image" style="background: linear-gradient( cyan, transparent), linear-gradient( -45deg, magenta, transparent), linear-gradient( 45deg, yellow, transparent), url(<?php echo esc_url($banner_image); ?>) center center / cover no-repeat;
+    background-blend-mode: overlay;"> -->
 
         <div class="container max-w-xl position-absolute top-50 start-50 translate-middle z-2">
-            <h1 class="h3 lg:h1 text-white">Awards Category</h1>
+            <h1 class="h3 lg:h1 text-white">
+                <?php echo $page_title; ?>
+            </h1>
+            <div class="archive-description text-white">
+                <?php echo $page_description; ?>
+            </div>
         </div>
-
     </div>
-
 </header>
 
 <div id="primary" class="section py-3 sm:py-6 lg:py-6">
@@ -82,35 +84,7 @@ get_header();
                                     </a>
                                     <i class="icon-2 lg:icon-3 unicon-chevron-right opacity-40"></i>
                                 </h2>
-
-                                <?php $sponsor_image = get_term_meta($first_category->term_id, 'sponsor_image', true); ?>
-                                <?php $sponsor_link_text = get_term_meta($first_category->term_id, 'sponsor_link_text', true); ?>
-                                <?php $sponsor_link = get_term_meta($first_category->term_id, 'sponsor_link', true); ?>
-
-                                <?php if ($sponsor_link_text && $sponsor_link): ?>
-                                    <div class="sponsor-link">
-                                        Powered by
-                                        <a class="text-none text-primary" href="<?php echo esc_url($sponsor_link); ?>"
-                                            target="_blank" rel="noopener noreferrer">
-                                            <?php echo esc_html($sponsor_link_text); ?>
-                                        </a>
-                                    </div>
-                                <?php endif; ?>
                             </div>
-
-                            <?php if ($sponsor_image): ?>
-                                <div class="sponsor-image m-1">
-                                    <?php if (!empty($sponsor_link)): ?>
-                                        <a href="<?php echo esc_url($sponsor_link); ?>" target="_blank" rel="noopener noreferrer">
-                                            <img width="90px" height="90px" src="<?php echo esc_url($sponsor_image); ?>"
-                                                alt="<?php echo esc_attr($first_category->name); ?>">
-                                        </a>
-                                    <?php else: ?>
-                                        <img width="90px" height="90px" src="<?php echo esc_url($sponsor_image); ?>"
-                                            alt="<?php echo esc_attr($first_category->name); ?>">
-                                    <?php endif; ?>
-                                </div>
-                            <?php endif; ?>
 
                         </div>
                         <div class="block-content">
@@ -120,6 +94,7 @@ get_header();
                                     <?php
                                     // Get the first post as the hero
                                     $category_query->the_post();
+                                    $awards_year = get_the_terms(get_the_ID(), 'years');
                                     ?>
                                     <div>
                                         <article class="post type-post panel vstack gap-1 lg:gap-2">
@@ -138,20 +113,12 @@ get_header();
                                                 <div
                                                     class="has-video-overlay position-absolute top-0 end-0 w-150px h-150px bg-gradient-45 from-transparent via-transparent to-black opacity-50">
                                                 </div>
-                                                <?php if (get_post_type() === 'ogtv'): ?>
-                                                    <span
-                                                        class="cstack position-absolute top-0 end-0 fs-6 w-40px h-40px text-white">
-                                                        <i class="icon-narrow unicon-play-filled-alt"></i>
-                                                    </span>
-                                                <?php elseif (get_post_type() === 'events'): ?>
-                                                    <span
-                                                        class="cstack position-absolute top-0 end-0 fs-6 w-40px h-40px text-white">
-                                                        <i class="icon-narrow unicon-calendar"></i>
-                                                    </span>
-                                                <?php else: ?>
 
+                                                <span
+                                                    class="cstack position-absolute top-0 end-0 fs-6 w-40px h-40px text-white">
+                                                    <i class="icon-narrow unicon-trophy-filled"></i>
+                                                </span>
 
-                                                <?php endif; ?>
                                             </div>
                                             <div class="post-header panel vstack gap-1">
                                                 <div
@@ -165,30 +132,14 @@ get_header();
                                                     <div class="sep">❘</div>
                                                     <div>
                                                         <div class="post-date hstack gap-narrow">
-                                                            <?php
-
-                                                            if (get_post_type() === 'events'):
-                                                                $events_data = get_post_meta(get_the_ID(), 'events_data', true);
-
-                                                                $event_date = isset($events_data['event_date']) ? esc_html($events_data['event_date']) : '';
-                                                                ?>
-
+                                                            <?php if (!empty($awards_year) && !is_wp_error($awards_year)): ?>
                                                                 <span>
-                                                                    <?php
-                                                                    if (!empty($event_date)) {
-                                                                        echo date('M j, Y', strtotime($event_date));
-                                                                    } else {
-                                                                        echo get_the_date('M j, Y'); // Default to post date if no event date
-                                                                    }
-                                                                    ?>
+                                                                    <?php echo implode(', ', wp_list_pluck($awards_year, 'name')); ?>
                                                                 </span>
-
                                                             <?php else: ?>
-
                                                                 <span>
                                                                     <?php echo get_the_date('M j, Y'); ?>
                                                                 </span>
-
                                                             <?php endif; ?>
                                                         </div>
                                                     </div>
@@ -198,23 +149,9 @@ get_header();
                                                         href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
                                                 </h3>
                                                 <p class="fs-6 opacity-60 text-truncate-2 my-1">
-                                                    <?php echo wp_trim_words(get_the_excerpt(), 20); ?>
+                                                    <?php echo wp_trim_words(get_the_excerpt(), 30); ?>
                                                 </p>
-                                                <div
-                                                    class="post-meta panel hstack justify-between fs-7 fw-medium text-gray-900 dark:text-white d-none md:d-flex text-opacity-60">
-                                                    <div class="meta">
-                                                        <div class="hstack gap-2">
-                                                            <div>
-                                                                <div class="post-author hstack gap-1">
-                                                                    <a href="<?php echo get_author_posts_url(get_the_author_meta('ID')); ?>"
-                                                                        data-uc-tooltip="<?php the_author(); ?>"><?php echo get_avatar(get_the_author_meta('ID'), 24, '', '', array('class' => 'w-24px h-24px rounded-circle')); ?></a>
-                                                                    <a href="<?php echo get_author_posts_url(get_the_author_meta('ID')); ?>"
-                                                                        class="text-black dark:text-white text-none fw-bold"><?php the_author(); ?></a>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
+
                                             </div>
                                         </article>
                                     </div>
@@ -226,6 +163,7 @@ get_header();
                                         while ($category_query->have_posts() && $count < 6):
                                             $category_query->the_post();
                                             $count++;
+                                            $awards_year = get_the_terms(get_the_ID(), 'years');
                                             ?>
                                             <div>
                                                 <article class="post type-post panel">
@@ -249,20 +187,10 @@ get_header();
                                                                     class="has-video-overlay position-absolute top-0 end-0 w-150px h-150px bg-gradient-45 from-transparent via-transparent to-black opacity-50">
                                                                 </div>
 
-                                                                <?php if (get_post_type() === 'ogtv'): ?>
-                                                                    <span
-                                                                        class="cstack position-absolute top-0 end-0 fs-6 w-40px h-40px text-white">
-                                                                        <i class="icon-narrow unicon-play-filled-alt"></i>
-                                                                    </span>
-                                                                <?php elseif (get_post_type() === 'events'): ?>
-                                                                    <span
-                                                                        class="cstack position-absolute top-0 end-0 fs-6 w-40px h-40px text-white">
-                                                                        <i class="icon-narrow unicon-calendar"></i>
-                                                                    </span>
-                                                                <?php else: ?>
-
-
-                                                                <?php endif; ?>
+                                                                <span
+                                                                    class="cstack position-absolute top-0 end-0 fs-6 w-40px h-40px text-white">
+                                                                    <i class="icon-narrow unicon-trophy-filled"></i>
+                                                                </span>
                                                             </div>
                                                         </div>
                                                         <div>
@@ -271,47 +199,21 @@ get_header();
                                                                     class="post-meta panel hstack justify-start gap-1 fs-7 fw-medium text-gray-900 dark:text-white text-opacity-60 z-1">
                                                                     <div>
                                                                         <div class="post-category hstack gap-narrow fw-medium">
-
-
-                                                                            <?php if (get_post_type() === 'ogtv'): ?>
-                                                                                OGTV
-                                                                            <?php elseif (get_post_type() === 'events'): ?>
-                                                                                Events
-                                                                            <?php else: ?>
-                                                                                News
-                                                                            <?php endif; ?>
+                                                                            Awards
                                                                         </div>
                                                                     </div>
                                                                     <div class="sep">❘</div>
                                                                     <div>
                                                                         <div class="post-date hstack gap-narrow">
-
-                                                                            <?php
-
-                                                                            if (get_post_type() === 'events'):
-                                                                                $events_data = get_post_meta(get_the_ID(), 'events_data', true);
-
-                                                                                $event_date = isset($events_data['event_date']) ? esc_html($events_data['event_date']) : '';
-                                                                                ?>
-
+                                                                            <?php if (!empty($awards_year) && !is_wp_error($awards_year)): ?>
                                                                                 <span>
-                                                                                    <?php
-                                                                                    if (!empty($event_date)) {
-                                                                                        echo date('M j, Y', strtotime($event_date));
-                                                                                    } else {
-                                                                                        echo get_the_date('M j, Y'); // Default to post date if no event date
-                                                                                    }
-                                                                                    ?>
+                                                                                    <?php echo implode(', ', wp_list_pluck($awards_year, 'name')); ?>
                                                                                 </span>
-
                                                                             <?php else: ?>
-
                                                                                 <span>
                                                                                     <?php echo get_the_date('M j, Y'); ?>
                                                                                 </span>
-
                                                                             <?php endif; ?>
-
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -328,7 +230,7 @@ get_header();
                                     </div>
                                     <a href="<?php echo get_category_link($first_category->term_id); ?>"
                                         class="animate-btn gap-0 btn btn-sm btn-alt-primary bg-transparent dark:text-white border w-100 mt-4">
-                                        <span>See all <?php echo $first_category->name; ?> articles</span>
+                                        <span>See all <?php echo $first_category->name; ?> Awards</span>
                                         <i class="icon icon-1 unicon-chevron-right"></i>
                                     </a>
                                 </div>
@@ -382,25 +284,14 @@ get_header();
                                             <i class="icon-2 lg:icon-3 unicon-chevron-right opacity-40"></i>
                                         </h2>
 
-                                        <?php $sponsor_link_text = get_term_meta($category->term_id, 'sponsor_link_text', true); ?>
-                                        <?php $sponsor_link = get_term_meta($category->term_id, 'sponsor_link', true); ?>
-
-                                        <?php if ($sponsor_link_text && $sponsor_link): ?>
-                                            <div class="sponsor-link">
-                                                Powered by
-                                                <a class="text-none text-primary" href="<?php echo esc_url($sponsor_link); ?>"
-                                                    target="_blank" rel="noopener noreferrer">
-                                                    <?php echo esc_html($sponsor_link_text); ?>
-                                                </a>
-                                            </div>
-                                        <?php endif; ?>
-
 
                                     </div>
                                     <div class="block-content">
                                         <div class="row child-cols-12 g-2 gy-3 md:gx-3 md:gy-4">
                                             <?php while ($category_query->have_posts()):
-                                                $category_query->the_post(); ?>
+                                                $category_query->the_post();
+                                                $award_year = get_the_terms(get_the_ID(), 'years');
+                                                ?>
                                                 <div>
                                                     <article class="post type-post panel">
                                                         <div class="row child-cols g-2 uc-grid" data-uc-grid="">
@@ -420,18 +311,10 @@ get_header();
                                                                     <div
                                                                         class="has-video-overlay position-absolute top-0 end-0 w-150px h-150px bg-gradient-45 from-transparent via-transparent to-black opacity-50">
                                                                     </div>
-                                                                    <?php if (get_post_type() === 'ogtv'): ?>
-                                                                        <span
-                                                                            class="cstack position-absolute top-0 end-0 fs-6 w-40px h-40px text-white">
-                                                                            <i class="icon-narrow unicon-play-filled-alt"></i>
-                                                                        </span>
-                                                                    <?php elseif (get_post_type() === 'events'): ?>
-                                                                        <span
-                                                                            class="cstack position-absolute top-0 end-0 fs-6 w-40px h-40px text-white">
-                                                                            <i class="icon-narrow unicon-calendar"></i>
-                                                                        </span>
-                                                                    <?php else: ?>
-                                                                    <?php endif; ?>
+                                                                    <span
+                                                                        class="cstack position-absolute top-0 end-0 fs-6 w-40px h-40px text-white">
+                                                                        <i class="icon-narrow unicon-trophy-filled"></i>
+                                                                    </span>
                                                                     <a href="<?php the_permalink(); ?>" class="position-cover"></a>
                                                                 </div>
                                                             </div>
@@ -441,52 +324,29 @@ get_header();
                                                                         class="post-meta panel hstack justify-start gap-1 fs-7 fw-medium text-gray-900 dark:text-white text-opacity-60 z-1">
                                                                         <div>
                                                                             <div class="post-category hstack gap-narrow fw-medium">
-
-                                                                                <?php if (get_post_type() === 'ogtv'): ?>
-                                                                                    OGTV
-                                                                                <?php elseif (get_post_type() === 'events'): ?>
-                                                                                    Events
-                                                                                <?php else: ?>
-                                                                                    News
-                                                                                <?php endif; ?>
-
+                                                                                Awards
                                                                             </div>
                                                                         </div>
                                                                         <div class="sep">❘</div>
                                                                         <div>
                                                                             <div class="post-date hstack gap-narrow">
-                                                                                <?php
-
-                                                                                if (get_post_type() === 'events'):
-                                                                                    $events_data = get_post_meta(get_the_ID(), 'events_data', true);
-
-                                                                                    $event_date = isset($events_data['event_date']) ? esc_html($events_data['event_date']) : '';
-                                                                                    ?>
-
+                                                                                <?php if (!empty($award_year) && !is_wp_error($award_year)): ?>
                                                                                     <span>
-                                                                                        <?php
-                                                                                        if (!empty($event_date)) {
-                                                                                            echo date('M j, Y', strtotime($event_date));
-                                                                                        } else {
-                                                                                            echo get_the_date('M j, Y'); // Default to post date if no event date
-                                                                                        }
-                                                                                        ?>
+                                                                                        <?php echo implode(', ', wp_list_pluck($award_year, 'name')); ?>
                                                                                     </span>
-
                                                                                 <?php else: ?>
-
                                                                                     <span>
                                                                                         <?php echo get_the_date('M j, Y'); ?>
                                                                                     </span>
-
                                                                                 <?php endif; ?>
-
                                                                             </div>
                                                                         </div>
                                                                     </div>
                                                                     <h3 class="post-title h6 lg:h5 m-0 text-truncate-2">
                                                                         <a class="text-none hover:text-primary duration-150"
-                                                                            href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
+                                                                            href="<?php the_permalink(); ?>">
+                                                                            <?php the_title(); ?>
+                                                                        </a>
                                                                     </h3>
                                                                 </div>
                                                             </div>

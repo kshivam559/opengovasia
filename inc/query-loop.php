@@ -47,12 +47,14 @@ function fetch_header_channel_posts($post_type = 'post', $posts_per_page = 2, $t
                             class="post-meta panel hstack justify-start gap-1 fs-7 ft-tertiary fw-medium text-gray-900 dark:text-white text-opacity-60 d-none md:d-flex z-1">
                             <div class="text-truncate">
                                 <div class="post-category hstack gap-narrow fw-semibold">
-                                    <?php
-                                    $categories = get_the_category();
-                                    if (!empty($categories)) {
-                                        echo '<a class="fw-medium text-none text-primary dark:text-primary-400" href="' . esc_url(get_category_link($categories[0]->term_id)) . '">' . esc_html($categories[0]->name) . '</a>';
-                                    }
+                                    <?php 
+                                    $category = get_term_by('slug', $term, 'category');
+                                    $category_link = get_term_link($term, 'category');
                                     ?>
+                                    <a class="fw-medium text-none text-primary dark:text-primary-400" href="
+                                        <?php echo esc_url($category_link); ?>">
+                                        <?php echo esc_html($category->name); ?>
+                                    </a>
                                 </div>
                             </div>
                             <div class="sep d-block">|</div>

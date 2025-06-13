@@ -9,41 +9,41 @@
 
 get_header();
 
-?>
+opengovasia_breadcrumbs();
 
-<?php opengovasia_breadcrumbs(); ?>
+$taxonomy = get_queried_object();
+$term_id = 0;
+
+if (is_object($taxonomy) && isset($taxonomy->term_id)) {
+	$term_id = $taxonomy->term_id;
+}
+$sponsored_by = get_term_meta($term_id, 'sponsored_by', true);
+
+?>
 
 <header class="page-header panel vstack text-center">
 
 	<?php
 
-	$taxonomy = get_queried_object();
-	$term_id = 0;
-
-	if (is_object($taxonomy) && isset($taxonomy->term_id)) {
-		$term_id = $taxonomy->term_id;
-	}
-
-	$sponsored_by = get_term_meta($term_id, 'sponsored_by', true);
-
 	if (is_category()):
 
-		$channel_image = !empty(get_term_meta($term_id, 'channel_image', true))
+		// Also check category.php for category banner
+		$banner_image = !empty(get_term_meta($term_id, 'channel_image', true))
 			? get_term_meta($term_id, 'channel_image', true)
-			: get_template_directory_uri() . '/assets/images/demo-three/common/channel-banner.webp';
+			: get_archive_banner('channels');
 
 	elseif (is_tax()):
 
-		$channel_image = !empty(get_term_meta($term_id, 'channel_image', true))
+		$banner_image = !empty(get_term_meta($term_id, 'channel_image', true))
 			? get_term_meta($term_id, 'channel_image', true)
-			: get_template_directory_uri() . '/assets/images/demo-three/common/events-banner.webp';
+			: get_archive_banner();
 	else:
-		$channel_image = get_template_directory_uri() . '/assets/images/demo-three/common/channel-banner.webp';
+		$banner_image = get_archive_banner();
 	endif;
 
 	?>
 
-	<div class="og_hero-image" style="background-image: url('<?php echo esc_url($channel_image); ?>');">
+	<div class="og_hero-image" style="background-image: url('<?php echo esc_url($banner_image); ?>');">
 
 
 
@@ -207,6 +207,10 @@ get_header();
 									} elseif (get_post_type() === 'ogtv') {
 
 										get_template_part('template-parts/ogtv/archive');
+										
+									} elseif (get_post_type() === 'company') {
+
+										get_template_part('template-parts/company/archive');
 
 									} else {
 

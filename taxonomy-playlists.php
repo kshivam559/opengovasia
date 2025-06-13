@@ -20,11 +20,11 @@ $term_id = $term->term_id;
 
     <?php
 
-    $channel_image = get_template_directory_uri() . '/assets/images/demo-three/common/events-banner.webp';
+    $banner_image = get_term_meta($term_id, 'channel_image', true);
 
     ?>
 
-    <div class="og_hero-image" style="background-image: url('<?php echo esc_url($channel_image); ?>');">
+    <div class="og_hero-image" style="background-image: url('<?php echo esc_url($banner_image); ?>');">
 
         <div class="container max-w-xl position-absolute top-50 start-50 translate-middle z-2">
             <h1 class="h3 lg:h1 text-white"><?php echo esc_html($term->name); ?></h1>
@@ -55,7 +55,7 @@ $term_id = $term->term_id;
                     }
                 }
 
-                echo '<span class="text-white">Showing ' . $current_posts . ' content out of ' . $total_posts . ' under "' . esc_html(single_term_title('', false)) . '" ' . strtoLower(esc_html($taxonomy_label)) . '.</span>';
+                echo '<span class="text-white">Showing ' . $current_posts . ' video out of ' . $total_posts . ' under "' . esc_html(single_term_title('', false)) . '" ' . strtoLower(esc_html($taxonomy_label)) . '.</span>';
                 ?>
 
             <?php endif; ?>

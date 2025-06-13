@@ -8,28 +8,21 @@
 
 get_header();
 
+opengovasia_breadcrumbs();
+
+$category = get_queried_object();
+$term_id = $category->term_id;
+
+$sponsored_by = get_term_meta($term_id, 'sponsored_by', true);
+
+$channel_image = !empty(get_term_meta($term_id, 'channel_image', true)) ? get_term_meta($term_id, 'channel_image', true) : get_archive_banner('channels');
+
 ?>
 
-<?php opengovasia_breadcrumbs(); ?>
 
 <header class="page-header panel vstack text-center">
 
-    <?php
-
-    $category = get_queried_object();
-    $term_id = $category->term_id;
-
-    // Retrieve the 'channel_image' meta or use fallback
-    $channel_image = !empty(get_term_meta($term_id, 'channel_image', true))
-        ? get_term_meta($term_id, 'channel_image', true)
-        : get_template_directory_uri() . '/assets/images/demo-three/common/channel-banner.webp';
-    ?>
-
     <div class="og_hero-image" style="background-image: url('<?php echo esc_url($channel_image); ?>');">
-
-
-        <?php $sponsored_by = get_term_meta($term_id, 'sponsored_by', true); ?>
-
 
         <?php if ($sponsored_by):
             $company = get_post($sponsored_by);
@@ -62,7 +55,6 @@ get_header();
             </div>
 
         <?php endif; ?>
-
 
         <div class="container max-w-xl position-absolute top-50 start-50 translate-middle z-2">
             <h1 class="h3 lg:h1 text-white"><?php echo single_cat_title('', false); ?></h1>
@@ -111,8 +103,7 @@ get_header();
                 $paged = get_query_var('paged') ? (int) get_query_var('paged') : 1;
                 $filter_post_type = isset($_GET['filter_post_type']) ? sanitize_text_field($_GET['filter_post_type']) : null;
 
-
-                $post_types = ['post', 'events', 'ogtv'];
+                $post_types = ['post', 'events', 'ogtv', 'awards'];
                 if ($paged > 1 && $filter_post_type) {
                     $post_types = [$filter_post_type]; // Show only selected post type on paginated views
                 }

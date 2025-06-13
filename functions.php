@@ -154,7 +154,14 @@ function opengovasia_scripts()
 	// wp_dequeue_style('global-styles');
 	// wp_dequeue_style('classic-theme-styles');
 
-	// wp_add_inline_style('opengovasia-style', '.bg-primary { background-color: red !important; }');
+	if (is_singular('events')):
+		$color_code = get_opengovasia_theme_color();
+	else:
+		$color_code = '#0c50a8'; // Default color code
+	endif;
+
+	wp_add_inline_style('opengovasia-style', ':root { --color-primary: ' . $color_code . '; --link-color-text: ' . $color_code . '; } .bg-primary { background-color: ' . $color_code . ' !important; } .hover\:bg-primary:hover { background-color: ' . $color_code . ' !important; } .btn-primary { --bs-btn-bg: ' . $color_code . ' !important; --bs-btn-border-color: ' . $color_code . ' !important; --bs-btn-hover-bg: ' . $color_code . ' !important; --bs-btn-hover-border-color: ' . $color_code . ' !important; } .btn-alt-primary { color: ' . $color_code . ' !important; } .btn-alt-primary:focus, .btn-alt-primary:hover { background: ' . $color_code . ' !important; } .border-primary, .hover\:border-primary:hover { border-color: ' . $color_code . ' !important; } .text-primary { color: ' . $color_code . ' !important; } .hover\:text-primary:hover { color: ' . $color_code . ' !important; } .uc-link:hover { color: ' . $color_code . ' !important; }');
+	
 
 	/* Enqueue scripts */
 
@@ -196,7 +203,7 @@ require get_template_directory() . '/inc/template-functions.php';
 /**
  * Custom Post Types for this theme.
  */
-require get_template_directory() . '/inc/custom-post-types.php';
+require get_template_directory() . '/inc/cpt-manager.php';
 
 /**
  * Custom Post type Taxonomies for this theme.
@@ -212,21 +219,13 @@ require get_template_directory() . '/inc/taxonomy/playlists.php';
 
 require get_template_directory() . '/inc/taxonomy/awards-category.php';
 
+require get_template_directory() . '/inc/taxonomy/source.php';
+
 /*
  * Custom Query Filter for this theme.
  */
 
 require get_template_directory() . '/inc/query-filters.php';
-
-
-// Flush rewrite rules on theme activation
-function flush_rewrite_rules_once()
-{
-	register_country_taxonomy(); // Ensure taxonomy exists before flushing rules
-	flush_rewrite_rules();
-}
-add_action('after_switch_theme', 'flush_rewrite_rules_once');
-
 
 /**
  * Custom Meta Box for this theme.
@@ -273,6 +272,12 @@ require get_template_directory() . '/inc/rewrite-rules.php';
  */
 
 require get_template_directory() . '/inc/query-loop.php';
+
+/**
+ * Add Theme Settings Page
+ */
+
+require get_template_directory() . '/inc/theme-settings.php';
 
 /**
  * Add PWA Support

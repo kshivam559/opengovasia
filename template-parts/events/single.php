@@ -23,14 +23,23 @@ if (!empty($categories)):
 endif;
 
 // Retrieve the 'channel_image' meta or use fallback
-$channel_image = !empty(get_term_meta($term_id, 'channel_image', true))
+$banner_image = !empty(get_term_meta($term_id, 'channel_image', true))
     ? get_term_meta($term_id, 'channel_image', true)
-    : get_template_directory_uri() . '/assets/images/demo-three/common/channel-banner.webp';
+    : get_archive_banner('past_events');
+
+// Fetch Event Data
+
+$events_data = get_custom_meta(get_the_ID());
+$selected_partners = get_custom_meta(get_the_ID(), 'companies', true);
+
+$event_date = $events_data['event_date'] ?? '';
+$event_start_time = $events_data['event_start_time'] ?? '';
+$event_end_time = $events_data['event_end_time'] ?? '';
 
 ?>
 
 
-<div class="og_hero-image" style="background-image: url(<?php echo esc_url($channel_image); ?>);">
+<div class="og_hero-image" style="background-image: url(<?php echo esc_url($banner_image); ?>);">
 
     <div class="container max-w-xl position-absolute start-50 translate-middle z-2 text-center" style="top: 35%;">
         <h1 class="h3 lg:h1 text-white "><?php the_title(); ?></h1>
@@ -56,14 +65,18 @@ $channel_image = !empty(get_term_meta($term_id, 'channel_image', true))
 
                 <span class="single-post sponsor-link text-white fs-6 md:fs-5">
                     Powered by
-                    <a class="text-none" href="<?php echo esc_url($sponsor_link); ?>"><?php echo esc_html($sponsor_name); ?></a>
+                    <a class="text-none"
+                        href="<?php echo esc_url($sponsor_link); ?>"><?php echo esc_html($sponsor_name); ?></a>
                 </span>
 
             <?php endif; ?>
             <span class="single-post single-post-sep sep text-white fs-6 md:fs-5 opacity-60">•</span>
             <span class="single-post single-post-date text-white fs-6 md:fs-5">
                 <i class="unicon-calendar"></i>
-                <?php echo get_the_date(); ?>
+                <?php
+                echo (!empty($event_date)) ? date('F j, Y', strtotime($event_date)) : get_the_date();
+                ?>
+
             </span>
         </div>
 
@@ -105,19 +118,6 @@ $channel_image = !empty(get_term_meta($term_id, 'channel_image', true))
     </div>
 </div>
 
-
-<?php
-
-// Fetch Event Data
-
-$events_data = get_post_meta(get_the_ID(), 'events_data', true);
-$selected_partners = get_post_meta(get_the_ID(), 'companies', true);
-
-$event_date = $events_data['event_date'] ?? '';
-$event_start_time = $events_data['event_start_time'] ?? '';
-$event_end_time = $events_data['event_end_time'] ?? '';
-
-?>
 
 <article id="post-<?php the_ID(); ?>" <?php post_class('post type-post single-post py-4 lg:py-4 xl:py-4'); ?>
     data-post-id="<?php the_ID(); ?>">
@@ -183,7 +183,7 @@ $event_end_time = $events_data['event_end_time'] ?? '';
             <div class="dark:bg-gray-900 rounded-1 p-2 sm:p-3 lg:p-4 xl:p-4 border border-gray-900 border-opacity-15">
 
                 <?php
-                $events_data = get_post_meta(get_the_ID(), 'events_data', true);
+
                 $event_date = $events_data['event_date'] ?? '';
                 $event_start_time = $events_data['event_start_time'] ?? '';
                 $event_end_time = $events_data['event_end_time'] ?? '';
@@ -516,7 +516,7 @@ $event_end_time = $events_data['event_end_time'] ?? '';
                                         if ($partner && $partner->post_status === 'publish'):
                                             $logo = get_the_post_thumbnail_url($partner_id, 'full');
                                             $info = wp_strip_all_tags(strip_shortcodes($partner->post_content));
-                                            $socials = get_post_meta($partner_id, '_company_socials', true);
+                                            $socials = get_custom_meta($partner_id, 'socials', true);
                                             ?>
                                             <div
                                                 class="partner border py-2 px-2 rounded-1 shadow-xs mb-2 dark:bg-gray-900 dark:text-white vstack gap-2 sm:hstack align-items-center">

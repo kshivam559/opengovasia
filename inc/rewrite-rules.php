@@ -15,6 +15,7 @@ function theme_register_rewrite_rules()
     add_rewrite_rule('^upcoming-events/?$', 'index.php?pagename=upcoming-events', 'top');
     add_rewrite_rule('^channels/?$', 'index.php?pagename=channels', 'top');
     add_rewrite_rule('^awards-category/?$', 'index.php?pagename=awards-category', 'top');
+    add_rewrite_rule('^awards/?$', 'index.php?pagename=awards', 'top');
 
 }
 add_action('init', 'theme_register_rewrite_rules');
@@ -25,6 +26,7 @@ function theme_register_pages()
     // Check if the page already exists
     $upcoming_events_page = get_page_by_path('upcoming-events');
     $channels_page = get_page_by_path('channels');
+    $awards_page = get_page_by_path('awards');
     $awards_category_page = get_page_by_path('awards-category');
 
     // If the page doesn't exist, create it
@@ -52,6 +54,18 @@ function theme_register_pages()
         ));
 
     }
+    if (!$awards_page) {
+        $page_id = wp_insert_post(array(
+            'post_title' => 'Awards',
+            'post_name' => 'awards',
+            'post_status' => 'publish',
+            'post_type' => 'page',
+            'post_content' => '<!-- wp:paragraph --><p>This page displays awards.</p><!-- /wp:paragraph -->',
+            'comment_status' => 'closed'
+        ));
+
+    }
+
     // If the page doesn't exist, create it
     if (!$awards_category_page) {
         $page_id = wp_insert_post(array(
@@ -99,6 +113,18 @@ function theme_channels_template($channels_template)
 
 add_filter('template_include', 'theme_channels_template');
 
+function theme_awards_template($awards_template)
+{
+    if (is_page('awards')) {
+        $new_template = locate_template(['awards.php']);
+        if (!empty($new_template)) {
+            return $new_template;
+        }
+    }
+    return $awards_template;
+}
+add_filter('template_include', 'theme_awards_template');
+
 function theme_awards_category_template($awards_category_template)
 {
     if (is_page('awards-category')) {
@@ -123,6 +149,7 @@ function theme_exclude_custom_pages_from_search($query)
         // Get the IDs of the pages to exclude
         $channels_page = get_page_by_path('channels');
         $upcoming_events_page = get_page_by_path('upcoming-events');
+        $awards_page = get_page_by_path('awards');
         $awards_category_page = get_page_by_path('awards-category');
 
         $exclude_ids = array();
@@ -132,6 +159,9 @@ function theme_exclude_custom_pages_from_search($query)
         }
         if ($upcoming_events_page) {
             $exclude_ids[] = $upcoming_events_page->ID;
+        }
+        if ($awards_page) {
+            $exclude_ids[] = $awards_page->ID;
         }
         if ($awards_category_page) {
             $exclude_ids[] = $awards_category_page->ID;
@@ -153,6 +183,9 @@ function theme_add_custom_page_labels($post_states, $post)
         }
         if ($post->post_name === 'upcoming-events') {
             $post_states['custom_upcoming'] = 'Upcoming Events Page';
+        }
+        if ($post->post_name === 'awards') {
+            $post_states['custom_awards'] = 'Awards Page';
         }
         if ($post->post_name === 'awards-category') {
             $post_states['custom_awards'] = 'Awards Category Page';

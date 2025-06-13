@@ -13,18 +13,27 @@
 
 get_header();
 
+opengovasia_breadcrumbs();
+
+$channel_image = get_archive_banner('ogtv');
+
+$get_theme_mod = get_theme_mod('text_content', []);
+$page_title = (!empty($get_theme_mod['ogtv_title'])) ? $get_theme_mod['ogtv_title'] : __('OGTV', 'opengovasia');
+$page_description = (!empty($get_theme_mod['ogtv_description'])) ? $get_theme_mod['ogtv_description'] : __('Explore our OGTV channel for the latest videos and playlists.', 'opengovasia');
+
 ?>
 
-<?php opengovasia_breadcrumbs(); ?>
-
 <header class="page-header panel vstack text-center">
-
-    <?php $channel_image = get_template_directory_uri() . '/assets/images/demo-three/common/channel-banner.webp'; ?>
 
     <div class="og_hero-image" style="background-image: url('<?php echo esc_url($channel_image); ?>');">
 
         <div class="container max-w-xl position-absolute top-50 start-50 translate-middle z-2">
-            <h1 class="h3 lg:h1 text-white">OGTV</h1>
+            <h1 class="h3 lg:h1 text-white">
+                <?php echo esc_html($page_title); ?>
+            </h1>
+            <div class="archive-description text-white">
+                <?php echo $page_description; ?>
+            </div>
         </div>
 
     </div>

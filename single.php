@@ -31,6 +31,9 @@ opengovasia_breadcrumbs();
 			case 'ogtv':
 				get_template_part("template-parts/ogtv/single", "");
 				break;
+			case 'company':
+				get_template_part("template-parts/company/single", "");
+				break;
 			default:
 				?>
 

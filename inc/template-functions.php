@@ -276,6 +276,94 @@ function opengovasia_pagination($query = null)
 	}
 }
 
+/**
+ * Format event time for display.
+ *
+ * @param string $time The time in 'H:i:s' format.
+ * @return string Formatted time in 'h:i A' format or empty string if no time is provided.
+ */
+
+function format_event_time($time)
+{
+	return $time ? DateTime::createFromFormat('H:i:s', $time)->format('h:i') : '';
+}
+
+/**
+ * Get the banner image URL for the OpenGovAsia theme.
+ *
+ * This function retrieves the banner image URL based on the provided key or returns a default value.
+ *
+ * @param string $banner_key The key for the banner image.
+ * @return string The URL of the banner image or the default value.
+ */
+
+function get_archive_banner($banner_page = '')
+{
+	$banner_images = get_theme_mod('banner_images', []);
+
+	if (!isset($banner_images[$banner_page]) || empty($banner_images[$banner_page])) {
+		// Return default banner if specific key is not set
+		return get_template_directory_uri() . '/assets/images/demo-three/common/channel-banner.webp';
+	}
+
+	// Return specific banner URL or default
+	return $banner_images[$banner_page];
+}
+
+/**
+ * Get the homepage banner for the OpenGovAsia theme.
+ *
+ * This function retrieves the homepage banner link based on the device type or returns a default value.
+ *
+ * @param string $device The device type ('desktop' or 'mobile').
+ * @return string The URL of the homepage banner or the default value.
+ */
+
+function get_homepage_banner($device = '')
+{
+	$banner_images = get_theme_mod('homepage_banner', []);
+
+	if ($device == 'desktop') {
+		$banner_images = $banner_images['desktop_banner'] ?? get_template_directory_uri() . '/assets/images/common/ad-slot.jpg';
+	} elseif ($device == 'mobile') {
+		$banner_images = $banner_images['mobile_banner'] ?? get_template_directory_uri() . '/assets/images/common/ad-slot-mobile.jpg';
+	} else {
+		$banner_images = get_template_directory_uri() . '/assets/images/demo-three/common/channel-banner.webp';
+	}
+
+	return $banner_images;
+}
+
+/**
+ * Get the homepage banner link for the OpenGovAsia theme.
+ *
+ * This function retrieves the homepage banner link based on the device type or returns a default value.
+ *
+ * @param string $device The device type ('desktop' or 'mobile').
+ * @return string The URL of the homepage banner link or the default value.
+ */
+
+
+function get_homepage_banner_link($device = '')
+{
+	$banner_links = get_theme_mod('homepage_banner', []);
+
+	if ($device == 'desktop') {
+		$banner_links = $banner_links['desktop_banner_link'] ?? esc_url('https://opengovasia.com/');
+	} elseif ($device == 'mobile') {
+		$banner_links = $banner_links['mobile_banner_link'] ?? esc_url('https://opengovasia.com/');
+	} else {
+		$banner_links = esc_url('https://opengovasia.com/');
+	}
+
+	// Return specific banner link or default
+	if (empty($device)) {
+		return esc_url('https://opengovasia.com/');
+	}
+
+	// Default banner link
+	return $banner_links;
+}
 
 
 /**
@@ -393,12 +481,13 @@ function opengovasia_dynamic_filter_form($filters = [])
 	}
 
 	$selected_values = [
-		'filter_post_type' => filter_input(INPUT_GET, 'filter_post_type', FILTER_SANITIZE_STRING) ?? '',
-		'country' => filter_input(INPUT_GET, 'c', FILTER_SANITIZE_STRING) ?? '',
-		'filter_year' => filter_input(INPUT_GET, 'filter_year', FILTER_SANITIZE_STRING) ?? ''
+		'filter_post_type' => isset($_GET['filter_post_type']) ? sanitize_text_field($_GET['filter_post_type']) : '',
+		'country' => isset($_GET['c']) ? sanitize_text_field($_GET['c']) : '',
+		'filter_year' => isset($_GET['filter_year']) ? sanitize_text_field($_GET['filter_year']) : ''
+
 	];
 
-	$is_search_page = filter_input(INPUT_GET, 's', FILTER_SANITIZE_STRING) ?? '';
+	$is_search_page = isset($_GET['s']) ? sanitize_text_field($_GET['s']) : '';
 
 	$post_type_options = [
 		'' => 'Post Type',
@@ -486,4 +575,28 @@ function opengovasia_dynamic_filter_form($filters = [])
 		</div>
 	</form>
 	<?php
+}
+
+/**
+ * Get the OpenGovAsia theme color based on post or term meta.
+ *
+ * This function retrieves the theme color for the current post or term.
+ * If no specific color is set, it defaults to a predefined color.
+ *
+ * @return string The hex color code for the theme.
+ */
+
+function get_opengovasia_theme_color()
+{
+	$selected_country = !empty($_GET['c']) ? sanitize_text_field($_GET['c']) : 'global';
+	$term = get_term_by('slug', $selected_country, 'country');
+	$color_code = get_term_meta($term->term_id, 'country_color', true) ?: '#0c50a8';
+
+
+	if (is_singular('events')):
+		return get_custom_meta(get_the_ID(), 'theme_color');
+
+	else:
+		return $color_code; // Default color
+	endif;
 }

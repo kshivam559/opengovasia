@@ -17,16 +17,14 @@ if (!empty($categories)):
     $category = $categories[0];
     $term_id = $category->term_id;
 
-    $sponsor_link_text = get_term_meta($term_id, 'sponsor_link_text', true);
-    $sponsor_link = get_term_meta($term_id, 'sponsor_link', true);
-
+    $sponsored_by = get_term_meta($term_id, 'sponsored_by', true);
 
 endif;
 
 // Retrieve the 'channel_image' meta or use fallback
 $channel_image = !empty(get_term_meta($term_id, 'channel_image', true))
     ? get_term_meta($term_id, 'channel_image', true)
-    : get_template_directory_uri() . '/assets/images/demo-three/common/channel-banner.webp';
+    : get_archive_banner('ogtv');
 
 ?>
 
@@ -41,18 +39,29 @@ $channel_image = !empty(get_term_meta($term_id, 'channel_image', true))
                 <a href="<?php echo esc_url(get_category_link($category->term_id)); ?>"
                     class="text-none text-white"><?php echo esc_html($category->name); ?></a>
             </span>
-            <?php if (!empty($sponsor_link_text) && !empty($sponsor_link)): ?>
+
+            <?php if (!empty($sponsored_by)):
+
+                $company = get_post($sponsored_by);
+                if ($company && $company->post_status === 'publish') {
+
+                    $sponsor_name = $company->post_title;
+                    $sponsor_link = get_permalink($company->ID);
+                }
+
+                ?>
                 <span class="single-post single-post-sep sep text-white fs-6 md:fs-5 opacity-60">
                     •
                 </span>
 
                 <span class="single-post sponsor-link text-white fs-6 md:fs-5">
                     Powered by
-                    <a class="text-none" href="<?php echo esc_url($sponsor_link); ?>" target="_blank"
-                        rel="noopener noreferrer"><?php echo esc_html($sponsor_link_text); ?></a>
+                    <a class="text-none"
+                        href="<?php echo esc_url($sponsor_link); ?>"><?php echo esc_html($sponsor_name); ?></a>
                 </span>
 
             <?php endif; ?>
+
             <span class="single-post single-post-sep sep text-white fs-6 md:fs-5 opacity-60">
                 •
             </span>
@@ -112,7 +121,7 @@ $channel_image = !empty(get_term_meta($term_id, 'channel_image', true))
                     class="featured-image m-0 ratio ratio-2x1 rounded-1 uc-transition-toggle overflow-hidden bg-gray-25 dark:bg-gray-800">
 
                     <?php
-                    $video_url = get_post_meta(get_the_ID(), 'ogtv_details', true)['video_url'] ?? '';
+                    $video_url = get_custom_meta(get_the_ID(), 'video_url', true);
 
                     if (preg_match('/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/|.*[?&]v=))([a-zA-Z0-9_-]{11})/', $video_url, $matches)) {
 

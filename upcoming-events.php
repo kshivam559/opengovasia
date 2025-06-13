@@ -7,26 +7,26 @@
 
 get_header();
 
-?>
+opengovasia_breadcrumbs();
 
-<?php opengovasia_breadcrumbs(); ?>
+// Get the banner image for the upcoming events page
+$banner_image = get_archive_banner('upcoming_events');
+
+$get_theme_mod = get_theme_mod('text_content', []);
+$page_title = (!empty($get_theme_mod['upcoming_events_title'])) ? $get_theme_mod['upcoming_events_title'] : __('Upcoming Events', 'opengovasia');
+$page_description = (!empty($get_theme_mod['upcoming_events_description'])) ? $get_theme_mod['upcoming_events_description'] : __('Be on a lookout for our content rich and engaging events across ASEAN and register now to get informed and empowered.', 'opengovasia');
+
+?>
 
 <header class="page-header panel vstack text-center">
 
-    <?php
-
-    $channel_image = get_template_directory_uri() . '/assets/images/demo-three/common/events-banner.webp';
-
-    ?>
-
-    <div class="og_hero-image" style="background-image: url('<?php echo esc_url($channel_image); ?>');">
+    <div class="og_hero-image" style="background-image: url('<?php echo esc_url($banner_image); ?>');">
 
         <div class="container max-w-xl position-absolute top-50 start-50 translate-middle z-2">
-            <h1 class="h3 lg:h1 text-white">Upcoming Events</h1>
+            <h1 class="h3 lg:h1 text-white"><?php echo $page_title; ?> </h1>
 
             <div class="archive-description text-white">
-                Be on a lookout for our content rich and engaging events across ASEAN and register now to get informed
-                and empowered.
+                <?php echo $page_description; ?>
             </div>
 
         </div>
@@ -39,32 +39,47 @@ get_header();
     <div class="container max-w-xl">
         <div class="panel vstack gap-3 sm:gap-6 lg:gap-7">
 
-
             <!-- Show only country filter for upcoming events -->
             <?php opengovasia_dynamic_filter_form(['country']); ?>
 
             <?php
             $paged = max(1, get_query_var('paged', 1)); // Ensure correct pagination
-            
-            $args = array(
+            // Basic meta query
+            $events = custom_query([
                 'post_type' => 'events',
                 'posts_per_page' => 12, // Set the number of posts per page
-                'meta_key' => 'event_date',
-                'orderby' => 'meta_value',
+                'orderby' => 'event_date', // Changed from 'meta_value' to 'event_date'
                 'order' => 'ASC',
                 'paged' => $paged,
-                'meta_query' => array(
-                    array(
+                'meta_query' => [
+                    [
                         'key' => 'event_date',
                         'value' => current_time('Y-m-d'),
                         'compare' => '>=',
                         'type' => 'DATE'
-                    )
-                )
-            );
+                    ]
+                ]
+            ]);
 
+            // $args = array(
+            //     'post_type' => 'events',
+            //     'posts_per_page' => 12, // Set the number of posts per page
+            //     'meta_key' => 'event_date',
+            //     'orderby' => 'meta_value',
+            //     'order' => 'ASC',
+            //     'paged' => $paged,
+            //     'meta_query' => array(
+            //         array(
+            //             'key' => 'event_date',
+            //             'value' => current_time('Y-m-d'),
+            //             'compare' => '>=',
+            //             'type' => 'DATE'
+            //         )
+            //     )
+            // );
+            
             // Execute the query with country filtering
-            $events = new Country_Filtered_Query($args);
+            // $events = new Country_Filtered_Query($args);
             ?>
 
             <?php if ($events->have_posts()): ?>

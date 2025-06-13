@@ -120,7 +120,8 @@
                     </div>
                 </div>
                 <div class="uc-center-navbar panel z-2 bg-primary dark:bg-gray-900"
-                    data-uc-navbar=" animation: uc-animation-slide-top-small; duration: 150;">
+                    data-uc-navbar=" animation: uc-animation-slide-top-small; duration: 150;" style="background: linear-gradient(90deg, #0B4596 60%, <?php echo get_opengovasia_theme_color() ?> 100%);
+">
                     <div class="container max-w-xl">
                         <div class="uc-navbar min-h-72px lg:min-h-80px text-white dark:text-white">
                             <div class="uc-navbar-left">
@@ -237,26 +238,37 @@
                                                         $args = array(
                                                             'post_type' => 'events',
                                                             'posts_per_page' => 4,
-                                                            'meta_key' => 'event_date',
-                                                            'orderby' => 'meta_value',
+                                                            // 'meta_key' => 'event_date', // Removed for custom_query
+                                                            'orderby' => 'event_date', // Changed for custom_query
                                                             'order' => 'ASC',
                                                             'meta_query' => array(
                                                                 array(
                                                                     'key' => 'event_date',
                                                                     'value' => current_time('Y-m-d'),
                                                                     'compare' => '>=',
-                                                                    'type' => 'DATE'
+                                                                    'type' => 'DATE' // type is informational for custom_query, actual casting is in schema
                                                                 )
                                                             )
                                                         );
 
-                                                        // Execute the query with country filtering
-                                                        $events_query = new Country_Filtered_Query($args);
+                                                        // Execute the query using custom_query
+                                                        // The Country_Filtered_Query class might need to be integrated differently if its specific caching/filtering is still required alongside custom_query
+                                                        $events_query = custom_query($args);
 
                                                         if ($events_query->have_posts()):
                                                             while ($events_query->have_posts()):
                                                                 $events_query->the_post();
-                                                                $event_date = get_post_meta(get_the_ID(), 'events_data[event_date]', true);
+
+                                                                $events_data = get_custom_meta(get_the_ID());
+
+                                                                if (isset($events_data['event_date'])) {
+                                                                    $event_date = esc_html($events_data['event_date']);
+                                                                    $event_date = date('M j, Y', strtotime($event_date));
+
+                                                                } else {
+                                                                    $event_date = get_the_date('Y-m-d');
+                                                                }
+
                                                                 $event_category = get_the_category(); // Get category if needed
                                                                 ?>
 
@@ -301,13 +313,8 @@
                                                                                 <div class="text-truncate">
                                                                                     <div class="post-date hstack gap-narrow">
                                                                                         <span>
-                                                                                            <?php
 
-                                                                                            $events_data = get_post_meta(get_the_ID(), 'events_data', true);
-
-                                                                                            $event_date = isset($events_data['event_date']) ? esc_html($events_data['event_date']) : '';
-
-                                                                                            echo esc_html(date('F j, Y', strtotime($event_date))); ?>
+                                                                                            <?php echo esc_html($event_date); ?>
 
                                                                                         </span>
                                                                                     </div>

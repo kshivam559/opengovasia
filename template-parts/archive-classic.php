@@ -9,9 +9,24 @@
 if (!defined('ABSPATH'))
     exit;
 
-$category = get_the_category();
-$category_name = !empty($category) ? esc_html($category[0]->name) : 'Uncategorized';
-$category_link = !empty($category) ? esc_url(get_category_link($category[0]->term_id)) : '#';
+
+if (is_category()):
+    // On category archive page
+    $category = get_queried_object();
+    $category_name = esc_html($category->name);
+    $category_link = esc_url(get_category_link($category->term_id));
+else:
+    // On single post or other pages
+    $categories = get_the_category();
+    if (!empty($categories)):
+        $category_name = esc_html($categories[0]->name);
+        $category_link = esc_url(get_category_link($categories[0]->term_id));
+    else:
+        $category_name = 'Uncategorized';
+        $category_link = '#';
+    endif;
+endif;
+
 $post_thumbnail = get_the_post_thumbnail_url(get_the_ID(), 'full') ?: get_template_directory_uri() . '/assets/images/common/img-fallback.png';
 $post_link = get_permalink();
 $post_title = get_the_title();
@@ -70,11 +85,21 @@ $post_date = get_the_date('M j, Y');
                     <div class="post-date hstack gap-narrow">
                         <?php if (get_post_type() === 'events'): ?>
                             <?php
-                            $events_data = get_post_meta(get_the_ID(), 'events_data', true);
+                            $events_data = get_custom_meta(get_the_ID());
                             $event_date = isset($events_data['event_date']) ? esc_html($events_data['event_date']) : '';
                             ?>
 
                             <span><?php echo esc_html(!empty($event_date) ? date('M j, Y', strtotime($event_date)) : $post_date); ?></span>
+                        <?php elseif (get_post_type() === 'awards'): ?>
+
+                            <?php
+                            $awards_year = get_the_terms(get_the_ID(), 'years');
+                            if (!empty($awards_year) && !is_wp_error($awards_year)):
+                                echo '<span>' . implode(', ', wp_list_pluck($awards_year, 'name')) . '</span>';
+                            else:
+                                echo '<span>' . esc_html($post_date) . '</span>';
+                            endif;
+                            ?>
 
                         <?php else: ?>
                             <span><?php echo esc_html($post_date); ?></span>

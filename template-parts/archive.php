@@ -44,25 +44,25 @@ if (!defined('ABSPATH'))
                     class="post-meta panel hstack justify-center fs-7 fw-medium text-gray-900 dark:text-white text-opacity-60 d-none md:d-flex">
                     <div class="meta">
                         <div class="hstack gap-2">
-                            <!-- <div class="post-author hstack gap-1">
+                            <div class="post-author hstack gap-1">
                                 <a href="<?php echo get_author_posts_url(get_the_author_meta('ID')); ?>"
                                     data-uc-tooltip="<?php the_author(); ?>">
                                     <?php echo get_avatar(get_the_author_meta('ID'), 24); ?>
                                 </a>
                                 <a href="<?php echo get_author_posts_url(get_the_author_meta('ID')); ?>"
                                     class="text-black dark:text-white text-none fw-bold"><?php the_author(); ?></a>
-                            </div> -->
+                            </div>
                             <div class="post-date hstack gap-narrow">
                                 <i class="icon-narrow unicon-calendar"></i>
                                 <span><?php echo get_the_date('M j, Y'); ?></span>
                             </div>
-                            <div>
+                            <!-- <div>
                                 <a href="<?php the_permalink(); ?>#blog-comment"
                                     class="post-comments text-none hstack gap-narrow">
                                     <i class="icon-narrow unicon-chat"></i>
                                     <span><?php echo get_comments_number(); ?></span>
                                 </a>
-                            </div>
+                            </div> -->
                         </div>
                     </div>
                 </div>

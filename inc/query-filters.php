@@ -192,19 +192,7 @@ function manage_post_types_and_archives($query)
             $query->set('post_type', ['post', 'events', 'ogtv']);
         }
 
-        // Handle events archive - Only filter future events on the events archive page
-        elseif ($query->is_post_type_archive('events')) {
-            $current_date = current_time('Y-m-d');
-            $meta_query = [
-                [
-                    'key' => 'event_date',
-                    'value' => $current_date,
-                    'compare' => '<', // Only show past events
-                    'type' => 'DATE',
-                ],
-            ];
-            $query->set('meta_query', $meta_query);
-        }
+
     }
 }
 add_action('pre_get_posts', 'manage_post_types_and_archives');
@@ -228,3 +216,38 @@ function prevent_custom_archive_page_redirect($template)
     return $template;
 }
 add_filter('template_include', 'prevent_custom_archive_page_redirect', 99);
+
+/**
+ * Custom query for Past Events
+ * 
+ * This code filters the main query to show only past events
+ * based on a custom meta field 'event_date'.
+ */
+
+add_action('pre_get_posts', function ($query) {
+    if (!is_admin() && $query->is_main_query() && is_post_type_archive('events')) {
+        $today = date('Y-m-d');
+
+        // Set context for HybridMeta filters
+        HybridMeta::set_main_query_context('events', [
+            [
+                'key' => 'event_date',
+                'value' => $today,
+                'compare' => '<'
+            ]
+        ]);
+
+        // Set orderby
+        $query->set('orderby', 'event_date');
+        $query->set('order', 'ASC');
+
+    }
+});
+
+// Simple cleanup - just clear context after main query
+add_action('wp', function () {
+    // Clear context after main query is done
+    if (is_post_type_archive(['events', 'awards', 'company', 'testimonials', 'ogtv'])) {
+        HybridMeta::clear_main_query_context();
+    }
+});

@@ -248,15 +248,27 @@ get_header(); ?>
         <!-- Section start -->
 
         <div class="section panel overflow-hidden">
-            <div class="section-outer panel">
+            <div class="section-outer panel py-4">
                 <div class="container max-w-xl">
-                    <div class="section-inner mt-4">
-                        <a class="text-none" href="https://www.youtube.com/watch?v=jW_knEb3Ss8&t=629s" target="_blank"
-                            rel="nofollow">
-                            <img class="w-100 h-auto rounded-1"
-                                src="https://cdn.opengovasia.com/wp-content/uploads/2025/03/OGTV-Banner-Leaderboard-Philipines.webp"
-                                alt="OGTV Banner Leaderboard Philipines" loading="lazy">
-                        </a>
+                    <div class="section-inner">
+                        <?php
+                        $homepage_banner_desktop = get_homepage_banner('desktop');
+                        $homepage_banner_mobile = get_homepage_banner('mobile');
+                        $homepage_banner_desktop_link = get_homepage_banner_link('desktop');
+                        $homepage_banner_mobile_link = get_homepage_banner_link('mobile');
+
+                        if ($homepage_banner_desktop || $homepage_banner_desktop_link): ?>
+                            <a class="text-none" href="<?php echo esc_url($homepage_banner_desktop_link); ?>">
+                                <img class="d-none md:d-block" src="<?php echo esc_url($homepage_banner_desktop); ?>"
+                                    alt="Homepage Banner">
+                            </a>
+                        <?php endif; ?>
+                        <?php if ($homepage_banner_mobile || $homepage_banner_mobile_link): ?>
+                            <a class="text-none d-block md:d-none" href="<?php echo esc_url($homepage_banner_mobile_link); ?>">
+                                <img class="d-block md:d-none" src="<?php echo esc_url($homepage_banner_mobile); ?>"
+                                    alt="Homepage Banner Mobile">
+                            </a>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
