@@ -14,11 +14,10 @@
  * 
  * This file is part of the OpenGovAsia theme.
  *
- * The script uses Country_Filtered_Query() to fetch content and also includes a filter to set the
- * number of posts loaded per request.
+ * The script also includes a filter to set the number of posts loaded per request.
  * The default is set to 1, but can be changed to 4 by modifying the filter.
  * 
- * Usage: opengovasia_default_posts_per_load($number); // See the filter below
+ * Usage: opengovasia_default_posts_per_load($number);
  *
  * @package OpenGovAsia
  * @since 1.0
@@ -178,11 +177,11 @@ function opengovasia_load_more_single_posts()
         $response['ids'] = $loaded_ids;
         $response['has_more'] = count($loaded_ids) === $posts_per_load;
 
-        set_transient($cache_key, $response, 10 * MINUTE_IN_SECONDS);
+        set_transient($cache_key, $response, 1440 * MINUTE_IN_SECONDS);
         wp_send_json_success($response);
     } else {
         $response['message'] = 'No more posts found.';
-        set_transient($cache_key, $response, 5 * MINUTE_IN_SECONDS);
+        set_transient($cache_key, $response, 240 * MINUTE_IN_SECONDS);
         wp_send_json_error($response);
     }
 }
@@ -205,6 +204,6 @@ add_action('delete_post', 'opengovasia_clear_infinite_scroll_cache', 10, 2);
 
 function opengovasia_default_posts_per_load($number)
 {
-    return 1;
+    return 4;
 }
 add_filter('opengovasia_posts_per_load', 'opengovasia_default_posts_per_load');

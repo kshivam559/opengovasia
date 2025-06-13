@@ -178,8 +178,8 @@ $channel_image = (!empty($categories) && !empty(get_term_meta($term_id, 'channel
                         <div class="container max-w-xl">
                             <div class="panel">
                                 <div class="swiper overflow-unset"
-                                    data-uc-swiper="items: 3.25; gap: 8; freeMode: true; center-bounds: true; disable-class: d-none;"
-                                    data-uc-swiper-s="items: 6;" data-uc-swiper-l="items: 6; gap: 12;">
+                                    data-uc-swiper="items: 2.5; gap: 12; freeMode: true; center-bounds: true; disable-class: d-none;"
+                                    data-uc-swiper-s="items: 5;" data-uc-swiper-l="items: 6; gap: 12;">
                                     <div class="swiper-wrapper">
                                         <?php foreach ($relationships['sponsored_channels'] as $channel): ?>
                                             <?php

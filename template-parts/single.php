@@ -10,10 +10,6 @@ if (!defined('ABSPATH'))
 
 
 $categories = get_the_category();
-$category = null;
-$term_id = 0;
-$sponsor_link_text = '';
-$sponsor_link = '';
 
 // Check if there are categories
 if (!empty($categories)):
@@ -21,17 +17,14 @@ if (!empty($categories)):
     $category = $categories[0];
     $term_id = $category->term_id;
 
-    if (!empty(get_term_meta($term_id, 'sponsor_link_text', true)) && !empty(get_term_meta($term_id, 'sponsor_link', true))):
-        // Retrieve the sponsor link text and link
-        $sponsor_link_text = get_term_meta($term_id, 'sponsor_link_text', true);
-        $sponsor_link = get_term_meta($term_id, 'sponsor_link', true);
-    endif;
+    $sponsored_by = get_term_meta($term_id, 'sponsored_by', true);
+
 endif;
 
 // Retrieve the 'channel_image' meta or use fallback
-$channel_image = (!empty($categories) && !empty(get_term_meta($term_id, 'channel_image', true)))
+$banner_image = !empty(get_term_meta($term_id, 'channel_image', true))
     ? get_term_meta($term_id, 'channel_image', true)
-    : get_template_directory_uri() . '/assets/images/demo-three/common/channel-banner.webp';
+    : get_archive_banner('channels');
 
 ?>
 
@@ -43,25 +36,28 @@ $channel_image = (!empty($categories) && !empty(get_term_meta($term_id, 'channel
 
         <div class="my-2">
 
-            <?php if (!empty($category)): ?>
+            <span class="single-post cateogry-link text-white fs-6 md:fs-5">
+                <a href="<?php echo esc_url(get_category_link($category->term_id)); ?>"
+                    class="text-none text-white"><?php echo esc_html($category->name); ?></a>
+            </span>
 
+            <?php if (!empty($sponsored_by)):
+                $company = get_post($sponsored_by);
+                if ($company && $company->post_status === 'publish'):
 
-                <span class="single-post cateogry-link text-white fs-6 md:fs-5">
-                    <a href="<?php echo esc_url(get_category_link($category->term_id)); ?>"
-                        class="text-none text-white"><?php echo esc_html($category->name); ?></a>
-                </span>
+                    $sponsor_name = $company->post_title;
+                    $sponsor_link = get_permalink($company->ID);
+                endif;
+                ?>
 
-            <?php endif; ?>
-
-            <?php if (!empty($sponsor_link_text) && !empty($sponsor_link)): ?>
                 <span class="single-post single-post-sep sep text-white fs-6 md:fs-5 opacity-60">
                     •
                 </span>
 
                 <span class="single-post sponsor-link text-white fs-6 md:fs-5">
                     Powered by
-                    <a class="text-none" href="<?php echo esc_url($sponsor_link); ?>" target="_blank"
-                        rel="noopener noreferrer"><?php echo esc_html($sponsor_link_text); ?></a>
+                    <a class="text-none"
+                        href="<?php echo esc_url($sponsor_link); ?>"><?php echo esc_html($sponsor_name); ?></a>
                 </span>
             <?php endif; ?>
 
