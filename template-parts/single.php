@@ -29,7 +29,7 @@ $banner_image = !empty(get_term_meta($term_id, 'channel_image', true))
 ?>
 
 
-<div class="og_hero-image" style="background-image: url(<?php echo esc_url($channel_image); ?>);">
+<div class="og_hero-image" style="background-image: url(<?php echo esc_url($banner_image); ?>);">
 
     <div class="container max-w-xl position-absolute start-50 translate-middle z-2 text-center" style="top: 35%;">
         <h1 class="h3 lg:h1 text-white "><?php the_title(); ?></h1>
