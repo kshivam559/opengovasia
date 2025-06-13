@@ -167,7 +167,7 @@ $channel_image = (!empty($categories) && !empty(get_term_meta($term_id, 'channel
             ?>
 
             <?php if (!empty($relationships['sponsored_channels'])): ?>
-                <div class="section-inner panel vstack gap-4 pt-4 my-4">
+                <div class="section-inner panel vstack gap-4 pb-4 my-4 border-bottom">
                     <div class="block-header panel">
                         <h2 class="h4 -ls-1 xl:-ls-2 m-0 text-inherit hstack gap-1">
                             Sponsored Channels
@@ -240,7 +240,7 @@ $channel_image = (!empty($categories) && !empty(get_term_meta($term_id, 'channel
 
             <!-- Display Partner Events -->
             <?php if (!empty($relationships['tagged_events'])): ?>
-                <div class="section-inner panel vstack gap-4 pt-4 my-4 border-top">
+                <div class="section-inner panel vstack gap-4 pb-4 my-4 border-bottom">
                     <div class="block-header panel">
                         <h2 class="h4 -ls-1 xl:-ls-2 m-0 text-inherit hstack gap-1">
                             OG Events Partnered with <?php echo esc_html($title); ?>
@@ -273,7 +273,7 @@ $channel_image = (!empty($categories) && !empty(get_term_meta($term_id, 'channel
 
             <!-- Display Awards -->
             <?php if (!empty($relationships['tagged_awards'])): ?>
-                <div class="section-inner panel vstack gap-4 pt-4 border-top">
+                <div class="section-inner panel vstack gap-4 pb-4 border-bottom">
                     <div class="block-header panel">
                         <h2 class="h4 -ls-1 xl:-ls-2 m-0 text-inherit hstack gap-1">
                             <?php echo esc_html($title); ?> Awards

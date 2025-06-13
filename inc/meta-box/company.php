@@ -404,12 +404,12 @@ function get_company_relationships($company_id)
         }
     }
 
-    // Get events where this company is tagged - using HybridMeta query
-    $events_query = HybridMeta::query(array(
+    // Get events where this company is tagged - using WP query
+    $events_query = new WP_Query([
         'post_type' => 'events',
         'posts_per_page' => -1,
-        'post_status' => array('publish', 'draft', 'pending', 'private')
-    ));
+        'post_status' => ['publish']
+    ]);
 
     if ($events_query->have_posts()) {
         while ($events_query->have_posts()) {
@@ -424,11 +424,11 @@ function get_company_relationships($company_id)
         wp_reset_postdata();
     }
 
-    // Get awards where this company is tagged - using HybridMeta query
-    $awards_query = HybridMeta::query(array(
+    // Get awards where this company is tagged - using WP query
+    $awards_query = new WP_Query(array(
         'post_type' => 'awards',
         'posts_per_page' => -1,
-        'post_status' => array('publish', 'draft', 'pending', 'private')
+        'post_status' => ['publish']
     ));
 
     if ($awards_query->have_posts()) {
