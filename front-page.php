@@ -438,7 +438,6 @@ get_header(); ?>
                                 'posts_per_page' => 12, // Set the number of posts per page
                                 'orderby' => 'event_date', // Changed from 'meta_value' to 'event_date'
                                 'order' => 'ASC',
-                                'paged' => $paged,
                                 'meta_query' => [
                                     [
                                         'key' => 'event_date',
