@@ -23,14 +23,6 @@ class Country_Filtered_Query extends WP_Query
         $country = isset($args['country']) ? sanitize_text_field($args['country']) : (isset($_GET['c']) ? sanitize_text_field($_GET['c']) : '');
         $term_exists = $country ? term_exists($country, 'country') : false;
 
-        // if (!empty($country) && $country !== 'global' && is_array($term_exists)) {
-        //     $args['tax_query'][] = [
-        //         'taxonomy' => 'country',
-        //         'field' => 'slug',
-        //         'terms' => $country,
-        //     ];
-        // }
-
         if (!empty($country) && $country !== 'global' && is_array($term_exists)) {
             $args['tax_query'][] = [
                 'taxonomy' => 'country',
@@ -40,9 +32,9 @@ class Country_Filtered_Query extends WP_Query
             ];
         }
 
-        // Generate a unique cache key for query results
+        // Try object cache first (Redis/Memcached if available)
         $cache_key = 'country_query_' . md5(maybe_serialize($args));
-        $cached_query = get_transient($cache_key);
+        $cached_query = wp_cache_get($cache_key, 'country_queries');
 
         if ($cached_query !== false) {
             parent::__construct([]);
@@ -51,18 +43,19 @@ class Country_Filtered_Query extends WP_Query
                     $this->$key = $cached_query[$key];
                 }
             }
+            return;
         }
 
         // Execute the main query
         parent::__construct($args);
 
-        // Store results in cache to improve performance
-        set_transient($cache_key, [
+        // Cache results in object cache (30 minutes, auto-cleanup)
+        wp_cache_set($cache_key, [
             'posts' => $this->posts,
             'post_count' => $this->post_count,
             'found_posts' => $this->found_posts,
             'max_num_pages' => $this->max_num_pages
-        ], HOUR_IN_SECONDS);
+        ], 'country_queries', 360 * MINUTE_IN_SECONDS);
     }
 }
 

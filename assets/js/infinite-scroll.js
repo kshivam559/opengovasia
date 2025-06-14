@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const country = infiniteScrollData.country || '';
   const postsContainer = document.getElementById("infinite-scroll-posts");
   const spinner = document.querySelector(".loading-spinner");
-  const ajaxUrl = infiniteScrollData.ajax_url;
+  const restUrl = infiniteScrollData.rest_url;
   const nonce = infiniteScrollData.nonce;
   const loadingText = infiniteScrollData.loading_text || "Loading Articles for you...";
   const noMoreText = infiniteScrollData.no_more_text || "No more articles";
@@ -49,23 +49,23 @@ document.addEventListener("DOMContentLoaded", function () {
     statusContainer.style.display = "block";
     statusContainer.textContent = loadingText;
 
-    const formData = new FormData();
-    formData.append("action", "load_more_single_posts");
-    formData.append("post_id", originalPostId);
-    formData.append("posts_per_load", postsPerLoad);
-    formData.append("country", country);
-    formData.append("nonce", nonce);
-
-    loadedPostIds.forEach((id) => {
-      formData.append("loaded_post_ids[]", id);
-    });
+    const payload = {
+      post_id: originalPostId,
+      posts_per_load: postsPerLoad,
+      loaded_post_ids: loadedPostIds,
+      country: country
+    };
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-    fetch(ajaxUrl, {
+    fetch(restUrl, {
       method: "POST",
-      body: formData,
+      headers: {
+        "Content-Type": "application/json",
+        "X-WP-Nonce": nonce,
+      },
+      body: JSON.stringify(payload),
       credentials: "same-origin",
       signal: controller.signal,
     })

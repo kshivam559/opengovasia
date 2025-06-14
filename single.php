@@ -38,7 +38,7 @@ opengovasia_breadcrumbs();
 				?>
 
 				<div class="single-post-container">
-					<div class="single-post-content" data-post-id="<?php the_ID(); ?>">
+					<div class="single-post-content" data-post-id="<?php get_the_ID(); ?>">
 						<?php get_template_part('template-parts/single'); ?>
 					</div>
 				</div>
