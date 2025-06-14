@@ -10,6 +10,8 @@ if (!defined('ABSPATH'))
 
 
 $categories = get_the_category();
+$category = null;
+$term_id = 0;
 
 // Check if there are categories
 if (!empty($categories)):
@@ -18,8 +20,9 @@ if (!empty($categories)):
     $term_id = $category->term_id;
 
     $sponsored_by = get_term_meta($term_id, 'sponsored_by', true);
-
+   
 endif;
+
 
 // Retrieve the 'channel_image' meta or use fallback
 $banner_image = !empty(get_term_meta($term_id, 'channel_image', true))
