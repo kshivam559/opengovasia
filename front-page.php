@@ -432,25 +432,23 @@ get_header(); ?>
 
                             <?php
                             // WordPress Query Arguments
-                            $args = array(
+                        
+                            $events = custom_query([
                                 'post_type' => 'events',
-                                'posts_per_page' => 8,
-                                'meta_key' => 'event_date',
-                                'orderby' => 'meta_value',
+                                'posts_per_page' => 12, // Set the number of posts per page
+                                'orderby' => 'event_date', // Changed from 'meta_value' to 'event_date'
                                 'order' => 'ASC',
-                                'meta_query' => array(
-                                    array(
+                                'paged' => $paged,
+                                'meta_query' => [
+                                    [
                                         'key' => 'event_date',
                                         'value' => current_time('Y-m-d'),
                                         'compare' => '>=',
                                         'type' => 'DATE'
-                                    )
-                                )
-                            );
+                                    ]
+                                ]
+                            ]);
 
-
-                            // Execute the query with country filtering
-                            $events = new Country_Filtered_Query($args);
                             ?>
 
                             <?php if ($events->have_posts()): ?>

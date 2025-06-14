@@ -28,6 +28,7 @@ function register_custom_post_types()
         // Default value
         $has_archive = true;
         $rewrite_slug = $slug;
+        $exclude_from_search = false;
 
         if ($slug === 'awards') {
             $has_archive = 'past-winners'; // change archive slug for awards
@@ -36,7 +37,7 @@ function register_custom_post_types()
 
         if ($slug === 'company') {
             $has_archive = false; // No archive for company
-            
+            $exclude_from_search = true; // Exclude from search results
         }
 
         register_post_type($slug, [
@@ -50,6 +51,7 @@ function register_custom_post_types()
             ],
             'public' => true,
             'has_archive' => $has_archive,
+            'exclude_from_search' => $exclude_from_search,
             'supports' => ['title', 'editor', 'thumbnail'],
             'menu_icon' => $data['icon'],
             'show_in_rest' => true,

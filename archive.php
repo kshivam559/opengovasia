@@ -131,22 +131,32 @@ $sponsored_by = get_term_meta($term_id, 'sponsored_by', true);
 				// Get the current term object
 				$term = get_queried_object();
 				$taxonomy_label = '';
+				$term_name = '';
 
 				if ($term) {
-					if (is_category()) {
+					if (function_exists('is_category') && is_category()) {
 						$taxonomy_label = 'Channel';
-					} elseif (is_tag()) {
+						$term_name = single_term_title('', false);
+					} elseif (function_exists('is_tag') && is_tag()) {
 						$taxonomy_label = 'Tag';
-					} elseif (is_tax() && isset($term->taxonomy)) {
-						$taxonomy = get_taxonomy($term->taxonomy);
+						$term_name = single_term_title('', false);
+					} elseif (function_exists('is_tax') && is_tax() && isset($term->taxonomy)) {
+						$taxonomy = function_exists('get_taxonomy') ? get_taxonomy($term->taxonomy) : null;
 						$taxonomy_label = $taxonomy ? $taxonomy->label : '';
-
-					} elseif (is_post_type_archive()) {
-						$taxonomy_label = post_type_archive_title('', false);
+						$term_name = single_term_title('', false);
+					} elseif (function_exists('is_author') && is_author()) {
+						$taxonomy_label = 'Author';
+						$term_name = get_the_author();
+					} elseif (function_exists('is_post_type_archive') && is_post_type_archive()) {
+						$taxonomy_label = function_exists('post_type_archive_title') ? post_type_archive_title('', false) : 'Archive';
+						$term_name = $taxonomy_label;
 					}
+				} else {
+					$taxonomy_label = 'Archive';
+					$term_name = 'All Content';
 				}
 
-				echo '<span class="text-white">Showing ' . $current_posts . ' content out of ' . $total_posts . ' under "' . esc_html(single_term_title('', false)) . '" ' . strtoLower(esc_html($taxonomy_label)) . '.</span>';
+				echo '<span class="text-white">Showing ' . $current_posts . ' content out of ' . $total_posts . ' under "' . esc_html($term_name) . '" ' . strtolower(esc_html($taxonomy_label)) . '.</span>';
 				?>
 
 			<?php endif; ?>
@@ -207,7 +217,7 @@ $sponsored_by = get_term_meta($term_id, 'sponsored_by', true);
 									} elseif (get_post_type() === 'ogtv') {
 
 										get_template_part('template-parts/ogtv/archive');
-										
+
 									} elseif (get_post_type() === 'company') {
 
 										get_template_part('template-parts/company/archive');

@@ -55,14 +55,23 @@ function opengovasia_breadcrumbs()
 		$post_type = get_post_type();
 		$post_type_obj = get_post_type_object($post_type);
 
-		// Handle Custom Post Type Archive Link
-		if (!in_array($post_type, ['post', 'page']) && !empty(get_post_type_archive_link($post_type))) {
-			$output .= '<li itemscope itemtype="https://schema.org/ListItem">
-			                <a href="' . esc_url(get_post_type_archive_link($post_type)) . '" itemprop="item">
-			                    <span itemprop="name">' . esc_html($post_type_obj->labels->name) . '</span>
-			                </a>
-			                <meta itemprop="position" content="' . $position++ . '" />
-			            </li>';
+		// Handle Custom Post Type Archive Link or Label
+		if (!in_array($post_type, ['post', 'page'])) {
+			if (!empty(get_post_type_archive_link($post_type))) {
+				// Show archive link if available
+				$output .= '<li itemscope itemtype="https://schema.org/ListItem">
+                        <a href="' . esc_url(get_post_type_archive_link($post_type)) . '" itemprop="item">
+                            <span itemprop="name">' . esc_html($post_type_obj->labels->name) . '</span>
+                        </a>
+                        <meta itemprop="position" content="' . $position++ . '" />
+                    </li>';
+			} else {
+				// Show label without link if no archive
+				$output .= '<li itemscope itemtype="https://schema.org/ListItem">
+                        <span itemprop="name">' . esc_html($post_type_obj->labels->name) . '</span>
+                        <meta itemprop="position" content="' . $position++ . '" />
+                    </li>';
+			}
 			$output .= $separator;
 		}
 
