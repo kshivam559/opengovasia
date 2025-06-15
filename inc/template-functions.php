@@ -247,8 +247,6 @@ function opengovasia_breadcrumbs()
 
 
 
-
-
 /**
  * Archive pagination function for the OpenGovAsia theme.
  * @param mixed $query
@@ -256,33 +254,33 @@ function opengovasia_breadcrumbs()
  */
 function opengovasia_pagination($query = null)
 {
-	if (!$query) {
-		global $wp_query;
-		$query = $wp_query;
-	}
+    if (!$query) {
+        global $wp_query;
+        $query = $wp_query;
+    }
 
-	$total_pages = $query->max_num_pages;
-	if ($total_pages <= 1)
-		return; // Don't show pagination if only one page
+    $total_pages = $query->max_num_pages;
+    if ($total_pages <= 1) return;
 
-	$pagination_links = paginate_links([
-		'prev_text' => '<span class="icon icon-1 unicon-chevron-left"></span>',
-		'next_text' => '<span class="icon icon-1 unicon-chevron-right"></span>',
-		'type' => 'array', // Returns an array to format in <ul>
-		'mid_size' => 2,
-		'end_size' => 1,
-		'total' => $total_pages,
-		'current' => max(1, get_query_var('paged', 1)), // Ensure current page is correct
-	]);
+    $pagination_links = paginate_links([
+        'prev_text' => '<span class="icon icon-1 unicon-chevron-left"></span>',
+        'next_text' => '<span class="icon icon-1 unicon-chevron-right"></span>',
+        'type' => 'array',
+        'mid_size' => 2,
+        'end_size' => 1,
+        'total' => $total_pages,
+        'current' => max(1, get_query_var('paged', 1)),
+        'add_args' => array_filter($_GET),
+    ]);
 
-	if (!empty($pagination_links)) {
-		echo '<div class="nav-pagination pt-3 mt-3 lg:mt-4 border-top">';
-		echo '<ul class="nav-x uc-pagination hstack gap-1 justify-center ft-secondary">';
-		foreach ($pagination_links as $link) {
-			echo '<li>' . str_replace('page-numbers', 'page-numbers uc-active', $link) . '</li>';
-		}
-		echo '</ul></div>';
-	}
+    if (!empty($pagination_links)) {
+        echo '<div class="nav-pagination pt-3 mt-3 lg:mt-4 border-top">';
+        echo '<ul class="nav-x uc-pagination hstack gap-1 justify-center ft-secondary">';
+        foreach ($pagination_links as $link) {
+            echo '<li>' . str_replace('page-numbers', 'page-numbers uc-active', $link) . '</li>';
+        }
+        echo '</ul></div>';
+    }
 }
 
 /**
@@ -375,216 +373,6 @@ function get_homepage_banner_link($device = '')
 }
 
 
-/**
- * Content filter dropdown for the OpenGovAsia theme.
- *
- * This file contains the opengovasia_content_filter_dropdown function to display a dropdown
- * to filter content on various pages of the OpenGovAsia WordPress theme.
- *
- * @package OpenGovAsia
- */
-
-function opengovasia_content_filter_dropdown()
-{
-	if (!is_archive() && !is_search()) {
-		return;
-	}
-
-	$post_type = isset($_GET['post_type']) ? sanitize_text_field($_GET['post_type']) : '';
-	?>
-	<!-- Search Filter Dropdown -->
-	<div class="">
-		<form method="get" action="<?php echo esc_url(home_url('/')); ?>"
-			class="search-filter-form d-flex items-center justify-between">
-			<input type="hidden" name="s" value="<?php echo get_search_query(); ?>">
-
-			<div class="col-6 lg:col-2 md:col-4">
-				<label class="form-label me-2 m-0" for="post_type">Filter by Type:</label>
-			</div>
-
-			<div class="col-6 lg:col-2 md:col-4">
-				<select name="post_type" id="post_type" class="form-select p-1" onchange="this.form.submit();">
-					<option value="">All</option>
-					<option value="post" <?php selected($post_type, 'post'); ?>>Posts</option>
-					<option value="events" <?php selected($post_type, 'events'); ?>>Events</option>
-					<option value="awards" <?php selected($post_type, 'awards'); ?>>Awards</option>
-					<option value="ogtv" <?php selected($post_type, 'ogtv'); ?>>OGTV</option>
-				</select>
-			</div>
-		</form>
-	</div>
-	<?php
-}
-
-/**
- * Country filter dropdown for the OpenGovAsia theme.
- *
- * This file contains the opengovasia_country_filter_dropdown function to display a dropdown
- * to filter content by country on various pages of the OpenGovAsia WordPress theme.
- *
- * @package OpenGovAsia
- */
-
-function opengovasia_country_filter_dropdown()
-{
-
-
-	$countries = get_terms(['taxonomy' => 'country', 'hide_empty' => false]);
-
-	if (empty($countries) || is_wp_error($countries)) {
-		return '';
-	}
-
-	$selected_country = isset($_GET['c']) ? sanitize_text_field($_GET['c']) : '';
-	$selected_post_type = isset($_GET['post_type']) ? sanitize_text_field($_GET['post_type']) : '';
-	$is_search_page = isset($_GET['s']) ? sanitize_text_field($_GET['s']) : '';
-
-	?>
-	<!-- Country Filter Dropdown -->
-	<div class="">
-		<form method="get" class="country-filter-form d-flex items-center justify-between">
-
-
-			<!-- Preserve Post Type Selection Only If It Exists -->
-			<?php if (!empty($selected_post_type)): ?>
-				<input type="hidden" name="post_type" value="<?php echo esc_attr($selected_post_type); ?>">
-			<?php endif; ?>
-
-			<?php if (!empty($is_search_page)): ?>
-				<input type="hidden" name="s" value="<?php echo esc_attr($is_search_page); ?>">
-			<?php endif; ?>
-
-			<div class="col-6 lg:col-2 md:col-4">
-				<label class="form-label me-2 m-0" for="country">Filter by Country:</label>
-			</div>
-
-			<div class="col-6 lg:col-2 md:col-4">
-				<select name="c" id="country" class="form-select p-1" onchange="this.form.submit();">
-					<option value="">All (Global)</option>
-					<?php foreach ($countries as $country): ?>
-						<option value="<?php echo esc_attr($country->slug); ?>" <?php selected($selected_country, $country->slug); ?>>
-							<?php echo esc_html($country->name); ?>
-						</option>
-					<?php endforeach; ?>
-				</select>
-			</div>
-		</form>
-	</div>
-	<?php
-}
-
-/**
- * Dynamic filter form for the OpenGovAsia theme.
- *
- * This file contains the opengovasia_dynamic_filter_form function to display a dynamic filter form
- * to filter content on various pages of the OpenGovAsia WordPress theme.
- *
- * @param array $filters Array of filters to display
- * @package OpenGovAsia
- */
-
-function opengovasia_dynamic_filter_form($filters = [])
-{
-	if ((is_date() || (!is_archive() && !is_search())) && !is_page('upcoming-events')) {
-		return;
-	}
-
-	$selected_values = [
-		'filter_post_type' => isset($_GET['filter_post_type']) ? sanitize_text_field($_GET['filter_post_type']) : '',
-		'country' => isset($_GET['c']) ? sanitize_text_field($_GET['c']) : '',
-		'filter_year' => isset($_GET['filter_year']) ? sanitize_text_field($_GET['filter_year']) : ''
-
-	];
-
-	$is_search_page = isset($_GET['s']) ? sanitize_text_field($_GET['s']) : '';
-
-	$post_type_options = [
-		'' => 'Post Type',
-		'post' => 'Posts',
-		'events' => 'Events',
-		'ogtv' => 'OGTV'
-	];
-
-	$country_options = get_transient('opengovasia_country_terms_filter') ?: ['' => 'Country'];
-	if ($country_options === ['' => 'Country']) {
-		$countries = get_terms(['taxonomy' => 'country', 'hide_empty' => true]);
-		if (!is_wp_error($countries)) {
-			foreach ($countries as $country) {
-				$country_options[$country->slug] = $country->name;
-			}
-			set_transient('opengovasia_country_terms', $country_options, 1 * HOUR_IN_SECONDS);
-		}
-	}
-
-	// Retrieve Years from taxonomy instead of static range
-	$year_options = ['' => 'Year'];
-	$years = get_terms(['taxonomy' => 'years', 'hide_empty' => true]);
-	if (!is_wp_error($years)) {
-		foreach ($years as $year) {
-			$year_options[$year->slug] = $year->name;
-		}
-	}
-
-	$filter_definitions = [
-		'filter_post_type' => [
-			'label' => 'Filter by:',
-			'options' => $post_type_options,
-			'param' => 'filter_post_type',
-			'icon' => 'unicon-document-alt' // Unicon icon for post type
-		],
-		'country' => [
-			'label' => 'Filter by:',
-			'options' => $country_options,
-			'param' => 'c',
-			'icon' => ' unicon-earth-filled' // Unicon icon for country
-		],
-		'filter_year' => [
-			'label' => 'Filter by:',
-			'options' => $year_options,
-			'param' => 'filter_year',
-			'icon' => 'unicon-calendar' // Unicon icon for year
-		]
-	];
-
-	$current_url = remove_query_arg(array_keys($filter_definitions), add_query_arg(null, null));
-	?>
-
-	<form method="get" action="<?php echo esc_url($current_url); ?>" class="hstack items-center gap-2 justify-between">
-		<?php if (!empty($is_search_page)): ?>
-			<input type="hidden" name="s" value="<?php echo esc_attr($is_search_page); ?>">
-		<?php endif; ?>
-
-		<div class="opacity-60 hstack gap-1"><i class="icon icon-1 unicon-settings-adjust-filled"></i>Filter by:</div>
-
-		<div class="hstack gap-2 ">
-
-			<?php foreach (array_intersect(array_keys($filter_definitions), $filters) as $filter):
-				$filter_data = $filter_definitions[$filter];
-
-				?>
-				<div>
-					<div class="hstack gap-2 fs-6 justify-between position-relative items-center">
-						<select name="<?php echo esc_attr($filter_data['param']); ?>"
-							class="form-select form-control-xs fs-6 w-150px dark:bg-gray-900 dark:text-white dark:border-gray-700 select-filter-type"
-							onchange="this.form.submit();">
-							<?php foreach ($filter_data['options'] as $value => $name): ?>
-								<option value="<?php echo esc_attr($value); ?>" <?php selected($selected_values[$filter] ?? '', $value); ?>>
-									<?php echo esc_html($name); ?>
-								</option>
-							<?php endforeach; ?>
-
-						</select>
-						<!-- Mobile trigger icon -->
-						<i
-							class="position-absolute filter-select-icon icon icon-2 <?php echo esc_attr($filter_data['icon']); ?> d-none"></i>
-
-					</div>
-				</div>
-			<?php endforeach; ?>
-		</div>
-	</form>
-	<?php
-}
 
 /**
  * Get the OpenGovAsia theme color based on post or term meta.

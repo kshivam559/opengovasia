@@ -184,7 +184,7 @@ $sponsored_by = get_term_meta($term_id, 'sponsored_by', true);
 
 			<?php else: ?>
 
-				<?php opengovasia_dynamic_filter_form(['country', 'filter_year']) ?>
+				<?php opengovasia_dynamic_filter_form(['country']) ?>
 
 			<?php endif; ?>
 

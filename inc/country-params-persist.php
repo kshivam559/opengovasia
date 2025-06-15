@@ -77,6 +77,7 @@ function oga_output_country_script()
     <?php
 }
 
+
 /**
  * Display country switching UI
  */
@@ -126,6 +127,28 @@ function oga_display_country_switcher()
             const urlParams = new URLSearchParams(window.location.search);
             const selectedCountry = urlParams.get('c');
 
+            /**
+             * Remove pagination from URL path and query parameters
+             * This handles both pretty permalinks (/page/3/) and query string (?paged=3)
+             */
+            function removePaginationFromUrl(url) {
+                // Create URL object
+                const urlObj = new URL(url);
+                
+                // Remove pagination from path (pretty permalinks)
+                // Handles patterns like: /page/3/, /page/3, /3/ at the end
+                urlObj.pathname = urlObj.pathname
+                    .replace(/\/page\/\d+\/?$/, '/')
+                    .replace(/\/\d+\/?$/, '/')
+                    .replace(/\/+$/, '/'); // Clean up multiple trailing slashes
+                
+                // Remove pagination query parameters
+                urlObj.searchParams.delete('paged');
+                urlObj.searchParams.delete('page');
+                
+                return urlObj;
+            }
+
             document.querySelectorAll('.oga-country-switcher').forEach(switcher => {
                 const countryDisplay = switcher.querySelector('.oga-current-country');
                 const countryLinks = switcher.querySelectorAll('.oga-country-link');
@@ -145,11 +168,15 @@ function oga_display_country_switcher()
                         event.preventDefault(); // Prevent default anchor behavior
 
                         const newCountry = this.dataset.country;
-                        const currentUrl = new URL(window.location.href);
+                        
+                        // Get clean URL without pagination
+                        const cleanUrl = removePaginationFromUrl(window.location.href);
+                        
+                        // Set the new country parameter
+                        cleanUrl.searchParams.set('c', newCountry);
 
-                        currentUrl.searchParams.set('c', newCountry); // Update only 'c' param
-
-                        window.location.href = currentUrl.toString(); // Redirect to updated URL
+                        // Redirect to the updated URL
+                        window.location.href = cleanUrl.toString();
                     });
                 });
             });
@@ -161,7 +188,6 @@ function oga_display_country_switcher()
 /**
  * Display current country name
  */
-
 function get_selected_country_name()
 {
     $slug = isset($_GET['c']) ? sanitize_text_field($_GET['c']) : 'global';
@@ -177,8 +203,24 @@ function output_hreflangs()
     // Fetch all countries (taxonomy terms)
     $countries = get_terms(['taxonomy' => 'country', 'hide_empty' => false]);
 
+    // Use WordPress function to get current URL more reliably
+    $current_url = home_url(add_query_arg(null, null));
+    
+    // Remove pagination parameters from current URL
+    $base_url = remove_query_arg(['paged', 'page', 'c'], $current_url);
+    
+    // Get existing query parameters
+    $query_string = parse_url($current_url, PHP_URL_QUERY);
+    $query_params = [];
+    if ($query_string) {
+        parse_str($query_string, $query_params);
+        // Remove pagination and country parameters
+        unset($query_params['c'], $query_params['paged'], $query_params['page']);
+    }
+
     // Default (global) hreflang
-    echo '<link rel="alternate" hreflang="x-default" href="' . esc_url(get_permalink()) . '?c=global" />' . "\n";
+    $global_url = add_query_arg(array_merge($query_params, ['c' => 'global']), $base_url);
+    echo '<link rel="alternate" hreflang="x-default" href="' . esc_url($global_url) . '" />' . "\n";
 
     // Loop through each country to add hreflang links
     foreach ($countries as $country) {
@@ -188,13 +230,13 @@ function output_hreflangs()
         }
 
         // Determine the hreflang tag format (using 'en-' before the country code for example)
-        $hreflang = 'en-' . strtolower($country->slug);  // Assuming English as default language for all countries
+        $hreflang = 'en-' . strtolower($country->slug);
 
-        // Generate the URL for the current country
-        $href = add_query_arg('c', $country->slug, get_permalink());
+        // Generate the URL for the current country without pagination
+        $country_url = add_query_arg(array_merge($query_params, ['c' => $country->slug]), $base_url);
 
         // Output the hreflang tag
-        echo '<link rel="alternate" hreflang="' . esc_attr($hreflang) . '" href="' . esc_url($href) . '" />' . "\n";
+        echo '<link rel="alternate" hreflang="' . esc_attr($hreflang) . '" href="' . esc_url($country_url) . '" />' . "\n";
     }
 }
 add_action('wp_head', 'output_hreflangs');
@@ -202,16 +244,13 @@ add_action('wp_head', 'output_hreflangs');
 /**
  * Add a REST API endpoint to fetch geolocation data
  */
-
 add_action('rest_api_init', function () {
     register_rest_route('opengovasia/v1', '/geolocation', [
         'methods' => 'GET',
         'callback' => function () {
-
             $user_ip = $_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['REMOTE_ADDR'];
 
             if (empty($user_ip) || $user_ip === '127.0.0.1' || $user_ip === '::1') {
-
                 return new WP_Error('geo_error', 'Invalid IP address' . $user_ip . '', ['status' => 400]);
                 // $user_ip = '106.219.00.100'; // Test IP
             }
@@ -238,11 +277,9 @@ add_action('rest_api_init', function () {
     ]);
 });
 
-
 /**
  * Add Cloudflare IP country header to the head
  */
-
 add_action('wp_head', function () {
     if (!headers_sent() && isset($_SERVER['HTTP_CF_IPCOUNTRY'])) {
         echo '<meta name="user-country" content="' . esc_attr(strtolower($_SERVER['HTTP_CF_IPCOUNTRY'])) . '">' . "\n";
